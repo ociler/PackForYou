@@ -1,1 +1,1 @@
-"# PackForYou" 
+PackForYou is an Android app made to help delivery men to do his job in a faster and better way. They won't have to call their clients to know if they will be at home or not. Instead of it, they will know it via this app, as this client will receive a Telegram message where he will be able to say if he will be at home or not and, i not, he will be able to send another location. The delivery man packages will, as well, auto-sort with the best possible route.
