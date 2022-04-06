@@ -1,4 +1,4 @@
-package com.example.packforyou
+package com.packforyou
 
 import org.junit.Test
 

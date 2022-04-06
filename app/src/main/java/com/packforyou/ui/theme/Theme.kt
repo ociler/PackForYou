@@ -1,59 +1,41 @@
-package com.packforyou.ui.theme
+package com.packforyou.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material.MaterialTheme.shapes
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
-import androidx.compose.material3.darkColorScheme
+import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import androidx.compose.material.MaterialTheme as MaterialTheme2
+import com.packforyou.ui.theme.*
 
-private val DarkColorPalette = darkColors(
-    primary = PurpleMain,
-    primaryVariant = PurpleMain,
-    secondary = Color.Gray,
-    background = elevation00,
-    surface = elevation01,
-    error = Red
+@Composable
+fun PackForYouTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit
+) {
+    MaterialTheme(
+        colors = if (darkTheme) DarkColors else LightColors,
+        typography = PackForYouTypography,
+        shapes = PackForYouShapes,
+        content = content
+    )
+}
+
+private val LightColors = lightColors(
+    primary = Red700,
+    primaryVariant = Red900,
+    onPrimary = Color.White,
+    secondary = Red700,
+    secondaryVariant = Red900,
+    onSecondary = Color.White,
+    error = Red800
 )
 
-private val DarkColorScheme = darkColorScheme(
-    primary = PurpleMain,
-    error = Red,
-    background = elevation00,
-    onBackground = Color.White,
-    onError = Color.White,
+private val DarkColors = darkColors(
+    primary = Red300,
+    primaryVariant = Red700,
     onPrimary = Color.Black,
-    secondary = Color.Gray,
+    secondary = Red300,
     onSecondary = Color.Black,
-    onPrimaryContainer = Color.Black,
-    tertiary = Citron,
-    onTertiary = Color.White,
-    surface = elevation16
+    error = Red200
 )
-
-@Composable
-fun MyGymPlusTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable() () -> Unit) {
-    val colors = DarkColorScheme
-    val systemUiController = rememberSystemUiController()
-    systemUiController.setStatusBarColor(color = Color.DarkGray)
-    MaterialTheme2(
-        colorScheme = colors,
-        typography = typography,
-        content = content
-    )
-}
-
-@Composable
-fun MyGymPlusTheme2(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable() () -> Unit) {
-    val colors = DarkColorPalette
-    val systemUiController = rememberSystemUiController()
-    systemUiController.setStatusBarColor(color = Color.DarkGray)
-    MaterialTheme2(
-        colors = colors,
-        typography = typography2,
-        shapes = shapes,
-        content = content
-    )
-}
