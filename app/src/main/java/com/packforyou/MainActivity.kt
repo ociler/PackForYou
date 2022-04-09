@@ -7,8 +7,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
-import com.packforyou.data.dataSource.Firebase
+import com.packforyou.data.dataSources.FirebaseDatabase
 import com.packforyou.ui.PackForYouTheme
 
 class MainActivity : ComponentActivity() {
@@ -22,7 +21,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-        Firebase.createRandomUser()
+        FirebaseDatabase.createRandomUser()
     }
 }
 
