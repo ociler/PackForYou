@@ -1,15 +1,9 @@
 package com.packforyou.data.dataSources
 
 import android.annotation.SuppressLint
-import android.util.Log
-import com.google.firebase.firestore.DocumentChange
-import com.google.firebase.firestore.FirebaseFirestoreException
-import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.packforyou.data.DeliveryMan
-import org.w3c.dom.Document
-import java.util.*
+import com.packforyou.data.models.DeliveryMan
 
 object FirebaseDatabase {
     @SuppressLint("StaticFieldLeak")
@@ -18,29 +12,33 @@ object FirebaseDatabase {
     fun getInstance() = db
 
     fun createRandomUser() {
-        // Create a new user with a first and last name
-        val user = hashMapOf(
-            "first" to "Ada",
-            "last" to "Lovelace",
-            "born" to 1815
+        val deliveryMan = DeliveryMan(
+            id = "123123123A",
+            name = "John Doe",
+            mail = "john@si.com",
+            password = "123456",
+            phone = 654654654
         )
+        createDeliveryMan(deliveryMan)
+    }
 
-        val user2 = hashMapOf(
-            "first" to "Alan",
-            "middle" to "Mathison",
-            "last" to "Turing",
-            "born" to 1912
-        )
+    fun createDeliveryMan(deliveryMan: DeliveryMan) {
+        val hashmapDeliveryMan = deliveryManToHashMap(deliveryMan)
 
-        // Add a new document with a generated ID
-        db.collection("users")
-            .add(user2)
+        db.collection("deliveryMen")
+            .document(hashmapDeliveryMan["name"].toString())
+            .set(hashmapDeliveryMan)
 
     }
 
-    fun createUser(user: DeliveryMan) {
-        db.collection("deliveryMen")
-            .add(user)
+    private fun deliveryManToHashMap(deliveryMan: DeliveryMan): HashMap<String, Any?> {
+        return hashMapOf(
+            "id" to deliveryMan.id,
+            "name" to deliveryMan.name,
+            "mail" to deliveryMan.mail,
+            "password" to deliveryMan.password,
+            "phone" to deliveryMan.phone
+        )
     }
 
     fun getAllDeliverymen(): List<DeliveryMan> {
@@ -65,7 +63,7 @@ object FirebaseDatabase {
                     }
                 }
             })
-            
+
          */
 
         return deliveryManList
