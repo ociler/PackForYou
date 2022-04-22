@@ -5,6 +5,9 @@ data class DeliveryMan (
     override var name: String? = "Rick Astley",
     override var phone: Int? = 666666666,
     var mail: String? = "rick@packforyou.es",
-    var password: String? = "password"
+    var password: String? = "password",
+    var route: Route? = null,
+    var location: Location? = null,
+    var packages: List<Package>? = null
     ): Person(id, name, phone) {
 }

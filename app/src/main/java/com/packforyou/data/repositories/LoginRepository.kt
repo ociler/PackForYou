@@ -27,7 +27,7 @@ class LoginRepositoryImpl(
         dataSource.getAllDeliveryMen().collect { state->
             when (state) {
                 is State.Loading -> {
-                    println("perate boludo")
+                    println("Espeeeera, ya casi está")
                 }
 
                 is State.Success -> {
