@@ -8,15 +8,15 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModelProvider
-import com.packforyou.data.dataSources.FirebaseDatabase
-import com.packforyou.data.repositories.FirebaseCallback
-import com.packforyou.data.repositories.LoginRepository
-import com.packforyou.data.repositories.Response
+import com.packforyou.data.dataSources.FirebaseRemoteDatabaseImpl
+import com.packforyou.data.repositories.LoginRepositoryImpl
 import com.packforyou.ui.PackForYouTheme
+import kotlinx.coroutines.flow.collect
+import java.lang.Thread.sleep
 
 class MainActivity : ComponentActivity() {
 
-    private lateinit var viewModel: LoginRepository
+    private lateinit var viewModel: LoginRepositoryImpl
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -27,16 +27,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-        viewModel = ViewModelProvider(this).get(LoginRepository::class.java)
-        FirebaseDatabase.createRandomUser()
+        var a = FirebaseRemoteDatabaseImpl()
 
-        viewModel.getResponseFromFirestoreUsingCallback(object : FirebaseCallback {
-            override fun onResponse(response: Response) {
-                println("inicio")
-                println(response)
-                println("final")
-            }
-        })
+
+
+
+        println(a.getAllDeliveryMen())
 
     }
 }
