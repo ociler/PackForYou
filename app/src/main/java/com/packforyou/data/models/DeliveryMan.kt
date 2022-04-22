@@ -7,7 +7,6 @@ data class DeliveryMan (
     var mail: String? = "rick@packforyou.es",
     var password: String? = "password",
     var route: Route? = null,
-    var location: Location? = null,
-    var packages: List<Package>? = null
+    var location: Location? = null
     ): Person(id, name, phone) {
 }

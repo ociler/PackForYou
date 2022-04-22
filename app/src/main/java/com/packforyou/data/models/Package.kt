@@ -7,6 +7,9 @@ data class Package(
     var isDelivered: Boolean? = false,
     var deliveryDate: Date? = null,
     var note: String? = "",
-    var urgency: Urgency? = Urgency.NOT_URGENT
+    var urgency: Urgency? = Urgency.NOT_URGENT,
+    var client: Client? = null,
+    var location: Location? = null,
+    var deliveryMan: DeliveryMan? = null
 ) {
 }
