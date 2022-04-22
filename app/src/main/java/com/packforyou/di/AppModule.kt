@@ -20,7 +20,7 @@ object AppModule {
     @Singleton
     @Provides
     fun provideLoginRepository(): ILoginRepository {
-        return LoginRepositoryImpl()
+        return LoginRepositoryImpl(provideLoginDataSource())
     }
 
     @Singleton

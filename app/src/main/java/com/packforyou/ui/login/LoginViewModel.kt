@@ -13,23 +13,20 @@ import javax.inject.Inject
 interface ILoginViewModel {
 
 }
-
-@OptIn(InternalCoroutinesApi::class)
 @HiltViewModel
+
 class LoginViewModelImpl @Inject constructor(
     private val repository: ILoginRepository
 ) : ILoginViewModel, ViewModel() {
-    fun getAllDeliveryMen(): List<DeliveryMan> {
+    var deliveryMen = listOf<DeliveryMan>()
+
+    suspend fun getAllDeliveryMen(): List<DeliveryMan> {
+        deliveryMen = repository.getAllDeliveryMen()
         return repository.getAllDeliveryMen()
     }
 
-    var a = FirebaseRemoteDatabaseImpl()
-    init {
-        viewModelScope.launch {
-            a.getFirstDeliveryMan().collect { deliveryMan ->
 
-            }
-        }
-    }
+
+    suspend fun addDeliveryMan() = repository.addDeliveryMan(DeliveryMan())
 
 }

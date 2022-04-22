@@ -11,7 +11,11 @@ import androidx.lifecycle.ViewModelProvider
 import com.packforyou.data.dataSources.FirebaseRemoteDatabaseImpl
 import com.packforyou.data.repositories.LoginRepositoryImpl
 import com.packforyou.ui.PackForYouTheme
+import com.packforyou.ui.login.LoginViewModelImpl
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import java.lang.Thread.sleep
 
 class MainActivity : ComponentActivity() {
@@ -27,12 +31,13 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-        var a = FirebaseRemoteDatabaseImpl()
 
 
+        var a = LoginViewModelImpl(LoginRepositoryImpl(FirebaseRemoteDatabaseImpl()))
 
-
-        println(a.getAllDeliveryMen())
+        GlobalScope.launch(Dispatchers.Main.immediate) {
+            println(a.getAllDeliveryMen())
+        }
 
     }
 }
