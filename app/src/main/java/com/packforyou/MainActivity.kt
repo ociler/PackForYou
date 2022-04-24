@@ -8,10 +8,15 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModelProvider
+import com.packforyou.data.ExampleObjects
 import com.packforyou.data.dataSources.FirebaseRemoteDatabaseImpl
+import com.packforyou.data.models.DeliveryMan
+import com.packforyou.data.models.Package
 import com.packforyou.data.repositories.LoginRepositoryImpl
+import com.packforyou.data.repositories.PackagesRepositoryImpl
 import com.packforyou.ui.PackForYouTheme
 import com.packforyou.ui.login.LoginViewModelImpl
+import com.packforyou.ui.packages.PackagesViewModelImpl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.collect
@@ -34,10 +39,25 @@ class MainActivity : ComponentActivity() {
 
 
         var a = LoginViewModelImpl(LoginRepositoryImpl(FirebaseRemoteDatabaseImpl()))
+        var b = PackagesViewModelImpl(PackagesRepositoryImpl(FirebaseRemoteDatabaseImpl()))
 
         GlobalScope.launch(Dispatchers.Main.immediate) {
-            println(a.getAllDeliveryMen())
+           // a.addDeliveryMan(DeliveryMan())
+            //b.addPackage(Package().copy(numPackage = 1))
+            ExampleObjects().addExamplePackage()
+            ExampleObjects().addExampleDeliveryMan()
+
         }
+
+
+
+
+/*
+        println("jej")
+        println(a.getAllDeliveryMen())
+        println("jijijija")
+
+ */
 
     }
 }

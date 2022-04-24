@@ -1,11 +1,23 @@
 package com.packforyou.ui.packages
 
 import androidx.lifecycle.ViewModel
-import com.packforyou.data.repositories.PackagesRepository
+import androidx.lifecycle.viewModelScope
+import com.packforyou.data.repositories.IPackagesRepository
+import com.packforyou.data.models.Package
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class PackagesViewModel @Inject constructor(
-    private val repository: PackagesRepository = PackagesRepository()
-) : ViewModel() {
+interface IPackagesViewModel{
+    fun addPackage(packge: Package)
+}
+class PackagesViewModelImpl @Inject constructor(
+    private val repository: IPackagesRepository
+) : ViewModel(), IPackagesViewModel {
+
+    override fun addPackage(packge: Package){
+        viewModelScope.launch {
+            repository.addPackage(packge)
+        }
+    }
 
 }

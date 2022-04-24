@@ -5,7 +5,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun Packages(
-    packagesViewModel: PackagesViewModel = viewModel()
+    packagesViewModel: IPackagesViewModel
 ) {
 
 

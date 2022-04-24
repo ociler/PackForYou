@@ -27,7 +27,7 @@ class LoginRepositoryImpl(
         dataSource.getAllDeliveryMen().collect { state->
             when (state) {
                 is State.Loading -> {
-                    println("Espeeeera, ya casi está")
+                    println("Wait! It's loading")
                 }
 
                 is State.Success -> {
@@ -47,7 +47,7 @@ class LoginRepositoryImpl(
                 }
 
                 is State.Success -> {
-                    println("Added")
+                    println("DeliveryMan Added")
                 }
 
                 is State.Failed -> {

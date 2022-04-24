@@ -11,5 +11,4 @@ data class Package(
     var client: Client? = null,
     var location: Location? = null,
     var deliveryMan: DeliveryMan? = null
-) {
-}
+)
