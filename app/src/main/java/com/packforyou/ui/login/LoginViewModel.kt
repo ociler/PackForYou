@@ -1,13 +1,14 @@
 package com.packforyou.ui.login
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.packforyou.data.models.Client
 import com.packforyou.data.models.DeliveryMan
-import com.packforyou.data.repositories.ILoginRepository
+import com.packforyou.data.repositories.IUsersRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.lang.Thread.sleep
 import javax.inject.Inject
 
 interface ILoginViewModel {
@@ -16,14 +17,19 @@ interface ILoginViewModel {
 
 @HiltViewModel
 class LoginViewModelImpl @Inject constructor(
-    private val repository: ILoginRepository
+    private val repository: IUsersRepository
 ) : ILoginViewModel, ViewModel() {
-    var deliveryMen = listOf<DeliveryMan>()
 
-    fun getAllDeliveryMen(): List<DeliveryMan> {
+    private var deliveryMen = MutableLiveData<List<DeliveryMan>>()
+
+    fun getAllDeliveryMen() {
         viewModelScope.launch {
-            deliveryMen = repository.getAllDeliveryMen()
+            deliveryMen.postValue(repository.getAllDeliveryMen())
+            println("getAllViweModel $deliveryMen")
         }
+    }
+
+    fun observeDeliveryMen(): LiveData<List<DeliveryMan>> {
         return deliveryMen
     }
 
@@ -31,6 +37,12 @@ class LoginViewModelImpl @Inject constructor(
     fun addDeliveryMan(deliveryMan: DeliveryMan) {
         viewModelScope.launch {
             repository.addDeliveryMan(deliveryMan)
+        }
+    }
+
+    fun addClient(client: Client){
+        viewModelScope.launch {
+            repository.addClient(client)
         }
     }
 

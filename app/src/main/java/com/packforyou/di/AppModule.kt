@@ -2,10 +2,8 @@ package com.packforyou.di
 
 import com.packforyou.data.dataSources.FirebaseRemoteDatabaseImpl
 import com.packforyou.data.dataSources.IFirebaseRemoteDatabase
-import com.packforyou.data.repositories.ILoginRepository
-import com.packforyou.data.repositories.LoginRepositoryImpl
-import com.packforyou.ui.login.ILoginViewModel
-import com.packforyou.ui.login.LoginViewModelImpl
+import com.packforyou.data.repositories.IUsersRepository
+import com.packforyou.data.repositories.UsersRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,8 +17,8 @@ object AppModule {
     /******** LOGIN ************/
     @Singleton
     @Provides
-    fun provideLoginRepository(): ILoginRepository {
-        return LoginRepositoryImpl(provideLoginDataSource())
+    fun provideLoginRepository(): IUsersRepository {
+        return UsersRepositoryImpl(provideLoginDataSource())
     }
 
     @Singleton

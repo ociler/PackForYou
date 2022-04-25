@@ -1,9 +1,8 @@
 package com.packforyou.data
 
 import com.packforyou.data.dataSources.FirebaseRemoteDatabaseImpl
-import com.packforyou.data.dataSources.IFirebaseRemoteDatabase
 import com.packforyou.data.models.*
-import com.packforyou.data.repositories.LoginRepositoryImpl
+import com.packforyou.data.repositories.UsersRepositoryImpl
 import com.packforyou.data.repositories.PackagesRepositoryImpl
 import com.packforyou.ui.login.LoginViewModelImpl
 import com.packforyou.ui.packages.PackagesViewModelImpl
@@ -11,7 +10,7 @@ import java.util.*
 
 class ExampleObjects {
 
-    var a = LoginViewModelImpl(LoginRepositoryImpl(FirebaseRemoteDatabaseImpl()))
+    var a = LoginViewModelImpl(UsersRepositoryImpl(FirebaseRemoteDatabaseImpl()))
     var b = PackagesViewModelImpl(PackagesRepositoryImpl(FirebaseRemoteDatabaseImpl()))
 
 
@@ -31,20 +30,37 @@ class ExampleObjects {
         zipCode = 46020
     )
 
+    val location2 = Location(
+        address = "Plaça Catalunya",
+        city = "Barcelona",
+        latitude = 4512.0,
+        longitude = 45876.0,
+        zipCode = 2547
+    )
+
     val client1 = Client(
-        id = "265478964A",
+        id = "265478964AB",
         name = "Jose Francisco Garcia",
         phone = 23456789,
         message = message
     )
 
     val deliveryMan1 = DeliveryMan(
-        id = "789456123M",
+        id = "789456124M",
         name = "Pedro Gómez",
         phone = 632569874,
         mail = "pedro@gmail.com",
         password = "password",
         location = location1
+    )
+
+    val deliveryMan2 = DeliveryMan(
+        id = "12345678A",
+        name = "Paco Gómez",
+        phone = 659874123,
+        mail = "paco@gmail.com",
+        password = "password",
+        location = location2
     )
 
     val package1 = Package(
@@ -67,9 +83,14 @@ class ExampleObjects {
 
     fun addExampleDeliveryMan(){
         a.addDeliveryMan(deliveryMan1)
+        a.addDeliveryMan(deliveryMan2)
     }
 
     fun addExamplePackage(){
         b.addPackage(package1)
+    }
+
+    fun addExampleClient(){
+        a.addClient(client1)
     }
 }

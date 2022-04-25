@@ -1,25 +1,23 @@
 package com.packforyou.data.repositories
 
-import android.widget.Toast
-import android.widget.Toast.LENGTH_SHORT
 import com.packforyou.data.models.DeliveryMan
-import com.packforyou.data.dataSources.FirebaseRemoteDatabaseImpl
 import com.packforyou.data.dataSources.IFirebaseRemoteDatabase
+import com.packforyou.data.models.Client
 import com.packforyou.data.models.State
 import kotlinx.coroutines.flow.collect
-import javax.sql.CommonDataSource
 
 
-interface ILoginRepository {
+interface IUsersRepository {
     suspend fun getAllDeliveryMen(): List<DeliveryMan>
 
     suspend fun addDeliveryMan(deliveryMan: DeliveryMan)
+    suspend fun addClient(client: Client)
 
 }
 
-class LoginRepositoryImpl(
+class UsersRepositoryImpl(
     private val dataSource: IFirebaseRemoteDatabase
-) : ILoginRepository {
+) : IUsersRepository {
 
     override suspend fun getAllDeliveryMen(): List<DeliveryMan> {
         var deliveryMen = listOf<DeliveryMan>()
@@ -48,6 +46,23 @@ class LoginRepositoryImpl(
 
                 is State.Success -> {
                     println("DeliveryMan Added")
+                }
+
+                is State.Failed -> {
+                    println("Failed! ${state.message}")
+                }
+            }
+        }
+    }
+
+    override suspend fun addClient(client: Client) {
+        dataSource.addClient(client).collect { state ->
+            when (state) {
+                is State.Loading -> {
+                }
+
+                is State.Success -> {
+                    println("Client Added")
                 }
 
                 is State.Failed -> {

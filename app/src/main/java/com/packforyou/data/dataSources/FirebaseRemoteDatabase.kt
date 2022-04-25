@@ -6,23 +6,25 @@ import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.packforyou.data.models.DeliveryMan
-import com.packforyou.data.models.Package
-import com.packforyou.data.models.State
+import com.packforyou.data.models.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.tasks.await
 
 interface IFirebaseRemoteDatabase {
     fun getAllDeliveryMen(): Flow<State<List<DeliveryMan>>>
+    fun getDeliveryManPackages(deliveryManId: String): Flow<State<List<Package>>>
 
     fun addDeliveryMan(deliveryMan: DeliveryMan): Flow<State<DocumentReference>>
     fun addPackage(packge: Package): Flow<State<DocumentReference>>
-    fun getDeliveryManPackages(deliveryManId: String): Flow<State<List<Package>>>
+    fun addLocation(location: Location): Flow<State<DocumentReference>>
+    fun addClient(client: Client): Flow<State<DocumentReference>>
 }
 
 val DELIVERYMEN_REF = "deliveryMen"
 val PACKAGES_REF = "packages"
+val LOCATION_REF = "locations"
+val CLIENT_REF = "clients"
 
 class FirebaseRemoteDatabaseImpl(
     private val rootRef: FirebaseFirestore = FirebaseFirestore.getInstance() //igual esto val la pena posar-ho fora del constructor i tindre la classe sense paràmetres
@@ -32,8 +34,8 @@ class FirebaseRemoteDatabaseImpl(
 
     private val deliveryMenCollection: CollectionReference = rootRef.collection(DELIVERYMEN_REF)
     private val packagesCollection: CollectionReference = rootRef.collection(PACKAGES_REF)
-
-    fun getInstance() = db
+    private val locationCollection: CollectionReference = rootRef.collection(LOCATION_REF)
+    private val clientCollection: CollectionReference = rootRef.collection(CLIENT_REF)
 
     override fun getAllDeliveryMen(): Flow<State<List<DeliveryMan>>> {
         return flow {
@@ -56,7 +58,7 @@ class FirebaseRemoteDatabaseImpl(
         return flow {
             emit(State.loading())
 
-            val deliveryManRef = deliveryMenCollection.document("seh")
+            val deliveryManRef = deliveryMenCollection.document(deliveryMan.id)
             deliveryManRef.set(deliveryMan)
             
             emit(State.success(deliveryManRef))
@@ -92,6 +94,34 @@ class FirebaseRemoteDatabaseImpl(
             packageRef.set(packge).await()
 
             emit(State.success(packageRef))
+
+        }.catch {
+            emit(State.failed(it.message.toString()))
+        }.flowOn(Dispatchers.IO)
+    }
+
+    override fun addLocation(location: Location): Flow<State<DocumentReference>> {
+        return flow {
+            emit(State.loading())
+
+            val locationRef = locationCollection.document(location.address)
+            locationRef.set(location).await()
+
+            emit(State.success(locationRef))
+
+        }.catch {
+            emit(State.failed(it.message.toString()))
+        }.flowOn(Dispatchers.IO)
+    }
+
+    override fun addClient(client: Client): Flow<State<DocumentReference>> {
+        return flow {
+            emit(State.loading())
+
+            val clientRef = clientCollection.document(client.id)
+            clientRef.set(client).await()
+
+            emit(State.success(clientRef))
 
         }.catch {
             emit(State.failed(it.message.toString()))
