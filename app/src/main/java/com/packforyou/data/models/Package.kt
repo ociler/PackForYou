@@ -10,5 +10,6 @@ data class Package(
     var urgency: Urgency? = Urgency.NOT_URGENT,
     var client: Client? = null,
     var location: Location? = null,
-    var deliveryMan: DeliveryMan? = null
+    var deliveryMan: DeliveryMan? = null,
+    var message: Message? = null
 )

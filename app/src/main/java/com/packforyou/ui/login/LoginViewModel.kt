@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.packforyou.data.models.Client
 import com.packforyou.data.models.DeliveryMan
 import com.packforyou.data.repositories.IUsersRepository
+import dagger.hilt.android.internal.lifecycle.HiltViewModelFactory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,7 +26,7 @@ class LoginViewModelImpl @Inject constructor(
     fun getAllDeliveryMen() {
         viewModelScope.launch {
             deliveryMen.postValue(repository.getAllDeliveryMen())
-            println("getAllViweModel $deliveryMen")
+            println("getAllViewModel $deliveryMen")
         }
     }
 

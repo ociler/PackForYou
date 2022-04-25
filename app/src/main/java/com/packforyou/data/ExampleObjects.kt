@@ -41,8 +41,7 @@ class ExampleObjects {
     val client1 = Client(
         id = "265478964AB",
         name = "Jose Francisco Garcia",
-        phone = 23456789,
-        message = message
+        phone = 23456789
     )
 
     val deliveryMan1 = DeliveryMan(
@@ -71,7 +70,8 @@ class ExampleObjects {
         urgency = Urgency.NOT_URGENT,
         client = client1,
         location = location1,
-        deliveryMan = deliveryMan1
+        deliveryMan = deliveryMan1,
+        message = message
     )
 
 
