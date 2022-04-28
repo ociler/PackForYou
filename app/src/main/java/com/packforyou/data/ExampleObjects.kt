@@ -1,5 +1,7 @@
 package com.packforyou.data
 
+import androidx.activity.viewModels
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.packforyou.data.dataSources.FirebaseRemoteDatabaseImpl
 import com.packforyou.data.models.*
 import com.packforyou.data.repositories.UsersRepositoryImpl
@@ -9,8 +11,8 @@ import com.packforyou.ui.packages.PackagesViewModelImpl
 import java.util.*
 
 class ExampleObjects {
-
-    var a = LoginViewModelImpl(UsersRepositoryImpl(FirebaseRemoteDatabaseImpl()))
+/*
+    val a: LoginViewModelImpl by viewModels()
     var b = PackagesViewModelImpl(PackagesRepositoryImpl(FirebaseRemoteDatabaseImpl()))
 
 
@@ -93,4 +95,6 @@ class ExampleObjects {
     fun addExampleClient(){
         a.addClient(client1)
     }
+
+ */
 }

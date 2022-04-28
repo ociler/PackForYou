@@ -1,5 +1,8 @@
 package com.packforyou
 
+import android.content.Context
+import android.location.Address
+import android.location.Geocoder
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -8,8 +11,10 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionContext
 import androidx.lifecycle.Observer
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.firebase.firestore.GeoPoint
 import com.packforyou.data.ExampleObjects
 import com.packforyou.data.dataSources.FirebaseRemoteDatabaseImpl
 import com.packforyou.data.models.DeliveryMan
@@ -24,6 +29,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -34,12 +40,15 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             PackForYouTheme {
-                Login(loginViewModel)
+                //Login(loginViewModel)
             }
         }
 
+        val packagesViewModel: PackagesViewModelImpl by viewModels()
 
+        val gp = packagesViewModel.getLocationFromAddress("Carrer Arquitecte Arnau 30, 1, 46020, Valencia", applicationContext)
 
+        println(gp)
 /*
         GlobalScope.launch(Dispatchers.Main.immediate) {
             // a.addDeliveryMan(DeliveryMan())
@@ -55,7 +64,6 @@ class MainActivity : ComponentActivity() {
 
 
 
-/*
         println("PreGet")
         loginViewModel.getAllDeliveryMen()
         loginViewModel.observeDeliveryMen().observe(this/*lifecycelOwner*/
@@ -63,7 +71,7 @@ class MainActivity : ComponentActivity() {
             println("Acabamos de pasar $deliveryMen")
         }
         println("PostGet")
- */
+
 
     }
 }
