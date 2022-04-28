@@ -1,15 +1,5 @@
 package com.packforyou.data
 
-import androidx.activity.viewModels
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.packforyou.data.dataSources.FirebaseRemoteDatabaseImpl
-import com.packforyou.data.models.*
-import com.packforyou.data.repositories.UsersRepositoryImpl
-import com.packforyou.data.repositories.PackagesRepositoryImpl
-import com.packforyou.ui.login.LoginViewModelImpl
-import com.packforyou.ui.packages.PackagesViewModelImpl
-import java.util.*
-
 class ExampleObjects {
 /*
     val a: LoginViewModelImpl by viewModels()

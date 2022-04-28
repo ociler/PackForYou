@@ -1,27 +1,17 @@
 package com.packforyou.ui.packages
 
-import android.annotation.SuppressLint
-import android.app.Application
 import android.content.Context
 import android.location.Address
 import android.location.Geocoder
-import androidx.compose.runtime.rememberCompositionContext
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.firestore.GeoPoint
 import com.packforyou.data.models.Package
 import com.packforyou.data.repositories.IPackagesRepository
-import dagger.hilt.android.internal.Contexts.getApplication
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.IOException
 import javax.inject.Inject
-import kotlin.coroutines.coroutineContext
 
 
 interface IPackagesViewModel {
