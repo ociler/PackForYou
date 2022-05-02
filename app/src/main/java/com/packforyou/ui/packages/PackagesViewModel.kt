@@ -5,8 +5,12 @@ import android.location.Address
 import android.location.Geocoder
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.api.Billing
 import com.google.firebase.firestore.GeoPoint
+import com.packforyou.data.models.Location
 import com.packforyou.data.models.Package
+import com.packforyou.data.models.Step
 import com.packforyou.data.repositories.IPackagesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -49,6 +53,24 @@ class PackagesViewModelImpl @Inject constructor(
             e.printStackTrace()
         }
         return null
+    }
+
+    fun optimizeRoute(packages: List<Package>): List<Package> {
+        var sortedPackages = listOf<Package>()
+        viewModelScope.launch {
+            sortedPackages = repository.getOptimizedRoute(packages)
+        }
+
+        return sortedPackages
+    }
+
+    fun getStep(origin: Location, destination: Location): Step {
+        var step = Step(0,0)
+        viewModelScope.launch {
+            step = repository.getStep(origin, destination)
+        }
+
+        return step
     }
 
 }

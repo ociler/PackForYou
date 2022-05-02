@@ -9,7 +9,8 @@ data class DeliveryMan (
     override var phone: Int? = 666666666,
     var mail: String? = "rick@packforyou.es",
     var password: String? = "password",
-    var location: Location? = null
+    var currentLocation: Location? = null,
+    var endLocation: Location? = null
     ): Person(id, name, phone){
         var packages: List<Package> = listOf()
         var route: Route? = null

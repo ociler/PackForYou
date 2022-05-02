@@ -10,6 +10,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import retrofit2.Retrofit
 import javax.inject.Singleton
 
 @Module
@@ -29,11 +30,4 @@ object AppModule {
         return UsersRepositoryImpl(provideFirebaseDataSource())
     }
 
-
-    /******** PACKAGES ************/
-    @Singleton
-    @Provides
-    fun providePackagesRepository(): IPackagesRepository {
-        return PackagesRepositoryImpl(provideFirebaseDataSource())
-    }
 }

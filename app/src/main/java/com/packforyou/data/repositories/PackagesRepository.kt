@@ -1,18 +1,24 @@
 package com.packforyou.data.repositories
 
+import com.packforyou.api.DirectionsApiService
+import com.packforyou.api.DistanceMatrixApiService
 import com.packforyou.data.dataSources.IFirebaseRemoteDatabase
 import com.packforyou.data.models.Location
 import com.packforyou.data.models.State
 import com.packforyou.data.models.Package
-import kotlinx.coroutines.flow.collect
+import com.packforyou.data.models.Step
 
 
 interface IPackagesRepository {
     suspend fun getDeliveryManPackages(deliveryManId: String): List<Package>?
     suspend fun addPackage(packge: Package)
+    suspend fun getOptimizedRoute(packages: List<Package>): List<Package>
+    suspend fun getStep(origin: Location, destination: Location): Step
 }
 class PackagesRepositoryImpl(
-    private val dataSource: IFirebaseRemoteDatabase
+    private val dataSource: IFirebaseRemoteDatabase,
+    private val directionsApiService: DirectionsApiService,
+    private val distanceMatrixApiService: DistanceMatrixApiService
 ): IPackagesRepository {
 
     override suspend fun getDeliveryManPackages(deliveryManId: String): List<Package>?{
@@ -49,6 +55,26 @@ class PackagesRepositoryImpl(
                 }
             }
         }
+    }
+
+    override suspend fun getOptimizedRoute(packages: List<Package>): List<Package>{
+        //TODO cal posar ací tota la lògica de json a package
+
+
+        return listOf()
+    }
+
+    override suspend fun getStep(origin: Location, destination:Location): Step {
+        val oLatLong = "${origin.latitude},${origin.longitude}"
+        val dLatLong = "${destination.latitude},${destination.longitude}"
+
+        val distanceAndTime = distanceMatrixApiService.getDistance(oLatLong, dLatLong)
+        println("$distanceAndTime es estoooooooo")
+        
+        val step = Step(distanceAndTime.rows[0].elements[0].distance.value, distanceAndTime.rows[0].elements[0].duration.value)
+
+        println(step)
+        return step
     }
 
 }

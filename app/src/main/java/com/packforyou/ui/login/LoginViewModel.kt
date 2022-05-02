@@ -13,8 +13,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 interface ILoginViewModel {
-
+    fun getAllDeliveryMen()
+    fun observeDeliveryMen(): LiveData<List<DeliveryMan>>
 }
+
 
 @HiltViewModel
 class LoginViewModelImpl @Inject constructor(
@@ -23,14 +25,14 @@ class LoginViewModelImpl @Inject constructor(
 
     private var deliveryMen = MutableLiveData<List<DeliveryMan>>()
 
-    fun getAllDeliveryMen() {
+    override fun getAllDeliveryMen() {
         viewModelScope.launch {
             deliveryMen.postValue(repository.getAllDeliveryMen())
             println("getAllViewModel $deliveryMen")
         }
     }
 
-    fun observeDeliveryMen(): LiveData<List<DeliveryMan>> {
+    override fun observeDeliveryMen(): LiveData<List<DeliveryMan>> {
         return deliveryMen
     }
 
