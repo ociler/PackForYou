@@ -15,6 +15,8 @@ import javax.inject.Inject
 interface ILoginViewModel {
     fun getAllDeliveryMen()
     fun observeDeliveryMen(): LiveData<List<DeliveryMan>>
+    fun addDeliveryMan(deliveryMan: DeliveryMan)
+    fun addClient(client: Client)
 }
 
 
@@ -37,13 +39,13 @@ class LoginViewModelImpl @Inject constructor(
     }
 
 
-    fun addDeliveryMan(deliveryMan: DeliveryMan) {
+    override fun addDeliveryMan(deliveryMan: DeliveryMan) {
         viewModelScope.launch {
             repository.addDeliveryMan(deliveryMan)
         }
     }
 
-    fun addClient(client: Client){
+    override fun addClient(client: Client){
         viewModelScope.launch {
             repository.addClient(client)
         }

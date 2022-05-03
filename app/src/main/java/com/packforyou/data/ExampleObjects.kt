@@ -1,18 +1,14 @@
 package com.packforyou.data
 
-import androidx.lifecycle.ViewModelProvider
 import com.packforyou.data.models.*
 import com.packforyou.ui.login.ILoginViewModel
-import com.packforyou.ui.login.LoginViewModelImpl
-import com.packforyou.ui.packages.PackagesViewModelImpl
+import com.packforyou.ui.packages.IPackagesViewModel
 import java.util.*
 
-class ExampleObjects {
-/*
-    val a: LoginViewModelImpl
-    val loginViewModel: ILoginViewModel = ViewModelProvider(this).get(LoginViewModelImpl::class.java)
-    var b = PackagesViewModelImpl(PackagesRepositoryImpl(FirebaseRemoteDatabaseImpl()))
-
+class ExampleObjects(
+    private val packagesViewModel: IPackagesViewModel,
+    private val loginViewModel: ILoginViewModel
+) {
 
     val message = Message(
         id = 1,
@@ -50,7 +46,7 @@ class ExampleObjects {
         phone = 632569874,
         mail = "pedro@gmail.com",
         password = "password",
-        currentLocation =
+        currentLocation = location1
     )
 
     val deliveryMan2 = DeliveryMan(
@@ -58,8 +54,7 @@ class ExampleObjects {
         name = "Paco Gómez",
         phone = 659874123,
         mail = "paco@gmail.com",
-        password = "password",
-        location = location2
+        password = "password"
     )
 
     val package1 = Package(
@@ -82,19 +77,17 @@ class ExampleObjects {
     )
 
     fun addExampleDeliveryMan(){
-        a.addDeliveryMan(deliveryMan1)
-        a.addDeliveryMan(deliveryMan2)
+        loginViewModel.addDeliveryMan(deliveryMan1)
+        loginViewModel.addDeliveryMan(deliveryMan2)
     }
 
     fun addExamplePackage(){
-        b.addPackage(package1)
+        packagesViewModel.addPackage(package1)
     }
 
     fun addExampleClient(){
-        a.addClient(client1)
+        loginViewModel.addClient(client1)
     }
 
-
- */
 
 }

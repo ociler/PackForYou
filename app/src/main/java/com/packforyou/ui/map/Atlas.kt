@@ -12,7 +12,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 
 
 @Composable
-fun Atlas(){
+fun Atlas(atlasViewModel: IAtlasViewModel){
 
 }
 
