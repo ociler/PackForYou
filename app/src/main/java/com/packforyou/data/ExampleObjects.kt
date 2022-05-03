@@ -1,8 +1,16 @@
 package com.packforyou.data
 
+import androidx.lifecycle.ViewModelProvider
+import com.packforyou.data.models.*
+import com.packforyou.ui.login.ILoginViewModel
+import com.packforyou.ui.login.LoginViewModelImpl
+import com.packforyou.ui.packages.PackagesViewModelImpl
+import java.util.*
+
 class ExampleObjects {
 /*
-    val a: LoginViewModelImpl by viewModels()
+    val a: LoginViewModelImpl
+    val loginViewModel: ILoginViewModel = ViewModelProvider(this).get(LoginViewModelImpl::class.java)
     var b = PackagesViewModelImpl(PackagesRepositoryImpl(FirebaseRemoteDatabaseImpl()))
 
 
@@ -42,7 +50,7 @@ class ExampleObjects {
         phone = 632569874,
         mail = "pedro@gmail.com",
         password = "password",
-        location = location1
+        currentLocation =
     )
 
     val deliveryMan2 = DeliveryMan(
@@ -86,5 +94,7 @@ class ExampleObjects {
         a.addClient(client1)
     }
 
+
  */
+
 }
