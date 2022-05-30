@@ -4,13 +4,19 @@ import com.packforyou.api.DirectionsApiService
 import com.packforyou.api.DistanceMatrixApiService
 import com.packforyou.data.dataSources.IFirebaseRemoteDatabase
 import com.packforyou.data.models.*
+import com.packforyou.ui.packages.IGetLeg
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 
 
 interface IPackagesRepository {
     suspend fun getDeliveryManPackages(deliveryManId: String): List<Package>?
     suspend fun addPackage(packge: Package)
-    suspend fun getLeg(origin: Location, destination: Location): Leg
     suspend fun getOptimizedRoute(route: Route): Route?
+    suspend fun computeDistanceBetweenAllPackages(packages: List<Package>, callback: IGetLeg)
 }
 
 class PackagesRepositoryImpl(
@@ -18,6 +24,11 @@ class PackagesRepositoryImpl(
     private val directionsApiService: DirectionsApiService,
     private val distanceMatrixApiService: DistanceMatrixApiService
 ) : IPackagesRepository {
+
+    private lateinit var travelTimeArray: Array<IntArray>
+    private var finishedCalls = 0
+    private var totalCalls = 0
+    private lateinit var globalCallback: IGetLeg
 
     override suspend fun getDeliveryManPackages(deliveryManId: String): List<Package>? {
         var packages: List<Package>? = null
@@ -36,6 +47,10 @@ class PackagesRepositoryImpl(
             }
         }
         return packages
+    }
+
+    private fun initializeLegArray(size: Int) {
+        travelTimeArray = Array(size) { IntArray(size) }
     }
 
     override suspend fun addPackage(packge: Package) {
@@ -65,7 +80,8 @@ class PackagesRepositoryImpl(
         val dAddress = getFormattedAddress(route.deliveryMan?.endLocation)
         val routeLocations = getLocationsFromPackages(route.packages)
         var waypoints = getFormattedWaypointsByAddress(routeLocations)
-        waypoints = "optimize:true|$waypoints" //TODO esto no deuria ser així. Deuria estar en la pròpia crida a la API
+        waypoints =
+            "optimize:true|$waypoints" //TODO esto no deuria ser així. Deuria estar en la pròpia crida a la API
 
         val optimizedRouteResponse =
             directionsApiService.getOptimizedRoute(oAddress, dAddress, waypoints)
@@ -77,77 +93,130 @@ class PackagesRepositoryImpl(
             sortedList.add(route.packages!![sortedOrder[i]])
         }
 
-        return Route(route.id, sortedList, route.deliveryMan)
+        return route.copy(packages = sortedList)
     }
 
+    private suspend fun enqueueLeg(originPackage: Package, destinationPackage: Package) {
 
-    override suspend fun getLeg(origin: Location, destination: Location): Leg {
-        val oLatLong = getStringLatLongFromLocation(origin)
-        val dLatLong = getStringLatLongFromLocation(destination)
+        getLeg(originPackage.location!!, destinationPackage.location!!).collect { state ->
+            when (state) {
+                is State.Loading -> {
+                }
 
-        val distanceAndTime = distanceMatrixApiService.getDistance(oLatLong, dLatLong)
-        println("$distanceAndTime es estoooooooo")
+                is State.Success -> {
+                    //ya tenemos el dato
+                    travelTimeArray[originPackage.numPackage][destinationPackage.numPackage] =
+                        state.data.duration!!
 
-        val step = Leg(
-            distanceAndTime.rows[0].elements[0].distance.value,
-            distanceAndTime.rows[0].elements[0].duration.value
-        )
+                    synchronized(this/*we want to block the thread. Doesn't mind the variable we put here*/) {
+                        finishedCalls++
+                        if (finishedCalls == totalCalls) {
+                            globalCallback.onSuccess(travelTimeArray)
+                        }
+                    }
 
-        println(step)
-        return step
-    }
+                }
 
-    private fun getStringLatLongFromLocation(location: Location?): String {
-        return if (location != null) {
-            "${location.latitude},${location.longitude}"
-        } else {
-            ""
+                is State.Failed -> {
+                    println("Failed! ${state.message}")
+                }
+            }
+            //if I place here the synchronous block of code, there is some problem. I have to place in the State.Success case
         }
     }
 
-    private fun getFormattedAddress(location: Location?): String {
-        return if (location != null) {
-            location.address.replace(' ', '+')
-        } else {
-            ""
-        }
+
+    private suspend fun getLeg(origin: Location, destination: Location): Flow<State<Leg>> {
+        return flow {
+            emit(State.loading())
+
+            val oLatLong = getStringLatLongFromLocation(origin)
+            val dLatLong = getStringLatLongFromLocation(destination)
+
+            val distanceAndTime = distanceMatrixApiService.getDistance(oLatLong, dLatLong)
+
+            val leg = Leg(
+                distanceAndTime.rows[0].elements[0].distance.value,
+                distanceAndTime.rows[0].elements[0].duration.value
+            )
+            emit(State.success(leg))
+
+        }.catch {
+            // If exception is thrown, emit failed state along with message.
+            emit(State.failed(it.message.toString()))
+        }.flowOn(Dispatchers.IO)
     }
 
-    private fun getFormattedWaypointsByLocation(locations: List<Location?>): String {
-        var result = ""
+    override suspend fun computeDistanceBetweenAllPackages(packages: List<Package>, callback: IGetLeg) {
+        globalCallback = callback
 
-        if (locations != null) {
-            result = getStringLatLongFromLocation(locations[0])
+        totalCalls = packages.size * packages.size
+        finishedCalls = 0
+        initializeLegArray(packages.size)
 
-            for (location in locations.subList(1, locations.size)) {
-                result += "|${getStringLatLongFromLocation(location)}"
+        for (origin in packages) {
+            for (destination in packages) {
+                if (origin.numPackage != destination.numPackage &&
+                    origin.location != null && destination.location != null
+                ) {
+                    enqueueLeg(origin, destination)
+                } else {
+                    synchronized(this) {
+                        finishedCalls++
+                        if (finishedCalls == totalCalls) {
+                            globalCallback.onSuccess(travelTimeArray)
+                        }
+                    }
+                }
             }
         }
-        return result
     }
+}
 
-    private fun getFormattedWaypointsByAddress(locations: List<Location?>): String {
-        var result = ""
+private fun getStringLatLongFromLocation(location: Location?): String {
+    return if (location != null) {
+        "${location.latitude},${location.longitude}"
+    } else {
+        ""
+    }
+}
 
-        if (locations != null) {
-            result = getFormattedAddress(locations[0])
+private fun getFormattedAddress(location: Location?): String {
+    return location?.address?.replace(' ', '+') ?: ""
+}
 
-            for (location in locations.subList(1, locations.size)) {
-                result += "|${getFormattedAddress(location)}"
-            }
+private fun getFormattedWaypointsByLocation(locations: List<Location?>): String {
+    var result = ""
+
+    if (locations != null) {
+        result = getStringLatLongFromLocation(locations[0])
+
+        for (location in locations.subList(1, locations.size)) {
+            result += "|${getStringLatLongFromLocation(location)}"
         }
-        return result
     }
+    return result
+}
 
-    private fun getLocationsFromPackages(packages: List<Package>?): List<Location?> {
-        val locations = arrayListOf<Location?>()
-        if (packages != null) {
-            for (packge in packages) {
-                locations.add(packge.location)
-            }
+private fun getFormattedWaypointsByAddress(locations: List<Location?>): String {
+    var result = ""
+
+    if (locations != null) {
+        result = getFormattedAddress(locations[0])
+
+        for (location in locations.subList(1, locations.size)) {
+            result += "|${getFormattedAddress(location)}"
         }
-        return locations.toList()
     }
+    return result
+}
 
-
+private fun getLocationsFromPackages(packages: List<Package>?): List<Location?> {
+    val locations = arrayListOf<Location?>()
+    if (packages != null) {
+        for (packge in packages) {
+            locations.add(packge.location)
+        }
+    }
+    return locations.toList()
 }
