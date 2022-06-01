@@ -6,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.firestore.GeoPoint
 import com.packforyou.data.models.DeliveryMan
@@ -18,9 +17,6 @@ import com.packforyou.ui.login.ILoginViewModel
 import com.packforyou.ui.login.LoginViewModelImpl
 import com.packforyou.ui.packages.PackagesViewModelImpl
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -44,20 +40,25 @@ class MainActivity : ComponentActivity() {
                     39.485892,
                     -0.353794
                 ), this
-            )
+            ),
+            latitude = 39.485834, longitude = -0.356361
         )
+
         val endLocation = Location().copy(
             address = packagesViewModel.getAddressFromLocation(
                 GeoPoint(
-                    39.485892,
+                    39.485834,
                     -0.353794
                 ), this
-            )
+            ),
+            latitude = 39.485834, longitude = -0.356361
         )
+
+
         val deliveryMan =
             DeliveryMan().copy(currentLocation = startLocation, endLocation = endLocation)
 
-        val package1 = Package().copy(
+        val valenciaPackage1 = Package().copy(
             location = Location().copy(
                 address = packagesViewModel.getAddressFromLocation(
                     GeoPoint(39.452473, -0.358421),
@@ -65,7 +66,8 @@ class MainActivity : ComponentActivity() {
                 ), latitude = 39.452473, longitude = -0.358421
             ), numPackage = 0
         )
-        val package2 = Package().copy(
+
+        val valenciaPackage2 = Package().copy(
             location = Location().copy(
                 address = packagesViewModel.getAddressFromLocation(
                     GeoPoint(39.471563, -0.370366),
@@ -73,7 +75,8 @@ class MainActivity : ComponentActivity() {
                 ), latitude = 39.471563, longitude = -0.370366
             ), numPackage = 1
         )
-        val package3 = Package().copy(
+
+        val valenciaPackage3 = Package().copy(
             location = Location().copy(
                 address = packagesViewModel.getAddressFromLocation(
                     GeoPoint(39.481279, -0.370887),
@@ -81,7 +84,7 @@ class MainActivity : ComponentActivity() {
                 ), latitude = 39.481279, longitude = -0.370887
             ), numPackage = 2
         )
-        val package4 = Package().copy(
+        val rocafortPackage = Package().copy(
             location = Location().copy(
                 address = packagesViewModel.getAddressFromLocation(
                     GeoPoint(39.522849, -0.417539),
@@ -89,7 +92,8 @@ class MainActivity : ComponentActivity() {
                 ), latitude = 39.522849, longitude = -0.417539
             ), numPackage = 3
         )
-        val package5 = Package().copy(
+
+        val entrepinsPackage1 = Package().copy(
             location = Location().copy(
                 address = packagesViewModel.getAddressFromLocation(
                     GeoPoint(39.555297, -0.527054),
@@ -98,28 +102,86 @@ class MainActivity : ComponentActivity() {
             ), numPackage = 4
         )
 
+        val entrepinsPackage2 = Package().copy(
+            location = Location().copy(
+                address = packagesViewModel.getAddressFromLocation(
+                    GeoPoint(39.551436, -0.517451),
+                    this
+                ), latitude = 39.436275, longitude = -0.462388
+            ), numPackage = 4
+        )
 
-        val packages = listOf(package2, package1, package3)
+
+        val packages = listOf(valenciaPackage2, valenciaPackage1, valenciaPackage3)
         val route = Route(deliveryMan = deliveryMan, packages = packages, id = 0)
+        var optimizedBruteForceRoute: Route
+        var optimizedClosestNeighbour: Route
 
-        println("Not optimized route 1 -> $route")
-        //val optimizedRouteMaps = packagesViewModel.getOptimizedRouteMaps(route)
-        println("whatever")
 
-        //first we fill the distances array
-        packagesViewModel.computeDistanceBetweenAllPackages(route.packages!!)
+        println("Not optimized route -> $route")
 
-        packagesViewModel.observeTravelTimeArray()
-            .observe(this@MainActivity) { optimizedArray ->
-                val optimizedRoute = packagesViewModel.getOptimizedRouteBruteForce(
+        //first we fill all the distances arrays. This function, when it finishes, will call the one to get endArray, and when it finishes the one to get the array between all packages
+        //Here we need the endLocation as well because we have no other way to get this Location. Maybe it is a bit strange because of the name
+        packagesViewModel.computeDistanceBetweenStartLocationAndPackages(startLocation, endLocation, packages)
+
+        packagesViewModel.travelTimeArray
+            .observe(this@MainActivity) { travelTimeArray ->
+
+                /****BRUTE FORCE****/
+                optimizedBruteForceRoute = packagesViewModel.getOptimizedRouteBruteForce(
                     route,
-                    optimizedArray
+                    travelTimeArray
                 ) //TODO maybe this should be in another thread, as it will take some time (theoretically)
 
-                println("Not optimized route 2 -> $route")
-                println("Optimized route -> $optimizedRoute")
+                /****CLOSEST NEIGHBOUR ****/
+                optimizedClosestNeighbour = packagesViewModel.getOptimizedRouteClosestNeighbour(
+                    deliveryMan.currentLocation!!,
+                    deliveryMan.endLocation!!,
+                    route,
+                    travelTimeArray,
+                    packagesViewModel.startTravelTimeArray,
+                    packagesViewModel.endTravelTimeArray
+                )
+
+
+                /***RESULTS***/
+
+                println("------------------------------")
+                println("Not Optimized route: ")
+                println("------------------------------")
+
+                println("Starting point: $startLocation")
+                route.packages!!.forEachIndexed { index, pckg ->
+                    println("Order: ${index + 1}, numPackage: ${pckg.numPackage},  location: ${pckg.location}")
+                }
+                println("Ending point: $endLocation\n\n")
+
+
+                println("------------------------------")
+                println("Brute Force Optimized route: ")
+                println("------------------------------")
+
+                println("Starting point: $startLocation")
+                optimizedBruteForceRoute.packages!!.forEachIndexed { index, pckg ->
+                    println("Order: ${index + 1}, numPackage: ${pckg.numPackage},  location: ${pckg.location}")
+                }
+                println("Ending point: $endLocation\n\n")
+
+
+
+                println("-----------------------------------")
+                println("Closest neighbour Optimized route: ")
+                println("-----------------------------------")
+
+                println("Starting point: $startLocation")
+                optimizedClosestNeighbour.packages!!.forEachIndexed { index, pckg ->
+                    println("Order: ${index + 1}, numPackage: ${pckg.numPackage},  location: ${pckg.location}")
+                }
+                println("Ending point: $endLocation\n\n")
 
             }
+
+
     }
 
 

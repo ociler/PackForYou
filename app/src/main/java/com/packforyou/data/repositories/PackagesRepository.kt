@@ -16,7 +16,20 @@ interface IPackagesRepository {
     suspend fun getDeliveryManPackages(deliveryManId: String): List<Package>?
     suspend fun addPackage(packge: Package)
     suspend fun getOptimizedRoute(route: Route): Route?
+
     suspend fun computeDistanceBetweenAllPackages(packages: List<Package>, callback: IGetLeg)
+    suspend fun computeDistanceBetweenStartLocationAndPackages(
+        startLocation: Location,
+        endLocation: Location,
+        packages: List<Package>,
+        callback: IGetLeg
+    )
+
+    suspend fun computeDistanceBetweenEndLocationAndPackages(
+        endLocation: Location,
+        packages: List<Package>,
+        callback: IGetLeg
+    )
 }
 
 class PackagesRepositoryImpl(
@@ -26,6 +39,13 @@ class PackagesRepositoryImpl(
 ) : IPackagesRepository {
 
     private lateinit var travelTimeArray: Array<IntArray>
+    private lateinit var startTravelTimeArray: IntArray
+    private lateinit var endTravelTimeArray: IntArray
+
+    private lateinit var globalPackagesList: List<Package>
+    private lateinit var globalStartLocation: Location
+    private lateinit var globalEndLocation: Location
+
     private var finishedCalls = 0
     private var totalCalls = 0
     private lateinit var globalCallback: IGetLeg
@@ -49,8 +69,16 @@ class PackagesRepositoryImpl(
         return packages
     }
 
-    private fun initializeLegArray(size: Int) {
+    private fun initializeTravelTimeArray(size: Int) {
         travelTimeArray = Array(size) { IntArray(size) }
+    }
+
+    private fun initializeStartTravelTimeArray(size: Int) {
+        startTravelTimeArray = IntArray(size)
+    }
+
+    private fun initializeEndTravelTimeArray(size: Int) {
+        endTravelTimeArray = IntArray(size)
     }
 
     override suspend fun addPackage(packge: Package) {
@@ -96,7 +124,7 @@ class PackagesRepositoryImpl(
         return route.copy(packages = sortedList)
     }
 
-    private suspend fun enqueueLeg(originPackage: Package, destinationPackage: Package) {
+    private suspend fun enqueuePackagesLeg(originPackage: Package, destinationPackage: Package) {
 
         getLeg(originPackage.location!!, destinationPackage.location!!).collect { state ->
             when (state) {
@@ -111,7 +139,7 @@ class PackagesRepositoryImpl(
                     synchronized(this/*we want to block the thread. Doesn't mind the variable we put here*/) {
                         finishedCalls++
                         if (finishedCalls == totalCalls) {
-                            globalCallback.onSuccess(travelTimeArray)
+                            globalCallback.onSuccessBetweenPackages(travelTimeArray)
                         }
                     }
 
@@ -125,6 +153,68 @@ class PackagesRepositoryImpl(
         }
     }
 
+    private suspend fun enqueueStartLeg(originLocation: Location, destinationPackage: Package) {
+        if (destinationPackage.location == null) return
+
+        getLeg(originLocation, destinationPackage.location!!).collect { state ->
+            when (state) {
+                is State.Loading -> {
+                }
+
+                is State.Success -> {
+                    //ya tenemos el dato
+                    startTravelTimeArray[destinationPackage.numPackage] = state.data.duration!!
+
+                    synchronized(this/*we want to block the thread. Doesn't mind the variable we put here*/) {
+                        finishedCalls++
+                        if (finishedCalls == totalCalls) {
+                            globalCallback.onSuccessBetweenStartLocationAndPackages(
+                                startTravelTimeArray, globalEndLocation, globalPackagesList
+                            )
+                        }
+                    }
+
+                }
+
+                is State.Failed -> {
+                    println("Failed! ${state.message}")
+                }
+            }
+            //if I place here the synchronous block of code, there is some problem. I have to place in the State.Success case
+        }
+    }
+
+
+    private suspend fun enqueueEndLeg(originPackage: Package, destinationLocation: Location) {
+        if (originPackage.location == null) return
+
+        getLeg(originPackage.location!!, destinationLocation).collect { state ->
+            when (state) {
+                is State.Loading -> {
+                }
+
+                is State.Success -> {
+                    //ya tenemos el dato
+                    endTravelTimeArray[originPackage.numPackage] = state.data.duration!!
+
+                    synchronized(this/*we want to block the thread. Doesn't mind the variable we put here*/) {
+                        finishedCalls++
+                        if (finishedCalls == totalCalls) {
+                            globalCallback.onSuccessBetweenEndLocationAndPackages(
+                                endTravelTimeArray, globalPackagesList
+                            )
+                        }
+                    }
+
+                }
+
+                is State.Failed -> {
+                    println("Failed! ${state.message}")
+                }
+            }
+            //if I place here the synchronous block of code, there is some problem. I have to place in the State.Success case
+        }
+    }
 
     private suspend fun getLeg(origin: Location, destination: Location): Flow<State<Leg>> {
         return flow {
@@ -147,76 +237,140 @@ class PackagesRepositoryImpl(
         }.flowOn(Dispatchers.IO)
     }
 
-    override suspend fun computeDistanceBetweenAllPackages(packages: List<Package>, callback: IGetLeg) {
+    override suspend fun computeDistanceBetweenAllPackages(
+        packages: List<Package>,
+        callback: IGetLeg
+    ) {
         globalCallback = callback
+        globalPackagesList = packages
 
         totalCalls = packages.size * packages.size
         finishedCalls = 0
-        initializeLegArray(packages.size)
+        initializeTravelTimeArray(packages.size)
 
         for (origin in packages) {
             for (destination in packages) {
                 if (origin.numPackage != destination.numPackage &&
                     origin.location != null && destination.location != null
                 ) {
-                    enqueueLeg(origin, destination)
+                    enqueuePackagesLeg(origin, destination)
                 } else {
                     synchronized(this) {
                         finishedCalls++
                         if (finishedCalls == totalCalls) {
-                            globalCallback.onSuccess(travelTimeArray)
+                            globalCallback.onSuccessBetweenPackages(travelTimeArray)
                         }
                     }
                 }
             }
         }
     }
-}
 
-private fun getStringLatLongFromLocation(location: Location?): String {
-    return if (location != null) {
-        "${location.latitude},${location.longitude}"
-    } else {
-        ""
+    //Here we need the endLocation as well because we have no other way to get this Location
+    override suspend fun computeDistanceBetweenStartLocationAndPackages(
+        startLocation: Location,
+        endLocation: Location,
+        packages: List<Package>,
+        callback: IGetLeg
+    ) {
+        globalCallback = callback
+        globalPackagesList = packages
+        globalStartLocation = startLocation
+        globalEndLocation = endLocation
+
+        totalCalls = packages.size
+        finishedCalls = 0
+        initializeStartTravelTimeArray(packages.size)
+
+        for (destination in packages) {
+            if (destination.location != null) {
+                enqueueStartLeg(startLocation, destination)
+            } else {
+                synchronized(this) {
+                    finishedCalls++
+                    if (finishedCalls == totalCalls) {
+                        globalCallback.onSuccessBetweenStartLocationAndPackages(
+                            startTravelTimeArray,
+                            globalEndLocation,
+                            globalPackagesList
+                        )
+                    }
+                }
+            }
+        }
     }
-}
 
-private fun getFormattedAddress(location: Location?): String {
-    return location?.address?.replace(' ', '+') ?: ""
-}
+    override suspend fun computeDistanceBetweenEndLocationAndPackages(
+        endLocation: Location,
+        packages: List<Package>,
+        callback: IGetLeg
+    ) {
+        globalCallback = callback
+        globalPackagesList = packages
+        globalEndLocation = endLocation
 
-private fun getFormattedWaypointsByLocation(locations: List<Location?>): String {
-    var result = ""
+        totalCalls = packages.size
+        finishedCalls = 0
+        initializeEndTravelTimeArray(packages.size)
 
-    if (locations != null) {
+        for (origin in packages) {
+            if (origin.location != null) {
+                enqueueEndLeg(origin, endLocation)
+            } else {
+                synchronized(this) {
+                    finishedCalls++
+                    if (finishedCalls == totalCalls) {
+                        globalCallback.onSuccessBetweenEndLocationAndPackages(
+                            endTravelTimeArray,
+                            globalPackagesList
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun getStringLatLongFromLocation(location: Location?): String {
+        return if (location != null) {
+            "${location.latitude},${location.longitude}"
+        } else {
+            ""
+        }
+    }
+
+    private fun getFormattedAddress(location: Location?): String {
+        return location?.address?.replace(' ', '+') ?: ""
+    }
+
+    private fun getFormattedWaypointsByLocation(locations: List<Location?>): String {
+        var result = ""
+
         result = getStringLatLongFromLocation(locations[0])
 
         for (location in locations.subList(1, locations.size)) {
             result += "|${getStringLatLongFromLocation(location)}"
         }
+        return result
     }
-    return result
-}
 
-private fun getFormattedWaypointsByAddress(locations: List<Location?>): String {
-    var result = ""
+    private fun getFormattedWaypointsByAddress(locations: List<Location?>): String {
+        var result = ""
 
-    if (locations != null) {
         result = getFormattedAddress(locations[0])
 
         for (location in locations.subList(1, locations.size)) {
             result += "|${getFormattedAddress(location)}"
         }
+        return result
     }
-    return result
-}
 
-private fun getLocationsFromPackages(packages: List<Package>?): List<Location?> {
-    val locations = arrayListOf<Location?>()
-    if (packages != null) {
-        for (packge in packages) {
-            locations.add(packge.location)
+    private fun getLocationsFromPackages(packages: List<Package>?): List<Location?> {
+        val locations = arrayListOf<Location?>()
+        if (packages != null) {
+            for (packge in packages) {
+                locations.add(packge.location)
+            }
         }
+        return locations.toList()
     }
-    return locations.toList()
 }
