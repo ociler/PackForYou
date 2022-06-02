@@ -4,7 +4,7 @@ import com.packforyou.api.DirectionsApiService
 import com.packforyou.api.DistanceMatrixApiService
 import com.packforyou.data.dataSources.IFirebaseRemoteDatabase
 import com.packforyou.data.models.*
-import com.packforyou.ui.packages.IGetLeg
+import com.packforyou.ui.packages.ICallbackAPICalls
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -15,20 +15,20 @@ import kotlinx.coroutines.flow.flowOn
 interface IPackagesRepository {
     suspend fun getDeliveryManPackages(deliveryManId: String): List<Package>?
     suspend fun addPackage(packge: Package)
-    suspend fun getOptimizedRoute(route: Route): Route?
 
-    suspend fun computeDistanceBetweenAllPackages(packages: List<Package>, callback: IGetLeg)
+    suspend fun computeOptimizedRouteDirectionsAPI(route: Route, callback: ICallbackAPICalls)
+    suspend fun computeDistanceBetweenAllPackages(packages: List<Package>, callback: ICallbackAPICalls)
     suspend fun computeDistanceBetweenStartLocationAndPackages(
         startLocation: Location,
         endLocation: Location,
         packages: List<Package>,
-        callback: IGetLeg
+        callback: ICallbackAPICalls
     )
 
     suspend fun computeDistanceBetweenEndLocationAndPackages(
         endLocation: Location,
         packages: List<Package>,
-        callback: IGetLeg
+        callback: ICallbackAPICalls
     )
 }
 
@@ -48,7 +48,7 @@ class PackagesRepositoryImpl(
 
     private var finishedCalls = 0
     private var totalCalls = 0
-    private lateinit var globalCallback: IGetLeg
+    private lateinit var globalCallback: ICallbackAPICalls
 
     override suspend fun getDeliveryManPackages(deliveryManId: String): List<Package>? {
         var packages: List<Package>? = null
@@ -98,11 +98,12 @@ class PackagesRepositoryImpl(
         }
     }
 
-    override suspend fun getOptimizedRoute(route: Route): Route? {
+    override suspend fun computeOptimizedRouteDirectionsAPI(route: Route, callback: ICallbackAPICalls){
         if (route.packages == null) {
-            return null
+            return
         }
 
+        globalCallback = callback
 
         val oAddress = getFormattedAddress(route.deliveryMan?.currentLocation)
         val dAddress = getFormattedAddress(route.deliveryMan?.endLocation)
@@ -114,14 +115,21 @@ class PackagesRepositoryImpl(
         val optimizedRouteResponse =
             directionsApiService.getOptimizedRoute(oAddress, dAddress, waypoints)
 
+        var totalTravelTime = 0
         val sortedList = arrayListOf<Package>()
         val sortedOrder = optimizedRouteResponse.routes.last().waypoint_order
 
-        for (i in 0 until route.packages!!.size) {
+        optimizedRouteResponse.routes.forEach { route -> //usually it will be just one element tho
+            route.legs.forEach { leg ->
+                totalTravelTime += leg.duration.value
+            }
+        }
+
+        for (i in route.packages!!.indices) {
             sortedList.add(route.packages!![sortedOrder[i]])
         }
 
-        return route.copy(packages = sortedList)
+        globalCallback.onSuccessDirectionsAPI(route.copy(packages = sortedList, totalTime = totalTravelTime))
     }
 
     private suspend fun enqueuePackagesLeg(originPackage: Package, destinationPackage: Package) {
@@ -239,7 +247,7 @@ class PackagesRepositoryImpl(
 
     override suspend fun computeDistanceBetweenAllPackages(
         packages: List<Package>,
-        callback: IGetLeg
+        callback: ICallbackAPICalls
     ) {
         globalCallback = callback
         globalPackagesList = packages
@@ -271,7 +279,7 @@ class PackagesRepositoryImpl(
         startLocation: Location,
         endLocation: Location,
         packages: List<Package>,
-        callback: IGetLeg
+        callback: ICallbackAPICalls
     ) {
         globalCallback = callback
         globalPackagesList = packages
@@ -303,7 +311,7 @@ class PackagesRepositoryImpl(
     override suspend fun computeDistanceBetweenEndLocationAndPackages(
         endLocation: Location,
         packages: List<Package>,
-        callback: IGetLeg
+        callback: ICallbackAPICalls
     ) {
         globalCallback = callback
         globalPackagesList = packages

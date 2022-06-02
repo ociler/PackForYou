@@ -113,48 +113,66 @@ class MainActivity : ComponentActivity() {
 
 
         val packages = listOf(valenciaPackage2, valenciaPackage1, valenciaPackage3)
-        val route = Route(deliveryMan = deliveryMan, packages = packages, id = 0)
-        var optimizedBruteForceRoute: Route
-        var optimizedClosestNeighbour: Route
+        val notOptimizedRoute =
+            Route(deliveryMan = deliveryMan, packages = packages, id = 0, totalTime = 0)
 
+        var bruteForceRoute: Route
+        var closestNeighbourRoute: Route
+        var optimizedDirectionsAPI: Route
 
-        println("Not optimized route -> $route")
 
         //first we fill all the distances arrays. This function, when it finishes, will call the one to get endArray, and when it finishes the one to get the array between all packages
         //Here we need the endLocation as well because we have no other way to get this Location. Maybe it is a bit strange because of the name
-        packagesViewModel.computeDistanceBetweenStartLocationAndPackages(startLocation, endLocation, packages)
+        packagesViewModel.computeDistanceBetweenStartLocationAndPackages(
+            startLocation,
+            endLocation,
+            packages
+        )
 
         packagesViewModel.travelTimeArray
-            .observe(this@MainActivity) { travelTimeArray ->
+            .observe(this) { travelTimeArray ->
+
+                /****NOT OPTIMIZED****/
+                notOptimizedRoute.totalTime = packagesViewModel.getRouteTravelTime(
+                    deliveryMan.currentLocation!!,
+                    deliveryMan.endLocation!!,
+                    notOptimizedRoute.packages!!,
+                    travelTimeArray,
+                    packagesViewModel.startTravelTimeArray,
+                    packagesViewModel.endTravelTimeArray
+                )
 
                 /****BRUTE FORCE****/
-                optimizedBruteForceRoute = packagesViewModel.getOptimizedRouteBruteForce(
-                    route,
+                bruteForceRoute = packagesViewModel.getOptimizedRouteBruteForce(
+                    notOptimizedRoute,
                     travelTimeArray
                 ) //TODO maybe this should be in another thread, as it will take some time (theoretically)
 
                 /****CLOSEST NEIGHBOUR ****/
-                optimizedClosestNeighbour = packagesViewModel.getOptimizedRouteClosestNeighbour(
+                closestNeighbourRoute = packagesViewModel.getOptimizedRouteClosestNeighbour(
                     deliveryMan.currentLocation!!,
                     deliveryMan.endLocation!!,
-                    route,
+                    notOptimizedRoute,
                     travelTimeArray,
                     packagesViewModel.startTravelTimeArray,
                     packagesViewModel.endTravelTimeArray
                 )
 
 
-                /***RESULTS***/
+                println("RESULTS")
+                println("------------------------------\n")
 
                 println("------------------------------")
                 println("Not Optimized route: ")
                 println("------------------------------")
 
                 println("Starting point: $startLocation")
-                route.packages!!.forEachIndexed { index, pckg ->
+                notOptimizedRoute.packages!!.forEachIndexed { index, pckg ->
                     println("Order: ${index + 1}, numPackage: ${pckg.numPackage},  location: ${pckg.location}")
                 }
-                println("Ending point: $endLocation\n\n")
+
+                println("Ending point: $endLocation")
+                println("Total travel time: ${notOptimizedRoute.totalTime}\n\n")
 
 
                 println("------------------------------")
@@ -162,10 +180,12 @@ class MainActivity : ComponentActivity() {
                 println("------------------------------")
 
                 println("Starting point: $startLocation")
-                optimizedBruteForceRoute.packages!!.forEachIndexed { index, pckg ->
+                bruteForceRoute.packages!!.forEachIndexed { index, pckg ->
                     println("Order: ${index + 1}, numPackage: ${pckg.numPackage},  location: ${pckg.location}")
                 }
-                println("Ending point: $endLocation\n\n")
+
+                println("Ending point: $endLocation")
+                println("Total travel time: ${bruteForceRoute.totalTime}\n\n")
 
 
 
@@ -174,13 +194,31 @@ class MainActivity : ComponentActivity() {
                 println("-----------------------------------")
 
                 println("Starting point: $startLocation")
-                optimizedClosestNeighbour.packages!!.forEachIndexed { index, pckg ->
+                closestNeighbourRoute.packages!!.forEachIndexed { index, pckg ->
                     println("Order: ${index + 1}, numPackage: ${pckg.numPackage},  location: ${pckg.location}")
                 }
-                println("Ending point: $endLocation\n\n")
-
+                println("Ending point: $endLocation")
+                println("Total travel time: ${closestNeighbourRoute.totalTime}\n\n")
             }
 
+
+        /****GOOGLE MAPS OPTIMIZATION****/
+        packagesViewModel.computeOptimizedRouteDirectionsAPI(notOptimizedRoute)
+        packagesViewModel.optimizedDirectionsAPIRoute.observe(this) { directionsRoute ->
+            optimizedDirectionsAPI = directionsRoute
+
+            println("-----------------------------------")
+            println("Directions API Optimized route: ")
+            println("-----------------------------------")
+
+            println("Starting point: $startLocation")
+            optimizedDirectionsAPI.packages!!.forEachIndexed { index, pckg ->
+                println("Order: ${index + 1}, numPackage: ${pckg.numPackage},  location: ${pckg.location}")
+            }
+
+            println("Ending point: $endLocation")
+            println("Total travel time: ${directionsRoute.totalTime}\n\n")
+        }
 
     }
 
