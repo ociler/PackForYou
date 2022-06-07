@@ -19,6 +19,9 @@ import com.packforyou.ui.map.AtlasWithGivenLocations
 import com.packforyou.ui.map.CasetaAtlas
 import com.packforyou.ui.packages.PackagesViewModelImpl
 import dagger.hilt.android.AndroidEntryPoint
+import java.time.LocalDateTime
+import java.util.*
+import kotlin.system.measureNanoTime
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -145,27 +148,31 @@ class MainActivity : ComponentActivity() {
                 )
 
                 /****BRUTE FORCE****/
-                bruteForceRoute = packagesViewModel.getOptimizedRouteBruteForce(
-                    notOptimizedRoute,
-                    travelTimeArray
-                ) //TODO maybe this should be in another thread, as it will take some time (theoretically)
+                val bruteForceTime = measureNanoTime {
+                    bruteForceRoute = packagesViewModel.getOptimizedRouteBruteForce(
+                        notOptimizedRoute,
+                        travelTimeArray
+                    ) //TODO maybe this should be in another thread, as it will take some time (theoretically)
+                }
 
                 /****CLOSEST NEIGHBOUR ****/
-                closestNeighbourRoute = packagesViewModel.getOptimizedRouteClosestNeighbour(
-                    deliveryMan.currentLocation!!,
-                    deliveryMan.endLocation!!,
-                    notOptimizedRoute,
-                    travelTimeArray,
-                    packagesViewModel.startTravelTimeArray,
-                    packagesViewModel.endTravelTimeArray
-                )
-
+                val closestNeighbourTime = measureNanoTime {
+                    closestNeighbourRoute = packagesViewModel.getOptimizedRouteClosestNeighbour(
+                        deliveryMan.currentLocation!!,
+                        deliveryMan.endLocation!!,
+                        notOptimizedRoute,
+                        travelTimeArray,
+                        packagesViewModel.startTravelTimeArray,
+                        packagesViewModel.endTravelTimeArray
+                    )
+                }
 
                 println("RESULTS")
                 println("------------------------------\n")
 
                 println("------------------------------")
                 println("Not Optimized route: ")
+                println("Algorithm time: 0ns")
                 println("------------------------------")
 
                 println("Starting point: $startLocation")
@@ -179,6 +186,7 @@ class MainActivity : ComponentActivity() {
 
                 println("------------------------------")
                 println("Brute Force Optimized route: ")
+                println("Algorithm time: $bruteForceTime ns")
                 println("------------------------------")
 
                 println("Starting point: $startLocation")
@@ -193,6 +201,7 @@ class MainActivity : ComponentActivity() {
 
                 println("-----------------------------------")
                 println("Closest neighbour Optimized route: ")
+                println("Algorithm time: $closestNeighbourTime ns")
                 println("-----------------------------------")
 
                 println("Starting point: $startLocation")
@@ -205,12 +214,17 @@ class MainActivity : ComponentActivity() {
 
 
         /****GOOGLE MAPS OPTIMIZATION****/
-        packagesViewModel.computeOptimizedRouteDirectionsAPI(notOptimizedRoute)
+
+        val directionsAPITime = measureNanoTime {
+            packagesViewModel.computeOptimizedRouteDirectionsAPI(notOptimizedRoute)
+        }
+
         packagesViewModel.optimizedDirectionsAPIRoute.observe(this) { directionsRoute ->
             optimizedDirectionsAPI = directionsRoute
 
             println("-----------------------------------")
             println("Directions API Optimized route: ")
+            println("Algorithm time: $directionsAPITime ns")
             println("-----------------------------------")
 
             println("Starting point: $startLocation")
