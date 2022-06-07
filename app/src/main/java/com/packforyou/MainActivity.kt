@@ -15,6 +15,8 @@ import com.packforyou.data.models.Route
 import com.packforyou.ui.PackForYouTheme
 import com.packforyou.ui.login.ILoginViewModel
 import com.packforyou.ui.login.LoginViewModelImpl
+import com.packforyou.ui.map.AtlasWithGivenLocations
+import com.packforyou.ui.map.CasetaAtlas
 import com.packforyou.ui.packages.PackagesViewModelImpl
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -27,12 +29,6 @@ class MainActivity : ComponentActivity() {
         val loginViewModel: ILoginViewModel =
             ViewModelProvider(this)[LoginViewModelImpl::class.java]
         val packagesViewModel: PackagesViewModelImpl by viewModels()
-
-        setContent {
-            PackForYouTheme {
-                // CasetaAtlas()
-            }
-        }
 
         val startLocation = Location().copy(
             address = packagesViewModel.getAddressFromLocation(
@@ -63,7 +59,8 @@ class MainActivity : ComponentActivity() {
                 address = packagesViewModel.getAddressFromLocation(
                     GeoPoint(39.452473, -0.358421),
                     this
-                ), latitude = 39.452473, longitude = -0.358421
+                ), latitude = 39.452473, longitude = -0.358421,
+                city = "Valencia"
             ), numPackage = 0
         )
 
@@ -72,7 +69,8 @@ class MainActivity : ComponentActivity() {
                 address = packagesViewModel.getAddressFromLocation(
                     GeoPoint(39.471563, -0.370366),
                     this
-                ), latitude = 39.471563, longitude = -0.370366
+                ), latitude = 39.471563, longitude = -0.370366,
+                city = "Valencia"
             ), numPackage = 1
         )
 
@@ -81,7 +79,8 @@ class MainActivity : ComponentActivity() {
                 address = packagesViewModel.getAddressFromLocation(
                     GeoPoint(39.481279, -0.370887),
                     this
-                ), latitude = 39.481279, longitude = -0.370887
+                ), latitude = 39.481279, longitude = -0.370887,
+                city = "Valencia"
             ), numPackage = 2
         )
         val rocafortPackage = Package().copy(
@@ -89,7 +88,8 @@ class MainActivity : ComponentActivity() {
                 address = packagesViewModel.getAddressFromLocation(
                     GeoPoint(39.522849, -0.417539),
                     this
-                ), latitude = 39.522849, longitude = -0.417539
+                ), latitude = 39.522849, longitude = -0.417539,
+                city = "Rocafort"
             ), numPackage = 3
         )
 
@@ -98,7 +98,8 @@ class MainActivity : ComponentActivity() {
                 address = packagesViewModel.getAddressFromLocation(
                     GeoPoint(39.555297, -0.527054),
                     this
-                ), latitude = 39.555297, longitude = -0.527054
+                ), latitude = 39.555297, longitude = -0.527054,
+                city = "Entrepins"
             ), numPackage = 4
         )
 
@@ -107,12 +108,13 @@ class MainActivity : ComponentActivity() {
                 address = packagesViewModel.getAddressFromLocation(
                     GeoPoint(39.551436, -0.517451),
                     this
-                ), latitude = 39.436275, longitude = -0.462388
+                ), latitude = 39.436275, longitude = -0.462388,
+                city = "Entrepins"
             ), numPackage = 4
         )
 
 
-        val packages = listOf(valenciaPackage2, valenciaPackage1, valenciaPackage3)
+        val packages = listOf(valenciaPackage2, valenciaPackage1, valenciaPackage3, rocafortPackage)
         val notOptimizedRoute =
             Route(deliveryMan = deliveryMan, packages = packages, id = 0, totalTime = 0)
 
@@ -218,6 +220,17 @@ class MainActivity : ComponentActivity() {
 
             println("Ending point: $endLocation")
             println("Total travel time: ${directionsRoute.totalTime}\n\n")
+        }
+
+        val locations = arrayListOf(startLocation, endLocation)
+        packages.forEach {
+            locations.add(it.location!!)
+        }
+
+        setContent {
+            PackForYouTheme {
+                AtlasWithGivenLocations(locations = locations)
+            }
         }
 
     }
