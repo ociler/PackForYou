@@ -12,15 +12,17 @@ import com.packforyou.data.models.DeliveryMan
 import com.packforyou.data.models.Location
 import com.packforyou.data.models.Package
 import com.packforyou.data.models.Route
+import com.packforyou.data.repositories.IPackagesAndAtlasRepository
 import com.packforyou.ui.PackForYouTheme
+import com.packforyou.ui.atlas.Atlas
+import com.packforyou.ui.atlas.AtlasViewModelImpl
 import com.packforyou.ui.login.ILoginViewModel
 import com.packforyou.ui.login.LoginViewModelImpl
-import com.packforyou.ui.map.AtlasWithGivenLocations
-import com.packforyou.ui.map.CasetaAtlas
+import com.packforyou.ui.atlas.AtlasWithGivenRoute
+import com.packforyou.ui.atlas.IAtlasViewModel
+import com.packforyou.ui.packages.IPackagesViewModel
 import com.packforyou.ui.packages.PackagesViewModelImpl
 import dagger.hilt.android.AndroidEntryPoint
-import java.time.LocalDateTime
-import java.util.*
 import kotlin.system.measureNanoTime
 
 @AndroidEntryPoint
@@ -29,28 +31,30 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
-        val loginViewModel: ILoginViewModel =
-            ViewModelProvider(this)[LoginViewModelImpl::class.java]
-        val packagesViewModel: PackagesViewModelImpl by viewModels()
+        val loginViewModel: ILoginViewModel by viewModels()
+            //= ViewModelProvider(this)[LoginViewModelImpl::class.java]
+        val packagesViewModel: PackagesViewModelImpl by viewModels() //TODO dir-li a David qupe fer ací
+
+        val atlasViewModel: AtlasViewModelImpl by viewModels()
 
         val startLocation = Location().copy(
             address = packagesViewModel.getAddressFromLocation(
                 GeoPoint(
-                    39.485892,
-                    -0.353794
+                    39.509074,
+                    -0.409842
                 ), this
             ),
-            latitude = 39.485834, longitude = -0.356361
+            latitude = 39.509074, longitude = -0.409842
         )
 
         val endLocation = Location().copy(
             address = packagesViewModel.getAddressFromLocation(
                 GeoPoint(
-                    39.485834,
-                    -0.353794
+                    39.429299,
+                    -0.363321
                 ), this
             ),
-            latitude = 39.485834, longitude = -0.356361
+            latitude = 39.429299, longitude = -0.363321
         )
 
 
@@ -121,8 +125,12 @@ class MainActivity : ComponentActivity() {
         val notOptimizedRoute =
             Route(deliveryMan = deliveryMan, packages = packages, id = 0, totalTime = 0)
 
-        var bruteForceRoute: Route
-        var closestNeighbourRoute: Route
+        var bruteForceTravelTimeRoute: Route
+        var closestNeighbourTravelTimeRoute: Route
+
+        var bruteForceDistanceRoute: Route
+        var closestNeighbourDistanceRoute: Route
+
         var optimizedDirectionsAPI: Route
 
 
@@ -134,7 +142,7 @@ class MainActivity : ComponentActivity() {
             packages
         )
 
-        packagesViewModel.travelTimeArray
+        packagesViewModel.observeTravelTimeArray()
             .observe(this) { travelTimeArray ->
 
                 /****NOT OPTIMIZED****/
@@ -143,28 +151,49 @@ class MainActivity : ComponentActivity() {
                     deliveryMan.endLocation!!,
                     notOptimizedRoute.packages!!,
                     travelTimeArray,
-                    packagesViewModel.startTravelTimeArray,
-                    packagesViewModel.endTravelTimeArray
+                    packagesViewModel.getStartTravelTimeArray(),
+                    packagesViewModel.getEndTravelTimeArray()
                 )
 
                 /****BRUTE FORCE****/
-                val bruteForceTime = measureNanoTime {
-                    bruteForceRoute = packagesViewModel.getOptimizedRouteBruteForce(
+                val bruteForceTravelTimeTime = measureNanoTime {
+                    bruteForceTravelTimeRoute =
+                        packagesViewModel.getOptimizedRouteBruteForceTravelTime(
+                            notOptimizedRoute,
+                            travelTimeArray
+                        ) //TODO maybe this should be in another thread, as it will take some time (theoretically)
+                }
+
+                val bruteForceDistanceTime = measureNanoTime {
+                    bruteForceDistanceRoute = packagesViewModel.getOptimizedRouteBruteForceDistance(
                         notOptimizedRoute,
-                        travelTimeArray
+                        packagesViewModel.getDistanceArray()
                     ) //TODO maybe this should be in another thread, as it will take some time (theoretically)
                 }
 
                 /****CLOSEST NEIGHBOUR ****/
-                val closestNeighbourTime = measureNanoTime {
-                    closestNeighbourRoute = packagesViewModel.getOptimizedRouteClosestNeighbour(
-                        deliveryMan.currentLocation!!,
-                        deliveryMan.endLocation!!,
-                        notOptimizedRoute,
-                        travelTimeArray,
-                        packagesViewModel.startTravelTimeArray,
-                        packagesViewModel.endTravelTimeArray
-                    )
+                val closestNeighbourTravelTimeTime = measureNanoTime {
+                    closestNeighbourTravelTimeRoute =
+                        packagesViewModel.getOptimizedRouteClosestNeighbourDistance(
+                            deliveryMan.currentLocation!!,
+                            deliveryMan.endLocation!!,
+                            notOptimizedRoute,
+                            travelTimeArray,
+                            packagesViewModel.getStartDistanceArray(),
+                            packagesViewModel.getEndDistanceArray()
+                        )
+                }
+
+                val closestNeighbourDistanceTime = measureNanoTime {
+                    closestNeighbourDistanceRoute =
+                        packagesViewModel.getOptimizedRouteClosestNeighbourDistance(
+                            deliveryMan.currentLocation!!,
+                            deliveryMan.endLocation!!,
+                            notOptimizedRoute,
+                            packagesViewModel.getDistanceArray(),
+                            packagesViewModel.getStartDistanceArray(),
+                            packagesViewModel.getEndDistanceArray()
+                        )
                 }
 
                 println("RESULTS")
@@ -181,35 +210,64 @@ class MainActivity : ComponentActivity() {
                 }
 
                 println("Ending point: $endLocation")
-                println("Total travel time: ${notOptimizedRoute.totalTime}\n\n")
+                println("Total travel time: ${notOptimizedRoute.totalTime} seconds\n\n")
 
 
-                println("------------------------------")
-                println("Brute Force Optimized route: ")
-                println("Algorithm time: $bruteForceTime ns")
-                println("------------------------------")
+                /***BRUTE FORCE***/
+                println("--------------------------------------------")
+                println("Brute Force Optimized route by TRAVEL TIME: ")
+                println("Algorithm time: $bruteForceTravelTimeTime ns")
+                println("--------------------------------------------")
 
                 println("Starting point: $startLocation")
-                bruteForceRoute.packages!!.forEachIndexed { index, pckg ->
+                bruteForceTravelTimeRoute.packages!!.forEachIndexed { index, pckg ->
                     println("Order: ${index + 1}, numPackage: ${pckg.numPackage},  location: ${pckg.location}")
                 }
 
                 println("Ending point: $endLocation")
-                println("Total travel time: ${bruteForceRoute.totalTime}\n\n")
+                println("Total travel time: ${bruteForceTravelTimeRoute.totalTime} seconds\n\n")
 
 
-
-                println("-----------------------------------")
-                println("Closest neighbour Optimized route: ")
-                println("Algorithm time: $closestNeighbourTime ns")
-                println("-----------------------------------")
+                println("-----------------------------------------")
+                println("Brute Force Optimized route by DISTANCE: ")
+                println("Algorithm time: $bruteForceDistanceTime ns")
+                println("-----------------------------------------")
 
                 println("Starting point: $startLocation")
-                closestNeighbourRoute.packages!!.forEachIndexed { index, pckg ->
+                bruteForceDistanceRoute.packages!!.forEachIndexed { index, pckg ->
+                    println("Order: ${index + 1}, numPackage: ${pckg.numPackage},  location: ${pckg.location}")
+                }
+
+                println("Ending point: $endLocation")
+                println("Total distance: ${bruteForceDistanceRoute.totalDistance} meters\n\n")
+
+
+                /***CLOSEST NEIGHBOUR***/
+                println("--------------------------------------------------")
+                println("Closest neighbour Optimized route by TRAVEL TIME: ")
+                println("Algorithm time: $closestNeighbourTravelTimeTime ns")
+                println("--------------------------------------------------")
+
+                println("Starting point: $startLocation")
+                closestNeighbourTravelTimeRoute.packages!!.forEachIndexed { index, pckg ->
                     println("Order: ${index + 1}, numPackage: ${pckg.numPackage},  location: ${pckg.location}")
                 }
                 println("Ending point: $endLocation")
-                println("Total travel time: ${closestNeighbourRoute.totalTime}\n\n")
+                println("Total travel time: ${closestNeighbourTravelTimeRoute.totalTime} seconds\n\n")
+
+
+
+                println("-----------------------------------")
+                println("Closest neighbour Optimized route by DISTANCE: ")
+                println("Algorithm time: $closestNeighbourDistanceTime ns")
+                println("-----------------------------------")
+
+                println("Starting point: $startLocation")
+                closestNeighbourDistanceRoute.packages!!.forEachIndexed { index, pckg ->
+                    println("Order: ${index + 1}, numPackage: ${pckg.numPackage},  location: ${pckg.location}")
+                }
+                println("Ending point: $endLocation")
+                println("Total distance: ${closestNeighbourDistanceRoute.totalDistance} meters\n\n")
             }
 
 
@@ -219,7 +277,7 @@ class MainActivity : ComponentActivity() {
             packagesViewModel.computeOptimizedRouteDirectionsAPI(notOptimizedRoute)
         }
 
-        packagesViewModel.optimizedDirectionsAPIRoute.observe(this) { directionsRoute ->
+        packagesViewModel.observeOptimizedDirectionsAPIRoute().observe(this) { directionsRoute ->
             optimizedDirectionsAPI = directionsRoute
 
             println("-----------------------------------")
@@ -233,17 +291,19 @@ class MainActivity : ComponentActivity() {
             }
 
             println("Ending point: $endLocation")
-            println("Total travel time: ${directionsRoute.totalTime}\n\n")
+            println("Total travel time: ${directionsRoute.totalTime} seconds\n\n")
         }
 
-        val locations = arrayListOf(startLocation, endLocation)
+        val locations = arrayListOf(startLocation)
+
         packages.forEach {
             locations.add(it.location!!)
         }
+        locations.add(endLocation)
 
         setContent {
             PackForYouTheme {
-                AtlasWithGivenLocations(locations = locations)
+                Atlas(atlasViewModel, notOptimizedRoute)
             }
         }
 

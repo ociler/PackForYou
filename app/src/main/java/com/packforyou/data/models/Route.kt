@@ -4,5 +4,6 @@ data class Route(
     val id: Int = 0,
     var packages: List<Package>? = null,
     var deliveryMan: DeliveryMan? = null,
-    var totalTime: Int? = null
+    var totalTime: Int? = null,
+    var totalDistance: Int? = null
 )

@@ -1,8 +1,5 @@
 package com.packforyou.data.models
 
-import com.packforyou.data.dataSources.FirebaseRemoteDatabaseImpl
-import com.packforyou.data.repositories.PackagesRepositoryImpl
-
 data class DeliveryMan (
     override var id: String = "12345678A",
     override var name: String? = "Rick Astley",

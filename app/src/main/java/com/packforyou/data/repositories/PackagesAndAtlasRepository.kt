@@ -4,20 +4,27 @@ import com.packforyou.api.DirectionsApiService
 import com.packforyou.api.DistanceMatrixApiService
 import com.packforyou.data.dataSources.IFirebaseRemoteDatabase
 import com.packforyou.data.models.*
-import com.packforyou.ui.packages.ICallbackAPICalls
+import com.packforyou.api.ICallbackAPICalls
+import com.packforyou.api.ICallbackDirectionsResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import javax.inject.Singleton
 
 
-interface IPackagesRepository {
+interface IPackagesAndAtlasRepository {
     suspend fun getDeliveryManPackages(deliveryManId: String): List<Package>?
     suspend fun addPackage(packge: Package)
 
     suspend fun computeOptimizedRouteDirectionsAPI(route: Route, callback: ICallbackAPICalls)
-    suspend fun computeDistanceBetweenAllPackages(packages: List<Package>, callback: ICallbackAPICalls)
+
+    suspend fun computeDistanceBetweenAllPackages(
+        packages: List<Package>,
+        callback: ICallbackAPICalls
+    )
+
     suspend fun computeDistanceBetweenStartLocationAndPackages(
         startLocation: Location,
         endLocation: Location,
@@ -30,17 +37,24 @@ interface IPackagesRepository {
         packages: List<Package>,
         callback: ICallbackAPICalls
     )
+
+    suspend fun computeDirectionsAPIResponse(route: Route, callback: ICallbackDirectionsResponse)
 }
 
-class PackagesRepositoryImpl(
+@Singleton
+class PackagesAndAtlasRepositoryImpl(
     private val dataSource: IFirebaseRemoteDatabase,
     private val directionsApiService: DirectionsApiService,
     private val distanceMatrixApiService: DistanceMatrixApiService
-) : IPackagesRepository {
+) : IPackagesAndAtlasRepository {
 
     private lateinit var travelTimeArray: Array<IntArray>
     private lateinit var startTravelTimeArray: IntArray
     private lateinit var endTravelTimeArray: IntArray
+
+    private lateinit var distanceArray: Array<IntArray>
+    private lateinit var startDistanceArray: IntArray
+    private lateinit var endDistanceArray: IntArray
 
     private lateinit var globalPackagesList: List<Package>
     private lateinit var globalStartLocation: Location
@@ -49,6 +63,7 @@ class PackagesRepositoryImpl(
     private var finishedCalls = 0
     private var totalCalls = 0
     private lateinit var globalCallback: ICallbackAPICalls
+    private lateinit var globalResponseCallback: ICallbackDirectionsResponse
 
     override suspend fun getDeliveryManPackages(deliveryManId: String): List<Package>? {
         var packages: List<Package>? = null
@@ -81,6 +96,18 @@ class PackagesRepositoryImpl(
         endTravelTimeArray = IntArray(size)
     }
 
+    private fun initializeDistanceArray(size: Int) {
+        distanceArray = Array(size) { IntArray(size) }
+    }
+
+    private fun initializeStartDistanceArray(size: Int) {
+        startDistanceArray = IntArray(size)
+    }
+
+    private fun initializeEndDistanceArray(size: Int) {
+        endDistanceArray = IntArray(size)
+    }
+
     override suspend fun addPackage(packge: Package) {
         dataSource.addPackage(packge).collect { state ->
             when (state) {
@@ -98,7 +125,10 @@ class PackagesRepositoryImpl(
         }
     }
 
-    override suspend fun computeOptimizedRouteDirectionsAPI(route: Route, callback: ICallbackAPICalls){
+    override suspend fun computeOptimizedRouteDirectionsAPI(
+        route: Route,
+        callback: ICallbackAPICalls
+    ) {
         if (route.packages == null) {
             return
         }
@@ -113,7 +143,7 @@ class PackagesRepositoryImpl(
             "optimize:true|$waypoints" //TODO esto no deuria ser així. Deuria estar en la pròpia crida a la API
 
         val optimizedRouteResponse =
-            directionsApiService.getOptimizedRoute(oAddress, dAddress, waypoints)
+            directionsApiService.getDirectionsAPIRoute(oAddress, dAddress, waypoints)
 
         var totalTravelTime = 0
         val sortedList = arrayListOf<Package>()
@@ -129,7 +159,33 @@ class PackagesRepositoryImpl(
             sortedList.add(route.packages!![sortedOrder[i]])
         }
 
-        globalCallback.onSuccessDirectionsAPI(route.copy(packages = sortedList, totalTime = totalTravelTime))
+        globalCallback.onSuccessOptimizedDirectionsAPI(
+            route.copy(
+                packages = sortedList,
+                totalTime = totalTravelTime
+            )
+        )
+    }
+
+    override suspend fun computeDirectionsAPIResponse(
+        route: Route,
+        callback: ICallbackDirectionsResponse
+    ) {
+        if (route.packages == null) {
+            return
+        }
+
+        globalResponseCallback = callback
+
+        val oAddress = getFormattedAddress(route.deliveryMan?.currentLocation)
+        val dAddress = getFormattedAddress(route.deliveryMan?.endLocation)
+        val routeLocations = getLocationsFromPackages(route.packages)
+        val waypoints = getFormattedWaypointsByAddress(routeLocations)
+
+        val directionsResponse =
+            directionsApiService.getDirectionsAPIRoute(oAddress, dAddress, waypoints)
+
+        globalResponseCallback.onSuccessResponseDirectionsAPI(directionsResponse)
     }
 
     private suspend fun enqueuePackagesLeg(originPackage: Package, destinationPackage: Package) {
@@ -140,14 +196,17 @@ class PackagesRepositoryImpl(
                 }
 
                 is State.Success -> {
-                    //ya tenemos el dato
+                    //here we already have the data
                     travelTimeArray[originPackage.numPackage][destinationPackage.numPackage] =
                         state.data.duration!!
+
+                    distanceArray[originPackage.numPackage][destinationPackage.numPackage] =
+                        state.data.distance!!
 
                     synchronized(this/*we want to block the thread. Doesn't mind the variable we put here*/) {
                         finishedCalls++
                         if (finishedCalls == totalCalls) {
-                            globalCallback.onSuccessBetweenPackages(travelTimeArray)
+                            globalCallback.onSuccessBetweenPackages(travelTimeArray, distanceArray)
                         }
                     }
 
@@ -170,14 +229,18 @@ class PackagesRepositoryImpl(
                 }
 
                 is State.Success -> {
-                    //ya tenemos el dato
+                    //we already have our data
                     startTravelTimeArray[destinationPackage.numPackage] = state.data.duration!!
+                    startDistanceArray[destinationPackage.numPackage] = state.data.distance!!
 
                     synchronized(this/*we want to block the thread. Doesn't mind the variable we put here*/) {
                         finishedCalls++
                         if (finishedCalls == totalCalls) {
                             globalCallback.onSuccessBetweenStartLocationAndPackages(
-                                startTravelTimeArray, globalEndLocation, globalPackagesList
+                                startTravelTimeArray,
+                                startDistanceArray,
+                                globalEndLocation,
+                                globalPackagesList
                             )
                         }
                     }
@@ -202,14 +265,15 @@ class PackagesRepositoryImpl(
                 }
 
                 is State.Success -> {
-                    //ya tenemos el dato
+                    //we already have our data
                     endTravelTimeArray[originPackage.numPackage] = state.data.duration!!
+                    endDistanceArray[originPackage.numPackage] = state.data.distance!!
 
                     synchronized(this/*we want to block the thread. Doesn't mind the variable we put here*/) {
                         finishedCalls++
                         if (finishedCalls == totalCalls) {
                             globalCallback.onSuccessBetweenEndLocationAndPackages(
-                                endTravelTimeArray, globalPackagesList
+                                endTravelTimeArray, endDistanceArray, globalPackagesList
                             )
                         }
                     }
@@ -255,6 +319,7 @@ class PackagesRepositoryImpl(
         totalCalls = packages.size * packages.size
         finishedCalls = 0
         initializeTravelTimeArray(packages.size)
+        initializeDistanceArray(packages.size)
 
         for (origin in packages) {
             for (destination in packages) {
@@ -266,7 +331,7 @@ class PackagesRepositoryImpl(
                     synchronized(this) {
                         finishedCalls++
                         if (finishedCalls == totalCalls) {
-                            globalCallback.onSuccessBetweenPackages(travelTimeArray)
+                            globalCallback.onSuccessBetweenPackages(travelTimeArray, distanceArray)
                         }
                     }
                 }
@@ -288,7 +353,9 @@ class PackagesRepositoryImpl(
 
         totalCalls = packages.size
         finishedCalls = 0
+
         initializeStartTravelTimeArray(packages.size)
+        initializeStartDistanceArray(packages.size)
 
         for (destination in packages) {
             if (destination.location != null) {
@@ -299,6 +366,7 @@ class PackagesRepositoryImpl(
                     if (finishedCalls == totalCalls) {
                         globalCallback.onSuccessBetweenStartLocationAndPackages(
                             startTravelTimeArray,
+                            startDistanceArray,
                             globalEndLocation,
                             globalPackagesList
                         )
@@ -320,6 +388,7 @@ class PackagesRepositoryImpl(
         totalCalls = packages.size
         finishedCalls = 0
         initializeEndTravelTimeArray(packages.size)
+        initializeEndDistanceArray(packages.size)
 
         for (origin in packages) {
             if (origin.location != null) {
@@ -330,6 +399,7 @@ class PackagesRepositoryImpl(
                     if (finishedCalls == totalCalls) {
                         globalCallback.onSuccessBetweenEndLocationAndPackages(
                             endTravelTimeArray,
+                            endDistanceArray,
                             globalPackagesList
                         )
                     }

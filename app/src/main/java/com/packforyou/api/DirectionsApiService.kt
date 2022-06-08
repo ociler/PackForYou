@@ -1,6 +1,6 @@
 package com.packforyou.api
 
-import com.packforyou.data.directionsDataClases.OptimizedRouteResponse
+import com.packforyou.data.directionsDataClases.DirectionsResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -12,9 +12,9 @@ import retrofit2.http.Query
 
 interface DirectionsApiService {
     @GET("$DIRECTIONS_URL?&$KEY_URL_REFERENCE") //TODO voldria fer amb path, pero no tira. Com faig per a poder posar el que vulga?
-    suspend fun getOptimizedRoute(
+    suspend fun getDirectionsAPIRoute(
         @Query("origin") oAddress: String,
         @Query("destination") dAddress: String,
         @Query("waypoints") wayPoints: String
-    ): OptimizedRouteResponse
+    ): DirectionsResponse
 }

@@ -2,8 +2,10 @@ package com.packforyou.di
 
 import com.packforyou.api.DirectionsApiService
 import com.packforyou.api.DistanceMatrixApiService
-import com.packforyou.data.repositories.IPackagesRepository
-import com.packforyou.data.repositories.PackagesRepositoryImpl
+import com.packforyou.data.repositories.IPackagesAndAtlasRepository
+import com.packforyou.data.repositories.PackagesAndAtlasRepositoryImpl
+import com.packforyou.ui.atlas.AtlasViewModelImpl
+import com.packforyou.ui.atlas.IAtlasViewModel
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -57,8 +59,8 @@ object ApiModule {
 
     @Singleton
     @Provides
-    fun providePackagesRepository(retrofit: Retrofit): IPackagesRepository {
-        return PackagesRepositoryImpl(
+    fun providePackagesAndAtlasRepository(retrofit: Retrofit): IPackagesAndAtlasRepository {
+        return PackagesAndAtlasRepositoryImpl(
             AppModule.provideFirebaseDataSource(),
             provideDirectionsApiService(retrofit),
             provideMatrixApiService(retrofit)
