@@ -12,14 +12,11 @@ import com.packforyou.data.models.DeliveryMan
 import com.packforyou.data.models.Location
 import com.packforyou.data.models.Package
 import com.packforyou.data.models.Route
-import com.packforyou.data.repositories.IPackagesAndAtlasRepository
 import com.packforyou.ui.PackForYouTheme
 import com.packforyou.ui.atlas.Atlas
 import com.packforyou.ui.atlas.AtlasViewModelImpl
-import com.packforyou.ui.login.ILoginViewModel
-import com.packforyou.ui.login.LoginViewModelImpl
-import com.packforyou.ui.atlas.AtlasWithGivenRoute
 import com.packforyou.ui.atlas.IAtlasViewModel
+import com.packforyou.ui.login.ILoginViewModel
 import com.packforyou.ui.packages.IPackagesViewModel
 import com.packforyou.ui.packages.PackagesViewModelImpl
 import dagger.hilt.android.AndroidEntryPoint
@@ -33,9 +30,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val loginViewModel: ILoginViewModel by viewModels()
             //= ViewModelProvider(this)[LoginViewModelImpl::class.java]
-        val packagesViewModel: PackagesViewModelImpl by viewModels() //TODO dir-li a David qupe fer ací
+        val packagesViewModel =
+            ViewModelProvider(this)[PackagesViewModelImpl::class.java]
 
-        val atlasViewModel: AtlasViewModelImpl by viewModels()
+        val atlasViewModel =
+        ViewModelProvider(this)[AtlasViewModelImpl::class.java]
 
         val startLocation = Location().copy(
             address = packagesViewModel.getAddressFromLocation(
@@ -47,6 +46,27 @@ class MainActivity : ComponentActivity() {
             latitude = 39.509074, longitude = -0.409842
         )
 
+        val elHierroStartLocation = Location().copy(
+            address = packagesViewModel.getAddressFromLocation(
+                GeoPoint(
+                    27.708349,
+                    -17.977343
+                ), this
+            ),
+            latitude = 27.708349, longitude = -17.977343
+        )
+
+        val elHierroEndLocation = Location().copy(
+            address = packagesViewModel.getAddressFromLocation(
+                GeoPoint(
+                    27.712708,
+                    -17.976712
+                ), this
+            ),
+            latitude = 27.712708, longitude = -17.976712
+        )
+
+
         val endLocation = Location().copy(
             address = packagesViewModel.getAddressFromLocation(
                 GeoPoint(
@@ -56,7 +76,6 @@ class MainActivity : ComponentActivity() {
             ),
             latitude = 39.429299, longitude = -0.363321
         )
-
 
         val deliveryMan =
             DeliveryMan().copy(currentLocation = startLocation, endLocation = endLocation)
@@ -90,6 +109,48 @@ class MainActivity : ComponentActivity() {
                 city = "Valencia"
             ), numPackage = 2
         )
+
+
+        val elHierroPackage1 = Package().copy(
+            location = Location().copy(
+                address = packagesViewModel.getAddressFromLocation(
+                    GeoPoint(27.753108, -18.033049),
+                    this
+                ), latitude = 27.753108, longitude = -18.033049,
+                city = "Valencia"
+            ), numPackage = 0
+        )
+
+        val elHierroPackage2 = Package().copy(
+            location = Location().copy(
+                address = packagesViewModel.getAddressFromLocation(
+                    GeoPoint(27.747804, -18.098230),
+                    this
+                ), latitude = 27.747804, longitude = -18.098230,
+                city = "Valencia"
+            ), numPackage = 1
+        )
+
+        val elHierroPackage3 = Package().copy(
+            location = Location().copy(
+                address = packagesViewModel.getAddressFromLocation(
+                    GeoPoint(27.833535, -17.922370),
+                    this
+                ), latitude = 27.833535, longitude = -17.922370,
+                city = "Valencia"
+            ), numPackage = 2
+        )
+
+        val elHierroPackage4 = Package().copy(
+            location = Location().copy(
+                address = packagesViewModel.getAddressFromLocation(
+                    GeoPoint(27.769842, -17.953681),
+                    this
+                ), latitude = 27.769842, longitude = -17.953681,
+                city = "Valencia"
+            ), numPackage = 3
+        )
+
         val rocafortPackage = Package().copy(
             location = Location().copy(
                 address = packagesViewModel.getAddressFromLocation(
@@ -117,11 +178,12 @@ class MainActivity : ComponentActivity() {
                     this
                 ), latitude = 39.436275, longitude = -0.462388,
                 city = "Entrepins"
-            ), numPackage = 4
+            ), numPackage = 5
         )
 
 
-        val packages = listOf(valenciaPackage2, valenciaPackage1, valenciaPackage3, rocafortPackage)
+        val packages = listOf(valenciaPackage1, valenciaPackage2, valenciaPackage3, rocafortPackage, entrepinsPackage1)
+
         val notOptimizedRoute =
             Route(deliveryMan = deliveryMan, packages = packages, id = 0, totalTime = 0)
 
@@ -297,7 +359,7 @@ class MainActivity : ComponentActivity() {
         val locations = arrayListOf(startLocation)
 
         packages.forEach {
-            locations.add(it.location!!)
+            locations.add(it.location)
         }
         locations.add(endLocation)
 
