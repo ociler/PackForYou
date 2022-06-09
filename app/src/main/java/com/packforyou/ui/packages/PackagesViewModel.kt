@@ -14,6 +14,7 @@ import com.packforyou.data.models.Location
 import com.packforyou.data.models.Package
 import com.packforyou.data.models.Route
 import com.packforyou.data.repositories.IPackagesAndAtlasRepository
+import com.packforyou.ui.utils.PermutationsIteratively
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.io.IOException
@@ -86,8 +87,13 @@ interface IPackagesViewModel {
     fun getStartDistanceArray(): IntArray
     fun getEndDistanceArray(): IntArray
 
-    fun observeDirectionsResponse() :MutableLiveData<DirectionsResponse>
-    fun observeOptimizedDirectionsAPIRoute() : MutableLiveData<Route>
+    fun observeDirectionsResponse(): MutableLiveData<DirectionsResponse>
+    fun observeOptimizedDirectionsAPIRoute(): MutableLiveData<Route>
+    fun setStartTravelTimeArray(startTravelTimeArray: IntArray)
+    fun setEndTravelTimeArray(endTravelTimeArray: IntArray)
+    fun setDistanceArray(distanceArray: Array<IntArray>)
+    fun setStartDistanceArray(startDistanceArray: IntArray)
+    fun setEndDistanceArray(endDistanceArray: IntArray)
 }
 
 @HiltViewModel
@@ -231,7 +237,7 @@ class PackagesViewModelImpl @Inject constructor(
         endLocation: Location,
         packages: List<Package>
     ) {
-        if (packages.size > 6) return
+        if (packages.size > 10) return
 
         viewModelScope.launch {
             repository.computeDistanceBetweenEndLocationAndPackages(
@@ -261,12 +267,11 @@ class PackagesViewModelImpl @Inject constructor(
     ): Route {
         if (route.packages == null) return route
 
-        //So many API calls. It will be better to don't use this method with more than 5 packages
-        if (route.packages!!.size > 6) return route
+        //So many compute. It will be better not use with more than this packages
+        if (route.packages!!.size > 9) return route
 
-        val permutations = getPermutations(
-            Array(route.packages!!.size) { it }
-        )
+
+        val permutations = getPermutationsIteratively(route.packages!!.size)
 
         var minimumTotalTravelTime = Int.MAX_VALUE
         var bestPermutation = permutations[0]
@@ -280,8 +285,8 @@ class PackagesViewModelImpl @Inject constructor(
             totalTravelTime = 0
 
             for (permPosition in 0 until permutation.size - 1) { //we have the position we want to check in our route
-                origin = route.packages!![permutation[permPosition]].numPackage
-                destination = route.packages!![permutation[permPosition + 1]].numPackage
+                origin = route.packages!![permutation[permPosition].toInt()].numPackage
+                destination = route.packages!![permutation[permPosition + 1].toInt()].numPackage
 
                 legTravelTime = travelTimeArray[origin][destination]
                 totalTravelTime += legTravelTime
@@ -296,7 +301,7 @@ class PackagesViewModelImpl @Inject constructor(
 
         val optimizedPackages = arrayListOf<Package>()
         for (i in bestPermutation) {
-            optimizedPackages.add(route.packages!![i])
+            optimizedPackages.add(route.packages!![i.toInt()])
         }
 
         return route.copy(packages = optimizedPackages, totalTime = totalTravelTime)
@@ -309,12 +314,11 @@ class PackagesViewModelImpl @Inject constructor(
     ): Route {
         if (route.packages == null) return route
 
-        //So many API calls. It will be better to don't use this method with more than 5 packages
-        if (route.packages!!.size > 5) return route
+        //So many compute. If we try to do this with more than these packages, OutOfMemory
+        //Not working even with that
+        if (route.packages!!.size > 9) return route
 
-        val permutations = getPermutations(
-            Array(route.packages!!.size) { it }
-        )
+        val permutations = getPermutationsIteratively(route.packages!!.size)
 
         var minimumTotalDistance = Int.MAX_VALUE
         var bestPermutation = permutations[0]
@@ -327,9 +331,9 @@ class PackagesViewModelImpl @Inject constructor(
         for (permutation in permutations) { //we have one permutation
             totalDistance = 0
 
-            for (permPosition in 0 until permutation.size - 1) { //we have the position we want to check in our route
-                origin = route.packages!![permutation[permPosition]].numPackage
-                destination = route.packages!![permutation[permPosition + 1]].numPackage
+            for (permPosition in 0 until permutation.size - 2) { //we have the position we want to check in our route
+                origin = route.packages!![permutation[permPosition].toInt()].numPackage
+                destination = route.packages!![permutation[permPosition + 1].toInt()].numPackage
 
                 legDistance = distanceArray[origin][destination]
                 totalDistance += legDistance
@@ -344,11 +348,28 @@ class PackagesViewModelImpl @Inject constructor(
 
         val optimizedPackages = arrayListOf<Package>()
         for (i in bestPermutation) {
-            optimizedPackages.add(route.packages!![i])
+            optimizedPackages.add(route.packages!![i.toInt()])
         }
 
         return route.copy(packages = optimizedPackages, totalDistance = totalDistance)
 
+    }
+
+    //With the size it creates an array from 0 to array.size - 1.
+    // As we are using Byte, only up to 127. If we used Int, OutOfMemory with size > 9
+    private fun getPermutationsIteratively(size: Int): ArrayList<ArrayList<Byte>> {
+        val permutations = arrayListOf<ArrayList<Byte>>()
+
+        if(size > 127) return permutations
+
+        val perm = PermutationsIteratively(Array(size) { it.toByte() })
+
+        permutations.add(perm.GetFirst())
+        while (perm.HasNext()) {
+            permutations.add(perm.GetNext())
+        }
+
+        return permutations
     }
 
 
@@ -467,6 +488,7 @@ class PackagesViewModelImpl @Inject constructor(
 
     }
 
+
     private fun areAllTrue(array: BooleanArray): Boolean {
         for (b in array) if (!b) {
             return false
@@ -474,7 +496,7 @@ class PackagesViewModelImpl @Inject constructor(
         return true
     }
 
-    private fun getPermutations(elements: Array<Int>): ArrayList<Array<Int>> {
+    private fun getPermutationsRecursively(elements: Array<Int>): ArrayList<Array<Int>> {
         permutationsList.clear()
         computePermutationsRecursive(elements.size, elements, 'a')
         return permutationsList
@@ -584,6 +606,27 @@ class PackagesViewModelImpl @Inject constructor(
 
     override fun observeOptimizedDirectionsAPIRoute(): MutableLiveData<Route> {
         return optimizedDirectionsAPIRoute
+    }
+
+
+    override fun setStartTravelTimeArray(startTravelTimeArray: IntArray) {
+        globalStartTravelTimeArray = startTravelTimeArray
+    }
+
+    override fun setEndTravelTimeArray(endTravelTimeArray: IntArray) {
+        globalEndTravelTimeArray = endTravelTimeArray
+    }
+
+    override fun setDistanceArray(distanceArray: Array<IntArray>) {
+        globalDistanceArray = distanceArray
+    }
+
+    override fun setStartDistanceArray(startDistanceArray: IntArray) {
+        globalStartDistanceArray = startDistanceArray
+    }
+
+    override fun setEndDistanceArray(endDistanceArray: IntArray) {
+        globalEndDistanceArray = endDistanceArray
     }
 
 }

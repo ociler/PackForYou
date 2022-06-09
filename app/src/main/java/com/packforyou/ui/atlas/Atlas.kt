@@ -264,7 +264,7 @@ fun AtlasWithGivenRoute(route: Route, viewModel: IAtlasViewModel) {
                     Marker(
                         state = MarkerState(position = latLong),
                         title = location.address,
-                        snippet = "Marker in ${location.city}"
+                        snippet = "Stop number: $index"
                     )
                 }
             }

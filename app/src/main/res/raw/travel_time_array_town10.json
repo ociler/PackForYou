@@ -1,0 +1,22 @@
+Bueno, per si no ho heu vist/fet encara, lo de la gui és molt fàcil:
+Una vegada dins de la solució, click dret a
+GestDepGUI > Agregar > Formulario
+I s'obri un [Diseño] de el .cs
+
+Açò pareix que no es puga fer res, però si obriu el cuador de herramientas (a la esquerre) i s'espereu a que carregue, teniu totes les coses per a fer la GUI, como si del maleït JavaFX es tractara 👌🏻
+
+pistes extra: 
+Amb Shift podeu seleccionar varios objectes i modificar els atributs alhora.
+per a editar un "label" (text no modificable) no feu doble click, a Microsoft li agrada fer sufrir.
+Si aguantes el control mentre arrastres un element es duplica
+Si el ordre dels atributs no té puto sentit, ordeneu-los per categoria. Igualment no tindrà sentit, però almenys podreu buscar per categoria.
+Voleu canviar el tamany de un text modificant el atribut "tamany"?? Mal. Teniu que modificar el tamany de font. Igualment si ho intenteu, no vos deixa, a menys que desactiveu el atribut (a fer la mà) "AutoSize".
+En cas que un element que deuria poder ser canviat el tamany però no vos deixa, mireu "AutoSizeMode", ha d'estar en "GrowOnly" (explicacions, demaneu-les a Microsoft)
+Si no podeu moure un element, potser l'atribut "Dock" no és None (yet again)
+El atribut dock no té sentit quan l'obris però si gastes la rodeta t'ix els noms dels valors, que si que en tenen (ho he descubert de potra jeje ✌🏻)
+Cuidao en el Ctrl+Z, vos pot tocar reiniciar perque un atribut ja no fa cas. Modificar el tamany en el form pot solucionar-ho.
+També crashea com el JavaFX.
+
+Otros: el estil de la aplicació pareix que estiga fet per a WindowsXP
+
+De nada por las horas de vida devueltas

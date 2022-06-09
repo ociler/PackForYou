@@ -146,12 +146,14 @@ class PackagesAndAtlasRepositoryImpl(
             directionsApiService.getDirectionsAPIRoute(oAddress, dAddress, waypoints)
 
         var totalTravelTime = 0
+        var totalDistance = 0
         val sortedList = arrayListOf<Package>()
         val sortedOrder = optimizedRouteResponse.routes.last().waypoint_order
 
         optimizedRouteResponse.routes.forEach { route -> //usually it will be just one element tho
             route.legs.forEach { leg ->
                 totalTravelTime += leg.duration.value
+                totalDistance += leg.distance.value
             }
         }
 
@@ -162,7 +164,8 @@ class PackagesAndAtlasRepositoryImpl(
         globalCallback.onSuccessOptimizedDirectionsAPI(
             route.copy(
                 packages = sortedList,
-                totalTime = totalTravelTime
+                totalTime = totalTravelTime,
+                totalDistance = totalDistance
             )
         )
     }
@@ -190,7 +193,7 @@ class PackagesAndAtlasRepositoryImpl(
 
     private suspend fun enqueuePackagesLeg(originPackage: Package, destinationPackage: Package) {
 
-        getLeg(originPackage.location!!, destinationPackage.location!!).collect { state ->
+        getLeg(originPackage.location, destinationPackage.location!!).collect { state ->
             when (state) {
                 is State.Loading -> {
                 }
