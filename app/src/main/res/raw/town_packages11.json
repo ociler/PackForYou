@@ -9,5 +9,5 @@
   {"isDelivered":false,"location":{"address":"Av. la Constitución,52,46640 Mogente,Valencia,Spain","city":"DEFAULT","latitude":38.875386,"longitude":-0.746829,"zipCode":46020},"note":"","numPackage":5,"urgency":"NOT_URGENT"},
   {"isDelivered":false,"location":{"address":"Avinguda de Silverio Perfecto Sanz Navarro,19,46692 Montesa,Valencia,Spain","city":"DEFAULT","latitude":38.948763,"longitude":-0.649738,"zipCode":46020},"note":"","numPackage":9,"urgency":"NOT_URGENT"},
   {"isDelivered":false,"location":{"address":"Carrer General Cirugeda,23,46640 Moixent,Valencia,Spain","city":"DEFAULT","latitude":38.876096,"longitude":-0.750686,"zipCode":46020},"note":"","numPackage":3,"urgency":"NOT_URGENT"},
-  {"isDelivered":false,"location":{"address":"Carrer Sant Vicent,34,46630 La Font de la Figuera,Valencia,Espanya","city":"DEFAULT","latitude":38.805771,"longitude":-0.880644,"zipCode":46020},"note":"","numPackage":6,"urgency":"NOT_URGENT"}
+  {"isDelivered":false,"location":{"address":"Carrer Sant Vicent,34,46630 La Font de la Figuera,Valencia,Spain","city":"DEFAULT","latitude":38.805771,"longitude":-0.880644,"zipCode":46020},"note":"","numPackage":6,"urgency":"NOT_URGENT"}
 ]

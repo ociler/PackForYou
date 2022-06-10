@@ -224,9 +224,8 @@ class PackagesAndAtlasRepositoryImpl(
     }
 
     private suspend fun enqueueStartLeg(originLocation: Location, destinationPackage: Package) {
-        if (destinationPackage.location == null) return
 
-        getLeg(originLocation, destinationPackage.location!!).collect { state ->
+        getLeg(originLocation, destinationPackage.location).collect { state ->
             when (state) {
                 is State.Loading -> {
                 }
@@ -260,9 +259,7 @@ class PackagesAndAtlasRepositoryImpl(
 
 
     private suspend fun enqueueEndLeg(originPackage: Package, destinationLocation: Location) {
-        if (originPackage.location == null) return
-
-        getLeg(originPackage.location!!, destinationLocation).collect { state ->
+        getLeg(originPackage.location, destinationLocation).collect { state ->
             when (state) {
                 is State.Loading -> {
                 }
@@ -361,21 +358,7 @@ class PackagesAndAtlasRepositoryImpl(
         initializeStartDistanceArray(packages.size)
 
         for (destination in packages) {
-            if (destination.location != null) {
-                enqueueStartLeg(startLocation, destination)
-            } else {
-                synchronized(this) {
-                    finishedCalls++
-                    if (finishedCalls == totalCalls) {
-                        globalCallback.onSuccessBetweenStartLocationAndPackages(
-                            startTravelTimeArray,
-                            startDistanceArray,
-                            globalEndLocation,
-                            globalPackagesList
-                        )
-                    }
-                }
-            }
+            enqueueStartLeg(startLocation, destination)
         }
     }
 
@@ -394,20 +377,7 @@ class PackagesAndAtlasRepositoryImpl(
         initializeEndDistanceArray(packages.size)
 
         for (origin in packages) {
-            if (origin.location != null) {
-                enqueueEndLeg(origin, endLocation)
-            } else {
-                synchronized(this) {
-                    finishedCalls++
-                    if (finishedCalls == totalCalls) {
-                        globalCallback.onSuccessBetweenEndLocationAndPackages(
-                            endTravelTimeArray,
-                            endDistanceArray,
-                            globalPackagesList
-                        )
-                    }
-                }
-            }
+            enqueueEndLeg(origin, endLocation)
         }
     }
 

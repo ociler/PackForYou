@@ -30,6 +30,16 @@ class MainActivity : ComponentActivity() {
     lateinit var packagesViewModel: IPackagesViewModel
     lateinit var atlasViewModel: IAtlasViewModel
 
+    lateinit var notOptimizedRoute: Route
+
+    lateinit var bruteForceTravelTimeRoute: Route
+    lateinit var closestNeighbourTravelTimeRoute: Route
+
+    lateinit var bruteForceDistanceRoute: Route
+    lateinit var closestNeighbourDistanceRoute: Route
+
+    lateinit var optimizedDirectionsAPI: Route
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -43,13 +53,15 @@ class MainActivity : ComponentActivity() {
             ViewModelProvider(this)[AtlasViewModelImpl::class.java]
 
 
-        val mode = "Town10" //with this, we will control which situation we want to test
+        val mode = "Town" //with this, we will control which situation we want to test
+        val numPckgMode = "11"
+
 
         //we have some json files with the locations and packages decoded. We will use them
         val startLocation = restoreStartLocation(mode)
         val endLocation = restoreEndLocation(mode)
 
-        val packages = restorePackagesFromJson(mode).toList()
+        val packages = restorePackagesFromJson(mode + numPckgMode).toList()
 
         packages.forEachIndexed { i, it ->
             it.numPackage = i
@@ -59,46 +71,34 @@ class MainActivity : ComponentActivity() {
         val deliveryMan =
             DeliveryMan().copy(currentLocation = startLocation, endLocation = endLocation)
 
-        val notOptimizedRoute =
+        notOptimizedRoute =
             Route(deliveryMan = deliveryMan, packages = packages, id = 0, totalTime = 0)
 
-
-        var bruteForceTravelTimeRoute: Route
-        var closestNeighbourTravelTimeRoute: Route
-
-        var bruteForceDistanceRoute: Route
-        var closestNeighbourDistanceRoute: Route
-
-        var optimizedDirectionsAPI: Route
 
 
         //We have already saved our arrays from a previous run of the app. In order to make less calls,
         // we will use them instead of making calls everytime we execute the app
         /***USING LOCAL FILES****/
-        restoreArraysFromJson(mode)
+        restoreArraysFromJson(mode + numPckgMode)
 
 
         //first we fill all the distances arrays. This function, when it finishes, will call the one to get endArray, and when it finishes the one to get the array between all packages
         //Here we need the endLocation as well because we have no other way to get this Location. Maybe it is a bit strange because of the name
         /*****CALLING API*****/
-
-
-        /*
+/*
         packagesViewModel.computeDistanceBetweenStartLocationAndPackages(
             startLocation,
             endLocation,
             packages
         )
 
-         */
-
-
-
-
+ */
 
 
         packagesViewModel.observeTravelTimeArray()
             .observe(this) { travelTimeArray ->
+
+                saveArraysInJson()
 
                 /****NOT OPTIMIZED****/
                 notOptimizedRoute.totalTime = packagesViewModel.getRouteTravelTime(
@@ -181,6 +181,8 @@ class MainActivity : ComponentActivity() {
                 println("Algorithm time: $bruteForceTravelTimeTime ms")
                 println("--------------------------------------------")
 
+                savePackagesInJson(bruteForceTravelTimeRoute.packages!!.toList())
+
                 println("Starting point: $startLocation")
                 bruteForceTravelTimeRoute.packages!!.forEachIndexed { index, pckg ->
                     println("Order: ${index + 1}, numPackage: ${pckg.numPackage},  location: ${pckg.location}")
@@ -194,6 +196,8 @@ class MainActivity : ComponentActivity() {
                 println("Brute Force Optimized route by DISTANCE: ")
                 println("Algorithm time: $bruteForceDistanceTime ms")
                 println("-----------------------------------------")
+
+                savePackagesInJson(bruteForceDistanceRoute.packages!!.toList())
 
                 println("Starting point: $startLocation")
                 bruteForceDistanceRoute.packages!!.forEachIndexed { index, pckg ->
@@ -210,6 +214,8 @@ class MainActivity : ComponentActivity() {
                 println("Algorithm time: $closestNeighbourTravelTimeTime ns")
                 println("--------------------------------------------------")
 
+                savePackagesInJson(closestNeighbourTravelTimeRoute.packages!!.toList())
+
                 println("Starting point: $startLocation")
                 closestNeighbourTravelTimeRoute.packages!!.forEachIndexed { index, pckg ->
                     println("Order: ${index + 1}, numPackage: ${pckg.numPackage},  location: ${pckg.location}")
@@ -223,6 +229,8 @@ class MainActivity : ComponentActivity() {
                 println("Closest neighbour Optimized route by DISTANCE: ")
                 println("Algorithm time: $closestNeighbourDistanceTime ns")
                 println("-----------------------------------")
+
+                savePackagesInJson(bruteForceDistanceRoute.packages!!.toList())
 
                 println("Starting point: $startLocation")
                 closestNeighbourDistanceRoute.packages!!.forEachIndexed { index, pckg ->
@@ -246,6 +254,8 @@ class MainActivity : ComponentActivity() {
             println("Directions API Optimized route: ")
             println("Algorithm time: $directionsAPITime ms")
             println("-----------------------------------")
+
+            savePackagesInJson(optimizedDirectionsAPI.packages!!.toList())
 
             println("Starting point: $startLocation")
             optimizedDirectionsAPI.packages!!.forEachIndexed { index, pckg ->
@@ -321,12 +331,7 @@ class MainActivity : ComponentActivity() {
     private fun savePackagesInJson(
         packages: List<Package>
     ) {
-        packages.forEach {
-            println("PACKAGE ${it.numPackage}")
-            println("--------------------")
-            println(Gson().toJson(it))
-            println("--------------------\n\n")
-        }
+        println(Gson().toJson(packages))
     }
 
     private fun restoreArraysFromJson(mode: String) {
@@ -337,7 +342,7 @@ class MainActivity : ComponentActivity() {
 
             "City10" -> {
                 reader =
-                    InputStreamReader(resources.openRawResource(R.raw.distance_array_valencia10))
+                    InputStreamReader(resources.openRawResource(R.raw.distance_array_city10))
                 packagesViewModel.setDistanceArray(
                     gson.fromJson(
                         reader,
@@ -346,15 +351,15 @@ class MainActivity : ComponentActivity() {
                 )
 
                 reader =
-                    InputStreamReader(resources.openRawResource(R.raw.start_distance_valencia10))
+                    InputStreamReader(resources.openRawResource(R.raw.start_distance_array_city10))
                 packagesViewModel.setStartDistanceArray(gson.fromJson(reader, IntArray::class.java))
 
-                reader = InputStreamReader(resources.openRawResource(R.raw.end_distance_valencia10))
+                reader = InputStreamReader(resources.openRawResource(R.raw.end_distance_array_city10))
                 packagesViewModel.setEndDistanceArray(gson.fromJson(reader, IntArray::class.java))
 
 
                 reader =
-                    InputStreamReader(resources.openRawResource(R.raw.start_travel_time_valencia10))
+                    InputStreamReader(resources.openRawResource(R.raw.start_travel_time_array_city10))
                 packagesViewModel.setStartTravelTimeArray(
                     gson.fromJson(
                         reader,
@@ -363,12 +368,12 @@ class MainActivity : ComponentActivity() {
                 )
 
                 reader =
-                    InputStreamReader(resources.openRawResource(R.raw.end_travel_time_valencia10))
+                    InputStreamReader(resources.openRawResource(R.raw.end_travel_time_array_city10))
                 packagesViewModel.setEndTravelTimeArray(gson.fromJson(reader, IntArray::class.java))
 
                 //We are calling this the last one because this way the .observe will run when everything is ready
                 reader =
-                    InputStreamReader(resources.openRawResource(R.raw.travel_time_array_valencia10))
+                    InputStreamReader(resources.openRawResource(R.raw.travel_time_array_city10))
                 packagesViewModel.observeTravelTimeArray()
                     .postValue(gson.fromJson(reader, Array<IntArray>::class.java))
             }
@@ -384,15 +389,15 @@ class MainActivity : ComponentActivity() {
                 )
 
                 reader =
-                    InputStreamReader(resources.openRawResource(R.raw.start_distance_town10))
+                    InputStreamReader(resources.openRawResource(R.raw.start_distance_array_town10))
                 packagesViewModel.setStartDistanceArray(gson.fromJson(reader, IntArray::class.java))
 
-                reader = InputStreamReader(resources.openRawResource(R.raw.end_distance_town10))
+                reader = InputStreamReader(resources.openRawResource(R.raw.end_distance_array_town10))
                 packagesViewModel.setEndDistanceArray(gson.fromJson(reader, IntArray::class.java))
 
 
                 reader =
-                    InputStreamReader(resources.openRawResource(R.raw.start_travel_time_town10))
+                    InputStreamReader(resources.openRawResource(R.raw.start_travel_time_array_town10))
                 packagesViewModel.setStartTravelTimeArray(
                     gson.fromJson(
                         reader,
@@ -401,12 +406,50 @@ class MainActivity : ComponentActivity() {
                 )
 
                 reader =
-                    InputStreamReader(resources.openRawResource(R.raw.end_travel_time_town10))
+                    InputStreamReader(resources.openRawResource(R.raw.end_travel_time_array_town10))
                 packagesViewModel.setEndTravelTimeArray(gson.fromJson(reader, IntArray::class.java))
 
                 //We are calling this the last one because this way the .observe will run when everything is ready
                 reader =
                     InputStreamReader(resources.openRawResource(R.raw.travel_time_array_town10))
+                packagesViewModel.observeTravelTimeArray()
+                    .postValue(gson.fromJson(reader, Array<IntArray>::class.java))
+            }
+
+            "Town11" -> {
+                reader =
+                    InputStreamReader(resources.openRawResource(R.raw.distance_array_town11))
+                packagesViewModel.setDistanceArray(
+                    gson.fromJson(
+                        reader,
+                        Array<IntArray>::class.java
+                    )
+                )
+
+                reader =
+                    InputStreamReader(resources.openRawResource(R.raw.start_distance_array_town11))
+                packagesViewModel.setStartDistanceArray(gson.fromJson(reader, IntArray::class.java))
+
+                reader = InputStreamReader(resources.openRawResource(R.raw.end_distance_array_town11))
+                packagesViewModel.setEndDistanceArray(gson.fromJson(reader, IntArray::class.java))
+
+
+                reader =
+                    InputStreamReader(resources.openRawResource(R.raw.start_travel_time_array_town11))
+                packagesViewModel.setStartTravelTimeArray(
+                    gson.fromJson(
+                        reader,
+                        IntArray::class.java
+                    )
+                )
+
+                reader =
+                    InputStreamReader(resources.openRawResource(R.raw.end_travel_time_array_town11))
+                packagesViewModel.setEndTravelTimeArray(gson.fromJson(reader, IntArray::class.java))
+
+                //We are calling this the last one because this way the .observe will run when everything is ready
+                reader =
+                    InputStreamReader(resources.openRawResource(R.raw.travel_time_array_town11))
                 packagesViewModel.observeTravelTimeArray()
                     .postValue(gson.fromJson(reader, Array<IntArray>::class.java))
             }
@@ -442,6 +485,7 @@ class MainActivity : ComponentActivity() {
                 reader = InputStreamReader(resources.openRawResource(R.raw.rascanya2))
                 packages.add(gson.fromJson(reader, Package::class.java))
                 reader = InputStreamReader(resources.openRawResource(R.raw.rascanya3))
+                packages.add(gson.fromJson(reader, Package::class.java))
             }
 
             "Town10" -> {
@@ -506,13 +550,13 @@ class MainActivity : ComponentActivity() {
     private fun restoreStartLocation(mode: String): Location {
         var startLocation = Location()
         when (mode) {
-            "City10" -> {
+            "City" -> {
                 val reader =
-                    InputStreamReader(resources.openRawResource(R.raw.valencia_start_location))
+                    InputStreamReader(resources.openRawResource(R.raw.city_start_location))
                 startLocation = Gson().fromJson(reader, Location::class.java)
             }
 
-            "Town10" -> {
+            "Town" -> {
                 val reader = InputStreamReader(resources.openRawResource(R.raw.town_start_location))
                 return Gson().fromJson(reader, Location::class.java)
             }
@@ -527,13 +571,13 @@ class MainActivity : ComponentActivity() {
     private fun restoreEndLocation(mode: String): Location {
         var endLocation = Location()
         when (mode) {
-            "City10" -> {
+            "City" -> {
                 val reader =
-                    InputStreamReader(resources.openRawResource(R.raw.valencia_end_location))
+                    InputStreamReader(resources.openRawResource(R.raw.city_end_location))
                 endLocation = Gson().fromJson(reader, Location::class.java)
             }
 
-            "Town10" -> {
+            "Town" -> {
                 val reader = InputStreamReader(resources.openRawResource(R.raw.town_end_location))
                 return Gson().fromJson(reader, Location::class.java)
             }
