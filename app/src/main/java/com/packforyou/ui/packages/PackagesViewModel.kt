@@ -40,10 +40,14 @@ interface IPackagesViewModel {
     fun computeOptimizedRouteDirectionsAPI(route: Route)
     fun computeDirectionsResponse(route: Route)
 
-    fun getOptimizedRouteBruteForceTravelTime(route: Route, travelTimeArray: Array<IntArray>): Route
+    fun getOptimizedRouteBruteForceTravelTime(
+        route: Route,
+        travelTimeArray: Array<IntArray>,
+        startTravelTimeArray: IntArray,
+        endTravelTimeArray: IntArray
+    ): Route
+
     fun getOptimizedRouteClosestNeighbourTravelTime(
-        startLocation: Location,
-        endLocation: Location,
         route: Route,
         travelTimeArray: Array<IntArray>,
         startTravelTimeArray: IntArray,
@@ -51,18 +55,20 @@ interface IPackagesViewModel {
     ): Route
 
     fun getRouteTravelTime(
-        startLocation: Location,
-        endLocation: Location,
         packages: List<Package>,
         travelTimeArray: Array<IntArray>,
         startTravelTimeArray: IntArray,
         endTravelTimeArray: IntArray
     ): Int
 
-    fun getOptimizedRouteBruteForceDistance(route: Route, distanceArray: Array<IntArray>): Route
+    fun getOptimizedRouteBruteForceDistance(
+        route: Route,
+        distanceArray: Array<IntArray>,
+        startDistanceArray: IntArray,
+        endDistanceArray: IntArray
+    ): Route
+
     fun getOptimizedRouteClosestNeighbourDistance(
-        startLocation: Location,
-        endLocation: Location,
         route: Route,
         distanceArray: Array<IntArray>,
         startDistanceArray: IntArray,
@@ -70,8 +76,6 @@ interface IPackagesViewModel {
     ): Route
 
     fun getRouteDistance(
-        startLocation: Location,
-        endLocation: Location,
         packages: List<Package>,
         distanceArray: Array<IntArray>,
         startDistanceArray: IntArray,
@@ -263,13 +267,14 @@ class PackagesViewModelImpl @Inject constructor(
 
     override fun getOptimizedRouteBruteForceTravelTime(
         route: Route,
-        travelTimeArray: Array<IntArray>
+        travelTimeArray: Array<IntArray>,
+        startTravelTimeArray: IntArray,
+        endTravelTimeArray: IntArray
     ): Route {
         if (route.packages == null) return route
 
-        //So many compute. It will be better not use with more than this packages
-        if (route.packages!!.size > 9) return route
-
+        //So much compute. With the emulator up to 9 packages. Otherwise, OutOfMemory
+        if (route.packages!!.size > 11) return route
 
         val permutations = getPermutationsIteratively(route.packages!!.size)
 
@@ -282,7 +287,7 @@ class PackagesViewModelImpl @Inject constructor(
         var legTravelTime: Int
 
         for (permutation in permutations) { //we have one permutation
-            totalTravelTime = 0
+            totalTravelTime = startTravelTimeArray[permutation[0].toInt()]
 
             for (permPosition in 0 until permutation.size - 1) { //we have the position we want to check in our route
                 origin = route.packages!![permutation[permPosition].toInt()].numPackage
@@ -292,6 +297,8 @@ class PackagesViewModelImpl @Inject constructor(
                 totalTravelTime += legTravelTime
 
             }
+
+            totalTravelTime += endTravelTimeArray[permutation.last().toInt()]
 
             if (totalTravelTime < minimumTotalTravelTime) {
                 minimumTotalTravelTime = totalTravelTime
@@ -304,19 +311,21 @@ class PackagesViewModelImpl @Inject constructor(
             optimizedPackages.add(route.packages!![i.toInt()])
         }
 
-        return route.copy(packages = optimizedPackages, totalTime = totalTravelTime)
+        return route.copy(packages = optimizedPackages, totalTime = minimumTotalTravelTime)
 
     }
 
     override fun getOptimizedRouteBruteForceDistance(
         route: Route,
-        distanceArray: Array<IntArray>
+        distanceArray: Array<IntArray>,
+        startDistanceArray: IntArray,
+        endDistanceArray: IntArray
     ): Route {
         if (route.packages == null) return route
 
-        //So many compute. If we try to do this with more than these packages, OutOfMemory
+        //So much compute. If we try to do this with more than these packages, OutOfMemory
         //Not working even with that
-        if (route.packages!!.size > 9) return route
+        if (route.packages!!.size > 11) return route
 
         val permutations = getPermutationsIteratively(route.packages!!.size)
 
@@ -329,9 +338,9 @@ class PackagesViewModelImpl @Inject constructor(
         var legDistance: Int
 
         for (permutation in permutations) { //we have one permutation
-            totalDistance = 0
+            totalDistance = startDistanceArray[permutation[0].toInt()]
 
-            for (permPosition in 0 until permutation.size - 2) { //we have the position we want to check in our route
+            for (permPosition in 0 until permutation.size - 1) { //we have the position we want to check in our route
                 origin = route.packages!![permutation[permPosition].toInt()].numPackage
                 destination = route.packages!![permutation[permPosition + 1].toInt()].numPackage
 
@@ -339,6 +348,8 @@ class PackagesViewModelImpl @Inject constructor(
                 totalDistance += legDistance
 
             }
+
+            totalDistance += endDistanceArray[permutation.last().toInt()]
 
             if (totalDistance < minimumTotalDistance) {
                 minimumTotalDistance = totalDistance
@@ -351,7 +362,7 @@ class PackagesViewModelImpl @Inject constructor(
             optimizedPackages.add(route.packages!![i.toInt()])
         }
 
-        return route.copy(packages = optimizedPackages, totalDistance = totalDistance)
+        return route.copy(packages = optimizedPackages, totalDistance = minimumTotalDistance)
 
     }
 
@@ -377,8 +388,6 @@ class PackagesViewModelImpl @Inject constructor(
     //goes to its closest neighbour until the last package. When arrives to the last package,
     //goes to endLocation
     override fun getOptimizedRouteClosestNeighbourTravelTime(
-        startLocation: Location,
-        endLocation: Location,
         route: Route,
         travelTimeArray: Array<IntArray>,
         startTravelTimeArray: IntArray,
@@ -433,8 +442,6 @@ class PackagesViewModelImpl @Inject constructor(
     }
 
     override fun getOptimizedRouteClosestNeighbourDistance(
-        startLocation: Location,
-        endLocation: Location,
         route: Route,
         distanceArray: Array<IntArray>,
         startDistanceArray: IntArray,
@@ -527,8 +534,6 @@ class PackagesViewModelImpl @Inject constructor(
     }
 
     override fun getRouteTravelTime(
-        startLocation: Location,
-        endLocation: Location,
         packages: List<Package>,
         travelTimeArray: Array<IntArray>,
         startTravelTimeArray: IntArray,
@@ -552,8 +557,6 @@ class PackagesViewModelImpl @Inject constructor(
     }
 
     override fun getRouteDistance(
-        startLocation: Location,
-        endLocation: Location,
         packages: List<Package>,
         distanceArray: Array<IntArray>,
         startDistanceArray: IntArray,

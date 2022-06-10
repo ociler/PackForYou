@@ -193,7 +193,7 @@ class PackagesAndAtlasRepositoryImpl(
 
     private suspend fun enqueuePackagesLeg(originPackage: Package, destinationPackage: Package) {
 
-        getLeg(originPackage.location, destinationPackage.location!!).collect { state ->
+        getLeg(originPackage.location, destinationPackage.location).collect { state ->
             when (state) {
                 is State.Loading -> {
                 }

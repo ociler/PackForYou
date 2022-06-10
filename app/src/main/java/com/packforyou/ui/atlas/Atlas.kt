@@ -29,6 +29,7 @@ import com.packforyou.R
 @Composable
 fun Atlas(atlasViewModel: IAtlasViewModel, route: Route) {
     AtlasWithGivenRoute(route, atlasViewModel)
+    //CasetaAtlas()
 }
 
 @Composable

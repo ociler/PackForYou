@@ -6,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModelProvider
-import com.google.firebase.firestore.GeoPoint
 import com.google.gson.Gson
 import com.packforyou.data.models.DeliveryMan
 import com.packforyou.data.models.Location
@@ -44,109 +43,7 @@ class MainActivity : ComponentActivity() {
             ViewModelProvider(this)[AtlasViewModelImpl::class.java]
 
 
-        /**********************************NOT ENCODED TOWNS *******************************************/
-
-        val laFont3 = Package().copy(
-            location = Location().copy(
-                address = packagesViewModel.getAddressFromLocation(
-                    GeoPoint(38.805771, -0.880644),
-                    this
-                ), latitude = 38.805771, longitude = -0.880644
-            ), numPackage = 3
-        )
-
-        val laFont4 = Package().copy(
-            location = Location().copy(
-                address = packagesViewModel.getAddressFromLocation(
-                    GeoPoint(38.803547, -0.878670),
-                    this
-                ), latitude = 38.803547, longitude = -0.878670
-            ), numPackage = 3
-        )
-
-        val laFont5 = Package().copy(
-            location = Location().copy(
-                address = packagesViewModel.getAddressFromLocation(
-                    GeoPoint(38.803798, -0.879936),
-                    this
-                ), latitude = 38.803798, longitude = -0.879936
-            ), numPackage = 3
-        )
-
-        val laFont6 = Package().copy(
-            location = Location().copy(
-                address = packagesViewModel.getAddressFromLocation(
-                    GeoPoint(38.807059, -0.880022),
-                    this
-                ), latitude = 38.807059, longitude = -0.880022
-            ), numPackage = 3
-        )
-
-        val laFont7 = Package().copy(
-            location = Location().copy(
-                address = packagesViewModel.getAddressFromLocation(
-                    GeoPoint(38.807493, -0.880129),
-                    this
-                ), latitude = 38.807493, longitude = -0.880129
-            ), numPackage = 3
-        )
-
-        val moixent6 = Package().copy(
-            location = Location().copy(
-                address = packagesViewModel.getAddressFromLocation(
-                    GeoPoint(38.874689, -0.749602),
-                    this
-                ), latitude = 38.874689, longitude = -0.749602
-            ), numPackage = 3
-        )
-
-        val moixent7 = Package().copy(
-            location = Location().copy(
-                address = packagesViewModel.getAddressFromLocation(
-                    GeoPoint(38.874476, -0.752462),
-                    this
-                ), latitude = 38.874476, longitude = -0.752462
-            ), numPackage = 3
-        )
-
-        val moixent8 = Package().copy(
-            location = Location().copy(
-                address = packagesViewModel.getAddressFromLocation(
-                    GeoPoint(38.873728, -0.755224),
-                    this
-                ), latitude = 38.873728, longitude = -0.755224
-            ), numPackage = 3
-        )
-
-        val moixent9 = Package().copy(
-            location = Location().copy(
-                address = packagesViewModel.getAddressFromLocation(
-                    GeoPoint(38.872826, -0.753765),
-                    this
-                ), latitude = 38.872826, longitude = -0.753765
-            ), numPackage = 3
-        )
-
-        val vallada2 = Package().copy(
-            location = Location().copy(
-                address = packagesViewModel.getAddressFromLocation(
-                    GeoPoint(38.896744, -0.688341),
-                    this
-                ), latitude = 38.896744, longitude = -0.688341
-            ), numPackage = 3
-        )
-
-        val vallada3 = Package().copy(
-            location = Location().copy(
-                address = packagesViewModel.getAddressFromLocation(
-                    GeoPoint(38.895884, -0.687053),
-                    this
-                ), latitude = 38.895884, longitude = -0.687053
-            ), numPackage = 3
-        )
-
-
-        val mode = "City10" //with this, we will control which situation we want to test
+        val mode = "Town10" //with this, we will control which situation we want to test
 
         //we have some json files with the locations and packages decoded. We will use them
         val startLocation = restoreStartLocation(mode)
@@ -178,21 +75,26 @@ class MainActivity : ComponentActivity() {
         //We have already saved our arrays from a previous run of the app. In order to make less calls,
         // we will use them instead of making calls everytime we execute the app
         /***USING LOCAL FILES****/
-        restoreArraysFromJson()
+        restoreArraysFromJson(mode)
 
 
         //first we fill all the distances arrays. This function, when it finishes, will call the one to get endArray, and when it finishes the one to get the array between all packages
         //Here we need the endLocation as well because we have no other way to get this Location. Maybe it is a bit strange because of the name
         /*****CALLING API*****/
-        /*
 
+
+        /*
         packagesViewModel.computeDistanceBetweenStartLocationAndPackages(
-            startLocationValencia,
-            endLocationValencia,
+            startLocation,
+            endLocation,
             packages
         )
 
          */
+
+
+
+
 
 
         packagesViewModel.observeTravelTimeArray()
@@ -200,8 +102,6 @@ class MainActivity : ComponentActivity() {
 
                 /****NOT OPTIMIZED****/
                 notOptimizedRoute.totalTime = packagesViewModel.getRouteTravelTime(
-                    deliveryMan.currentLocation!!,
-                    deliveryMan.endLocation!!,
                     notOptimizedRoute.packages!!,
                     travelTimeArray,
                     packagesViewModel.getStartTravelTimeArray(),
@@ -209,8 +109,6 @@ class MainActivity : ComponentActivity() {
                 )
 
                 notOptimizedRoute.totalDistance = packagesViewModel.getRouteDistance(
-                    deliveryMan.currentLocation!!,
-                    deliveryMan.endLocation!!,
                     notOptimizedRoute.packages!!,
                     packagesViewModel.getDistanceArray(),
                     packagesViewModel.getStartDistanceArray(),
@@ -223,14 +121,18 @@ class MainActivity : ComponentActivity() {
                     bruteForceTravelTimeRoute =
                         packagesViewModel.getOptimizedRouteBruteForceTravelTime(
                             notOptimizedRoute,
-                            travelTimeArray
+                            travelTimeArray,
+                            packagesViewModel.getStartTravelTimeArray(),
+                            packagesViewModel.getEndTravelTimeArray()
                         ) //TODO maybe this should be in another thread, as it will take some time (theoretically)
                 }
 
                 val bruteForceDistanceTime = measureTimeMillis {
                     bruteForceDistanceRoute = packagesViewModel.getOptimizedRouteBruteForceDistance(
                         notOptimizedRoute,
-                        packagesViewModel.getDistanceArray()
+                        packagesViewModel.getDistanceArray(),
+                        packagesViewModel.getStartDistanceArray(),
+                        packagesViewModel.getEndDistanceArray()
                     ) //TODO maybe this should be in another thread, as it will take some time (theoretically)
                 }
 
@@ -238,8 +140,6 @@ class MainActivity : ComponentActivity() {
                 val closestNeighbourTravelTimeTime = measureNanoTime {
                     closestNeighbourTravelTimeRoute =
                         packagesViewModel.getOptimizedRouteClosestNeighbourTravelTime(
-                            deliveryMan.currentLocation!!,
-                            deliveryMan.endLocation!!,
                             notOptimizedRoute,
                             travelTimeArray,
                             packagesViewModel.getStartTravelTimeArray(),
@@ -250,8 +150,6 @@ class MainActivity : ComponentActivity() {
                 val closestNeighbourDistanceTime = measureNanoTime {
                     closestNeighbourDistanceRoute =
                         packagesViewModel.getOptimizedRouteClosestNeighbourDistance(
-                            deliveryMan.currentLocation!!,
-                            deliveryMan.endLocation!!,
                             notOptimizedRoute,
                             packagesViewModel.getDistanceArray(),
                             packagesViewModel.getStartDistanceArray(),
@@ -274,7 +172,7 @@ class MainActivity : ComponentActivity() {
 
                 println("Ending point: $endLocation")
                 println("Total travel time: ${notOptimizedRoute.totalTime} seconds")
-                println("Total travel time: ${notOptimizedRoute.totalDistance} meters\n\n")
+                println("Total distance: ${notOptimizedRoute.totalDistance} meters\n\n")
 
 
                 /***BRUTE FORCE***/
@@ -421,51 +319,100 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun savePackagesInJson(
-        packages: List<Package>,
-        startLocation: Location,
-        endLocation: Location
+        packages: List<Package>
     ) {
-        println("START LOCATION")
-        println("--------------------")
-        println(Gson().toJson(startLocation))
-        println("--------------------\n\n")
-
         packages.forEach {
             println("PACKAGE ${it.numPackage}")
             println("--------------------")
             println(Gson().toJson(it))
             println("--------------------\n\n")
         }
-
-        println("END LOCATION")
-        println("--------------------")
-        println(Gson().toJson(endLocation))
-        println("--------------------\n\n")
     }
 
-    private fun restoreArraysFromJson() {
+    private fun restoreArraysFromJson(mode: String) {
         val gson = Gson()
+        var reader: InputStreamReader
 
-        var reader = InputStreamReader(resources.openRawResource(R.raw.distance_array_valencia10))
-        packagesViewModel.setDistanceArray(gson.fromJson(reader, Array<IntArray>::class.java))
+        when (mode) {
 
-        reader = InputStreamReader(resources.openRawResource(R.raw.start_distance_valencia10))
-        packagesViewModel.setStartDistanceArray(gson.fromJson(reader, IntArray::class.java))
+            "City10" -> {
+                reader =
+                    InputStreamReader(resources.openRawResource(R.raw.distance_array_valencia10))
+                packagesViewModel.setDistanceArray(
+                    gson.fromJson(
+                        reader,
+                        Array<IntArray>::class.java
+                    )
+                )
 
-        reader = InputStreamReader(resources.openRawResource(R.raw.end_distance_valencia10))
-        packagesViewModel.setEndDistanceArray(gson.fromJson(reader, IntArray::class.java))
+                reader =
+                    InputStreamReader(resources.openRawResource(R.raw.start_distance_valencia10))
+                packagesViewModel.setStartDistanceArray(gson.fromJson(reader, IntArray::class.java))
+
+                reader = InputStreamReader(resources.openRawResource(R.raw.end_distance_valencia10))
+                packagesViewModel.setEndDistanceArray(gson.fromJson(reader, IntArray::class.java))
 
 
-        reader = InputStreamReader(resources.openRawResource(R.raw.start_distance_valencia10))
-        packagesViewModel.setStartTravelTimeArray(gson.fromJson(reader, IntArray::class.java))
+                reader =
+                    InputStreamReader(resources.openRawResource(R.raw.start_travel_time_valencia10))
+                packagesViewModel.setStartTravelTimeArray(
+                    gson.fromJson(
+                        reader,
+                        IntArray::class.java
+                    )
+                )
 
-        reader = InputStreamReader(resources.openRawResource(R.raw.end_distance_valencia10))
-        packagesViewModel.setEndTravelTimeArray(gson.fromJson(reader, IntArray::class.java))
+                reader =
+                    InputStreamReader(resources.openRawResource(R.raw.end_travel_time_valencia10))
+                packagesViewModel.setEndTravelTimeArray(gson.fromJson(reader, IntArray::class.java))
 
-        //We are calling this the lastone because this way the .observe will run when everything is ready
-        reader = InputStreamReader(resources.openRawResource(R.raw.travel_time_array_valencia10))
-        packagesViewModel.observeTravelTimeArray()
-            .postValue(gson.fromJson(reader, Array<IntArray>::class.java))
+                //We are calling this the last one because this way the .observe will run when everything is ready
+                reader =
+                    InputStreamReader(resources.openRawResource(R.raw.travel_time_array_valencia10))
+                packagesViewModel.observeTravelTimeArray()
+                    .postValue(gson.fromJson(reader, Array<IntArray>::class.java))
+            }
+
+            "Town10" -> {
+                reader =
+                    InputStreamReader(resources.openRawResource(R.raw.distance_array_town10))
+                packagesViewModel.setDistanceArray(
+                    gson.fromJson(
+                        reader,
+                        Array<IntArray>::class.java
+                    )
+                )
+
+                reader =
+                    InputStreamReader(resources.openRawResource(R.raw.start_distance_town10))
+                packagesViewModel.setStartDistanceArray(gson.fromJson(reader, IntArray::class.java))
+
+                reader = InputStreamReader(resources.openRawResource(R.raw.end_distance_town10))
+                packagesViewModel.setEndDistanceArray(gson.fromJson(reader, IntArray::class.java))
+
+
+                reader =
+                    InputStreamReader(resources.openRawResource(R.raw.start_travel_time_town10))
+                packagesViewModel.setStartTravelTimeArray(
+                    gson.fromJson(
+                        reader,
+                        IntArray::class.java
+                    )
+                )
+
+                reader =
+                    InputStreamReader(resources.openRawResource(R.raw.end_travel_time_town10))
+                packagesViewModel.setEndTravelTimeArray(gson.fromJson(reader, IntArray::class.java))
+
+                //We are calling this the last one because this way the .observe will run when everything is ready
+                reader =
+                    InputStreamReader(resources.openRawResource(R.raw.travel_time_array_town10))
+                packagesViewModel.observeTravelTimeArray()
+                    .postValue(gson.fromJson(reader, Array<IntArray>::class.java))
+            }
+
+            else -> println("Sorry, not valid mode given")
+        }
     }
 
 
@@ -495,29 +442,28 @@ class MainActivity : ComponentActivity() {
                 reader = InputStreamReader(resources.openRawResource(R.raw.rascanya2))
                 packages.add(gson.fromJson(reader, Package::class.java))
                 reader = InputStreamReader(resources.openRawResource(R.raw.rascanya3))
-                packages.add(gson.fromJson(reader, Package::class.java))
             }
 
             "Town10" -> {
-                reader = InputStreamReader(resources.openRawResource(R.raw.benimaclet1))
+                reader = InputStreamReader(resources.openRawResource(R.raw.moixent1))
                 packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.benimaclet2))
+                reader = InputStreamReader(resources.openRawResource(R.raw.moixent4))
                 packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.benimaclet3))
+                reader = InputStreamReader(resources.openRawResource(R.raw.la_font1))
                 packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.benimaclet4))
+                reader = InputStreamReader(resources.openRawResource(R.raw.vallada1))
                 packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.benimaclet5))
+                reader = InputStreamReader(resources.openRawResource(R.raw.moixent2))
                 packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.benimaclet6))
+                reader = InputStreamReader(resources.openRawResource(R.raw.montesa2))
                 packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.benimaclet7))
+                reader = InputStreamReader(resources.openRawResource(R.raw.la_font2))
                 packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.rascanya1))
+                reader = InputStreamReader(resources.openRawResource(R.raw.moixent3))
                 packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.rascanya2))
+                reader = InputStreamReader(resources.openRawResource(R.raw.montesa1))
                 packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.rascanya3))
+                reader = InputStreamReader(resources.openRawResource(R.raw.moixent5))
                 packages.add(gson.fromJson(reader, Package::class.java))
             }
 
@@ -532,7 +478,7 @@ class MainActivity : ComponentActivity() {
     private fun restorePackagesFromJson(mode: String): Array<Package> {
         var packages = arrayOf<Package>()
         val gson = Gson()
-        var reader: InputStreamReader
+        val reader: InputStreamReader
 
         when (mode) {
             "City10" -> {
@@ -541,7 +487,12 @@ class MainActivity : ComponentActivity() {
             }
 
             "Town10" -> {
-                reader = InputStreamReader(resources.openRawResource(R.raw.town_packages))
+                reader = InputStreamReader(resources.openRawResource(R.raw.town_packages10))
+                packages = gson.fromJson(reader, Array<Package>::class.java)
+            }
+
+            "Town11" -> {
+                reader = InputStreamReader(resources.openRawResource(R.raw.town_packages11))
                 packages = gson.fromJson(reader, Array<Package>::class.java)
             }
 
