@@ -219,6 +219,7 @@ class PackagesViewModelImpl @Inject constructor(
         //initializeTravelTimeArray(packages.size + 1)
         if(packages.size > 30){
             println("\nPackages.size > 30. It would be too many calls between packages\n")
+            return
         }
 
         viewModelScope.launch {

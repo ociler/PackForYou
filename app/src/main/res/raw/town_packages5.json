@@ -2,32 +2,6 @@
   {
     "isDelivered": false,
     "location": {
-      "address": "Carrer Portal de Villena,18,46630 La Font de la Figuera,Valencia,Spain",
-      "city": "DEFAULT",
-      "latitude": 38.804918,
-      "longitude": -0.879529,
-      "zipCode": 46020
-    },
-    "note": "",
-    "numPackage": 0,
-    "urgency": "NOT_URGENT"
-  },
-  {
-    "isDelivered": false,
-    "location": {
-      "address": "C. Nueva,21,46640 Mogente,Valencia,Spain",
-      "city": "DEFAULT",
-      "latitude": 38.872713,
-      "longitude": -0.754302,
-      "zipCode": 46020
-    },
-    "note": "",
-    "numPackage": 2,
-    "urgency": "NOT_URGENT"
-  },
-  {
-    "isDelivered": false,
-    "location": {
       "address": "C. Poeta Gabriel Vila,34,46640 Mogente,Valencia,Spain",
       "city": "DEFAULT",
       "latitude": 38.876246,
@@ -54,19 +28,6 @@
   {
     "isDelivered": false,
     "location": {
-      "address": "Av. la Constitución,26,46640 Mogente,Valencia,Spain",
-      "city": "DEFAULT",
-      "latitude": 38.875232,
-      "longitude": -0.7489,
-      "zipCode": 46020
-    },
-    "note": "",
-    "numPackage": 6,
-    "urgency": "NOT_URGENT"
-  },
-  {
-    "isDelivered": false,
-    "location": {
       "address": "Carrer Comandant Cirujeda,4,46691 Vallada,Valencia,Spain",
       "city": "DEFAULT",
       "latitude": 38.895091,
@@ -75,32 +36,6 @@
     },
     "note": "",
     "numPackage": 7,
-    "urgency": "NOT_URGENT"
-  },
-  {
-    "isDelivered": false,
-    "location": {
-      "address": "Carrer de Sant Antoni,6,46692 Montesa,Valencia,Spain",
-      "city": "DEFAULT",
-      "latitude": 38.949764,
-      "longitude": -0.651648,
-      "zipCode": 46020
-    },
-    "note": "",
-    "numPackage": 8,
-    "urgency": "NOT_URGENT"
-  },
-  {
-    "isDelivered": false,
-    "location": {
-      "address": "Av. la Constitución,52,46640 Mogente,Valencia,Spain",
-      "city": "DEFAULT",
-      "latitude": 38.875386,
-      "longitude": -0.746829,
-      "zipCode": 46020
-    },
-    "note": "",
-    "numPackage": 5,
     "urgency": "NOT_URGENT"
   },
   {

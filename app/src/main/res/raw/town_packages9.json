@@ -80,19 +80,6 @@
   {
     "isDelivered": false,
     "location": {
-      "address": "Carrer de Sant Antoni,6,46692 Montesa,Valencia,Spain",
-      "city": "DEFAULT",
-      "latitude": 38.949764,
-      "longitude": -0.651648,
-      "zipCode": 46020
-    },
-    "note": "",
-    "numPackage": 8,
-    "urgency": "NOT_URGENT"
-  },
-  {
-    "isDelivered": false,
-    "location": {
       "address": "Av. la Constitución,52,46640 Mogente,Valencia,Spain",
       "city": "DEFAULT",
       "latitude": 38.875386,

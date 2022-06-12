@@ -1,0 +1,80 @@
+[
+  {
+    "isDelivered": false,
+    "location": {
+      "address": "Carrer de l\u0027Arquitecte Arnau,55,46020 València,Valencia,Spain",
+      "city": "",
+      "latitude": 39.485826,
+      "longitude": -0.35638,
+      "zipCode": 46020
+    },
+    "note": "",
+    "numPackage": 0,
+    "urgency": "NOT_URGENT"
+  },
+  {
+    "isDelivered": false,
+    "location": {
+      "address": "Carrer de l\u0027Historiador Chabret,3,46019 València,Valencia,Spain",
+      "city": "",
+      "latitude": 39.492425,
+      "longitude": -0.368503,
+      "zipCode": 46020
+    },
+    "note": "",
+    "numPackage": 2,
+    "urgency": "NOT_URGENT"
+  },
+  {
+    "isDelivered": false,
+    "location": {
+      "address": "Carrer d\u0027Agustín Lara,8,46019 València,Valencia,Spain",
+      "city": "",
+      "latitude": 39.493444,
+      "longitude": -0.370982,
+      "zipCode": 46020
+    },
+    "note": "",
+    "numPackage": 9,
+    "urgency": "NOT_URGENT"
+  },
+  {
+    "isDelivered": false,
+    "location": {
+      "address": "Carrer del Poeta Asins,5,46020 València,Valencia,Spain",
+      "city": "",
+      "latitude": 39.487333,
+      "longitude": -0.360446,
+      "zipCode": 46020
+    },
+    "note": "",
+    "numPackage": 1,
+    "urgency": "NOT_URGENT"
+  },
+  {
+    "isDelivered": false,
+    "location": {
+      "address": "C. del Músic Hipòlit Martínez,2,46020 València,Valencia,Spain",
+      "city": "",
+      "latitude": 39.484642,
+      "longitude": -0.356584,
+      "zipCode": 46020
+    },
+    "note": "",
+    "numPackage": 3,
+    "urgency": "NOT_URGENT"
+  },
+  {
+    "isDelivered": false,
+    "location": {
+      "address": "Carrer d\u0027Emili Baró,84,46020 València,Valencia,Spain",
+      "city": "",
+      "latitude": 39.490828,
+      "longitude": -0.359287,
+      "zipCode": 46020
+    },
+    "note": "",
+    "numPackage": 6,
+    "urgency": "NOT_URGENT"
+  }
+]
