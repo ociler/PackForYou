@@ -1,0 +1,13 @@
+{
+  "isDelivered": false,
+  "location": {
+    "address": "Camí de la Rotglà,4D,46692 Montesa,Valencia,Spain",
+    "city": "DEFAULT",
+    "latitude": 38.898815,
+    "longitude": -0.689172,
+    "zipCode": 46020
+  },
+  "note": "",
+  "numPackage": 4,
+  "urgency": "NOT_URGENT"
+}

@@ -1,0 +1,56 @@
+[
+  {
+    "isDelivered": false,
+    "location": {
+      "address": "C. Poeta Gabriel Vila,34,46640 Mogente,Valencia,Spain",
+      "city": "DEFAULT",
+      "latitude": 38.876246,
+      "longitude": -0.748503,
+      "zipCode": 46020
+    },
+    "note": "",
+    "numPackage": 4,
+    "urgency": "NOT_URGENT"
+  },
+
+  {
+    "isDelivered": false,
+    "location": {
+      "address": "Avinguda de Silverio Perfecto Sanz Navarro,19,46692 Montesa,Valencia,Spain",
+      "city": "DEFAULT",
+      "latitude": 38.948763,
+      "longitude": -0.649738,
+      "zipCode": 46020
+    },
+    "note": "",
+    "numPackage": 9,
+    "urgency": "NOT_URGENT"
+  },
+
+  {
+    "isDelivered": false,
+    "location": {
+      "address": "Carrer en Gonzalo García,45,46630 La Font de la Figuera,Valencia,Spain",
+      "city": "DEFAULT",
+      "latitude": 38.806607,
+      "longitude": -0.87882,
+      "zipCode": 46020
+    },
+    "note": "",
+    "numPackage": 1,
+    "urgency": "NOT_URGENT"
+  },
+  {
+    "isDelivered": false,
+    "location": {
+      "address": "Carrer Comandant Cirujeda,4,46691 Vallada,Valencia,Spain",
+      "city": "DEFAULT",
+      "latitude": 38.895091,
+      "longitude": -0.691592,
+      "zipCode": 46020
+    },
+    "note": "",
+    "numPackage": 7,
+    "urgency": "NOT_URGENT"
+  }
+]

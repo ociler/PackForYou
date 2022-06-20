@@ -60,8 +60,8 @@ class MainActivity : ComponentActivity() {
         var t1: Long
 
 
-        val mode = "City" //with this, we will control which situation we want to test
-        val numPckgMode = "5"
+        val mode = "Test" //with this, we will control which situation we want to test
+        val numPckgMode = "4"
         val usingLocalFiles = false
         val callingDirectionsAPI = true
 
@@ -130,6 +130,8 @@ class MainActivity : ComponentActivity() {
                 )
 
                 /****BRUTE FORCE****/
+
+                packagesViewModel.computePermutations(notOptimizedRoute.packages!!.size)
 
                 val bruteForceTravelTimeTime = measureTimeMillis {
                     bruteForceTravelTimeRoute =
@@ -225,7 +227,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 /***CLOSEST NEIGHBOUR***/
-                if (closestNeighbourDistanceRoute.packages!!.size % 5 == 0) { //not print from 6 to 9
+                if (closestNeighbourDistanceRoute.packages!!.size % 5 == 0 || closestNeighbourDistanceRoute.packages!!.size == 4) { //not print from 6 to 9
 
                     println("--------------------------------------------------")
                     println("Closest neighbour Optimized route by TRAVEL TIME: ")
@@ -256,6 +258,13 @@ class MainActivity : ComponentActivity() {
                     }
                     println("Ending point: $endLocation")
                     println("Total distance: ${closestNeighbourDistanceRoute.totalDistance} meters\n\n")
+
+
+                    setContent {
+                        PackForYouTheme {
+                            Atlas(atlasViewModel, notOptimizedRoute)
+                        }
+                    }
                 }
             }
 
@@ -298,26 +307,7 @@ class MainActivity : ComponentActivity() {
             locations.add(endLocation)
         }
 
-        setContent {
-            PackForYouTheme {
-                Atlas(atlasViewModel, notOptimizedRoute)
-            }
-        }
-
     }
-
-
-/*
-
-        println("PreGet")
-        loginViewModel.getAllDeliveryMen()
-        loginViewModel.observeDeliveryMen().observe(this/*lifecycelOwner*/
-        ) { deliveryMen ->
-            println("Acabamos de pasar $deliveryMen")
-        }
-        println("PostGet")
-
- */
 
     private fun saveArraysInJson() {
         println("TRAVEL TIME ARRAY")
@@ -1072,72 +1062,17 @@ class MainActivity : ComponentActivity() {
     }
 
 
-    private fun restorePackagesFromJsonManually(mode: String): ArrayList<Package> {
-        val packages = arrayListOf<Package>()
-        val gson = Gson()
-        var reader: InputStreamReader
-
-        when (mode) {
-            "City10" -> {
-                reader = InputStreamReader(resources.openRawResource(R.raw.benimaclet1))
-                packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.benimaclet2))
-                packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.benimaclet3))
-                packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.benimaclet4))
-                packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.benimaclet5))
-                packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.benimaclet6))
-                packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.benimaclet7))
-                packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.rascanya1))
-                packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.rascanya2))
-                packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.rascanya3))
-                packages.add(gson.fromJson(reader, Package::class.java))
-            }
-
-            "Town10" -> {
-                reader = InputStreamReader(resources.openRawResource(R.raw.moixent1))
-                packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.moixent4))
-                packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.la_font1))
-                packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.vallada1))
-                packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.moixent2))
-                packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.montesa2))
-                packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.la_font2))
-                packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.moixent3))
-                packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.montesa1))
-                packages.add(gson.fromJson(reader, Package::class.java))
-                reader = InputStreamReader(resources.openRawResource(R.raw.moixent5))
-                packages.add(gson.fromJson(reader, Package::class.java))
-            }
-
-            else -> {
-                println("Sorry, no valid mode given")
-            }
-        }
-
-        return packages
-    }
-
     private fun restorePackagesFromJson(mode: String): Array<Package> {
         var packages = arrayOf<Package>()
         val gson = Gson()
         val reader: InputStreamReader
 
         when (mode) {
+            "Test4" -> {
+                reader = InputStreamReader(resources.openRawResource(R.raw.test_packages))
+                packages = gson.fromJson(reader, Array<Package>::class.java)
+            }
+
             "Town5" -> {
                 reader = InputStreamReader(resources.openRawResource(R.raw.town_packages5))
                 packages = gson.fromJson(reader, Array<Package>::class.java)
@@ -1242,6 +1177,12 @@ class MainActivity : ComponentActivity() {
     private fun restoreStartLocation(mode: String): Location {
         var startLocation = Location()
         when (mode) {
+            "Test" -> {
+                val reader =
+                    InputStreamReader(resources.openRawResource(R.raw.test_start_location))
+                startLocation = Gson().fromJson(reader, Location::class.java)
+            }
+
             "City" -> {
                 val reader =
                     InputStreamReader(resources.openRawResource(R.raw.city_start_location))
@@ -1263,6 +1204,12 @@ class MainActivity : ComponentActivity() {
     private fun restoreEndLocation(mode: String): Location {
         var endLocation = Location()
         when (mode) {
+            "Test" -> {
+                val reader =
+                    InputStreamReader(resources.openRawResource(R.raw.test_end_location))
+                endLocation = Gson().fromJson(reader, Location::class.java)
+            }
+
             "City" -> {
                 val reader =
                     InputStreamReader(resources.openRawResource(R.raw.city_end_location))

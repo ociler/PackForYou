@@ -82,6 +82,8 @@ interface IPackagesViewModel {
         endDistanceArray: IntArray
     ): Int
 
+    fun computePermutations(size: Int)
+
 
     fun observeTravelTimeArray(): MutableLiveData<Array<IntArray>>
     fun getStartTravelTimeArray(): IntArray
@@ -105,7 +107,9 @@ class PackagesViewModelImpl @Inject constructor(
     private val repository: IPackagesAndAtlasRepository
 ) : ViewModel(), IPackagesViewModel {
 
-    private val permutationsList = ArrayList<Array<Int>>()
+    private var permutationsListRec = ArrayList<Array<Int>>()
+
+    private var permutationsListIt =ArrayList<ArrayList<Byte>>()
 
     var globalTravelTimeArray = MutableLiveData<Array<IntArray>>()
     lateinit var globalStartTravelTimeArray: IntArray
@@ -217,7 +221,7 @@ class PackagesViewModelImpl @Inject constructor(
 
     override fun computeDistanceBetweenAllPackages(packages: List<Package>) {
         //initializeTravelTimeArray(packages.size + 1)
-        if(packages.size > 30){
+        if (packages.size > 30) {
             println("\nPackages.size > 30. It would be too many calls between packages\n")
             return
         }
@@ -274,16 +278,23 @@ class PackagesViewModelImpl @Inject constructor(
         startTravelTimeArray: IntArray,
         endTravelTimeArray: IntArray
     ): Route {
-        if (route.packages == null) return route
+        if (route.packages.isNullOrEmpty()) return route.copy(id = -1)
+
+        if (startTravelTimeArray.size != route.packages!!.size ||
+            endTravelTimeArray.size != route.packages!!.size ||
+            travelTimeArray.size != route.packages!!.size
+        ) {
+            return route.copy(id = -2)
+        }
 
         //So much compute. With the emulator up to 9 packages. Otherwise, OutOfMemory
         //Physical device up to 10 packages. Same problem
-        if (route.packages!!.size > 10){
+        if (route.packages!!.size > 10) {
             println("With this number of packages, the Brute Force algorithm won't finish")
             return route.copy(id = -1)
         }
 
-        val permutations = getPermutationsIteratively(route.packages!!.size)
+        val permutations = permutationsListIt
 
         var minimumTotalTravelTime = Int.MAX_VALUE
         var bestPermutation = permutations[0]
@@ -328,16 +339,24 @@ class PackagesViewModelImpl @Inject constructor(
         startDistanceArray: IntArray,
         endDistanceArray: IntArray
     ): Route {
-        if (route.packages == null) return route
+
+        if (route.packages.isNullOrEmpty()) return route.copy(id = -1)
+
+        if (startDistanceArray.size != route.packages!!.size ||
+            endDistanceArray.size != route.packages!!.size ||
+            distanceArray.size != route.packages!!.size
+        ) {
+            return route.copy(id = -2)
+        }
 
         //So much compute. With the emulator up to 9 packages. Otherwise, OutOfMemory
         //With physical device up to 10. Same problem.
-        if (route.packages!!.size > 10){
+        if (route.packages!!.size > 10) {
             println("With this number of packages, the Brute Force algorithm won't finish")
             return route.copy(id = -1)
         }
 
-        val permutations = getPermutationsIteratively(route.packages!!.size)
+        val permutations = permutationsListIt
 
         var minimumTotalDistance = Int.MAX_VALUE
         var bestPermutation = permutations[0]
@@ -381,7 +400,7 @@ class PackagesViewModelImpl @Inject constructor(
     private fun getPermutationsIteratively(size: Int): ArrayList<ArrayList<Byte>> {
         val permutations = arrayListOf<ArrayList<Byte>>()
 
-        if(size > 127) return permutations
+        if (size > 127) return permutations
 
         val perm = PermutationsIteratively(Array(size) { it.toByte() })
 
@@ -394,6 +413,11 @@ class PackagesViewModelImpl @Inject constructor(
     }
 
 
+    override fun computePermutations(size: Int) {
+        permutationsListIt = getPermutationsIteratively(size)
+    }
+
+
     //Starts from startLocation, goes to its closest neighbour (first package) and from there,
     //goes to its closest neighbour until the last package. When arrives to the last package,
     //goes to endLocation
@@ -403,7 +427,14 @@ class PackagesViewModelImpl @Inject constructor(
         startTravelTimeArray: IntArray,
         endTravelTimeArray: IntArray
     ): Route {
-        if (route.packages == null) return route
+        if (route.packages.isNullOrEmpty()) return route.copy(id = -1)
+
+        if (startTravelTimeArray.size != route.packages!!.size ||
+            endTravelTimeArray.size != route.packages!!.size ||
+            travelTimeArray.size != route.packages!!.size
+        ) {
+            return route.copy(id = -2)
+        }
 
         val packages = route.packages!!
         var closestNeighbour = packages[0]
@@ -457,7 +488,14 @@ class PackagesViewModelImpl @Inject constructor(
         startDistanceArray: IntArray,
         endDistanceArray: IntArray
     ): Route {
-        if (route.packages == null) return route
+        if (route.packages.isNullOrEmpty()) return route.copy(id = -1)
+
+        if (startDistanceArray.size != route.packages!!.size ||
+            endDistanceArray.size != route.packages!!.size ||
+            distanceArray.size != route.packages!!.size
+        ) {
+            return route.copy(id = -2)
+        }
 
         val packages = route.packages!!
         var closestNeighbour = packages[0]
@@ -515,16 +553,16 @@ class PackagesViewModelImpl @Inject constructor(
 
     private fun getPermutationsRecursively(size: Int): ArrayList<Array<Int>> {
         val array = IntArray(size)
-        permutationsList.clear()
+        permutationsListRec.clear()
         computePermutationsRecursive(size, array.toTypedArray(), 'a')
-        return permutationsList
+        return permutationsListRec
     }
 
     private fun computePermutationsRecursive(
         n: Int, elements: Array<Int>, delimiter: Char
     ) {
         if (n == 1) {
-            permutationsList.add(elements.clone())
+            permutationsListRec.add(elements.clone())
         } else {
             for (i in 0 until n - 1) {
                 computePermutationsRecursive(n - 1, elements, delimiter)

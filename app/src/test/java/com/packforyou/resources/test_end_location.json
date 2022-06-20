@@ -1,0 +1,13 @@
+{
+  "isDelivered": false,
+  "location": {
+    "address": "Carrer Joan de Joanes,10,46630 La Font de la Figuera,Valencia,Spain",
+    "city": "DEFAULT",
+    "latitude": 38.807176,
+    "longitude": -0.880687,
+    "zipCode": 46020
+  },
+  "note": "",
+  "numPackage": 5,
+  "urgency": "NOT_URGENT"
+}

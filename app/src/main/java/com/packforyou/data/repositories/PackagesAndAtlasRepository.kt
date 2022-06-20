@@ -295,7 +295,7 @@ class PackagesAndAtlasRepositoryImpl(
             val oLatLong = getStringLatLongFromLocation(origin)
             val dLatLong = getStringLatLongFromLocation(destination)
 
-            val distanceAndTime = distanceMatrixApiService.getDistance(oLatLong, dLatLong)
+            val distanceAndTime = distanceMatrixApiService.getDistanceAndTime(oLatLong, dLatLong)
 
             val leg = Leg(
                 distanceAndTime.rows[0].elements[0].distance.value,
