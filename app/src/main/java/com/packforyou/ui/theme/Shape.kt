@@ -1,7 +1,7 @@
 package com.packforyou.ui.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Shapes
+import androidx.compose.material3.Shapes
 
 val PackForYouShapes = Shapes(
     small = RoundedCornerShape(percent = 30),

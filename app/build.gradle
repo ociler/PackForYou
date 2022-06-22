@@ -41,8 +41,7 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.1.0'
-        kotlinCompilerVersion '1.6.10'
+        kotlinCompilerExtensionVersion = "1.2.0-alpha08"
     }
     packagingOptions {
         resources {
@@ -73,6 +72,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth:21.0.5'
     implementation 'com.google.firebase:firebase-firestore:24.1.2'
     implementation 'com.google.android.material:material:1.6.1'
+    implementation("androidx.compose.material3:material3:1.0.0-alpha13")
+    implementation("androidx.compose.material3:material3-window-size-class:1.0.0-alpha13")
     implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.1'

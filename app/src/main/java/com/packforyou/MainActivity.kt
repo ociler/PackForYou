@@ -3,28 +3,40 @@ package com.packforyou
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.Divider
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
-import com.google.firebase.firestore.GeoPoint
 import com.google.gson.Gson
 import com.packforyou.data.models.DeliveryMan
 import com.packforyou.data.models.Location
 import com.packforyou.data.models.Package
 import com.packforyou.data.models.Route
-import com.packforyou.ui.PackForYouTheme
+import com.packforyou.ui.theme.PackForYouTheme
 import com.packforyou.ui.atlas.Atlas
 import com.packforyou.ui.atlas.AtlasViewModelImpl
 import com.packforyou.ui.atlas.IAtlasViewModel
+import com.packforyou.ui.home.*
 import com.packforyou.ui.login.ILoginViewModel
 import com.packforyou.ui.login.LoginViewModelImpl
-import com.packforyou.ui.packages.IPackagesViewModel
-import com.packforyou.ui.packages.PackagesViewModelImpl
+import com.packforyou.ui.packages.*
 import dagger.hilt.android.AndroidEntryPoint
-import java.io.FileWriter
+import kotlinx.coroutines.launch
 import java.io.InputStreamReader
-import java.io.PrintWriter
-import java.nio.charset.Charset
 import kotlin.system.measureNanoTime
 import kotlin.system.measureTimeMillis
 
@@ -56,13 +68,13 @@ class MainActivity : ComponentActivity() {
         atlasViewModel =
             ViewModelProvider(this)[AtlasViewModelImpl::class.java]
 
-        var t0:Long = 0
+        var t0: Long = 0
         var t1: Long
 
 
         val mode = "Town" //with this, we will control which situation we want to test
-        val numPckgMode = "10"
-        val usingLocalFiles = false
+        val numPckgMode = "5"
+        val usingLocalFiles = true
         val callingDirectionsAPI = false
 
 
@@ -76,6 +88,12 @@ class MainActivity : ComponentActivity() {
         val deliveryMan =
             DeliveryMan().copy(currentLocation = startLocation, endLocation = endLocation)
 
+
+        setContent {
+            PackForYouTheme {
+                Home(owner = this, route = notOptimizedRoute)
+            }
+        }
 
         packages.forEachIndexed { i, it ->
             it.numPackage = i
@@ -107,7 +125,7 @@ class MainActivity : ComponentActivity() {
         packagesViewModel.observeTravelTimeArray()
             .observe(this) { travelTimeArray ->
 
-                if(!usingLocalFiles) {
+                if (!usingLocalFiles) {
                     t1 = System.currentTimeMillis()
 
                     println("TIME TO GET ARRAYS FROM MATRIX API: ${t1 - t0} ms")
@@ -258,13 +276,6 @@ class MainActivity : ComponentActivity() {
                     }
                     println("Ending point: $endLocation")
                     println("Total distance: ${closestNeighbourDistanceRoute.totalDistance} meters\n\n")
-
-
-                    setContent {
-                        PackForYouTheme {
-                            Atlas(atlasViewModel, notOptimizedRoute)
-                        }
-                    }
                 }
             }
 

@@ -1,12 +1,10 @@
-package com.packforyou.ui
+package com.packforyou.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.darkColors
-import androidx.compose.material.lightColors
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
-import com.packforyou.ui.theme.*
 
 @Composable
 fun PackForYouTheme(
@@ -14,28 +12,26 @@ fun PackForYouTheme(
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
-        colors = if (darkTheme) DarkColors else LightColors,
+        colorScheme = if (darkTheme) DarkColors else LightColors,
         typography = PackForYouTypography,
         shapes = PackForYouShapes,
         content = content
     )
 }
 
-private val LightColors = lightColors(
-    primary = Red700,
-    primaryVariant = Red900,
-    onPrimary = Color.White,
-    secondary = Red700,
-    secondaryVariant = Red900,
-    onSecondary = Color.White,
-    error = Red800
+private val LightColors = lightColorScheme(
+    primary = White,
+    onPrimary = Grey,
+    secondary = Black,
+    onSecondary = Grey,
+    error = Red800,
+    background = White
 )
 
-private val DarkColors = darkColors(
+private val DarkColors = darkColorScheme(
     primary = Red300,
-    primaryVariant = Red700,
-    onPrimary = Color.Black,
+    onPrimary = Black,
     secondary = Red300,
-    onSecondary = Color.Black,
+    onSecondary = Black,
     error = Red200
 )

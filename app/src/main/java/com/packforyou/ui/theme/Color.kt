@@ -30,3 +30,7 @@ val Red900 = Color(0xffc20029)
 
 val Red200 = Color(0xfff297a2)
 val Red300 = Color(0xffea6d7e)
+
+val White = Color(0xffffffff)
+val Black = Color(0xff000000)
+val Grey = Color(0xff222222)
