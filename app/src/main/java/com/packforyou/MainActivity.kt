@@ -60,10 +60,10 @@ class MainActivity : ComponentActivity() {
         var t1: Long
 
 
-        val mode = "Test" //with this, we will control which situation we want to test
-        val numPckgMode = "4"
+        val mode = "Town" //with this, we will control which situation we want to test
+        val numPckgMode = "10"
         val usingLocalFiles = false
-        val callingDirectionsAPI = true
+        val callingDirectionsAPI = false
 
 
         //we have some json files with the locations and packages decoded. We will use them
@@ -1061,17 +1061,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
     private fun restorePackagesFromJson(mode: String): Array<Package> {
         var packages = arrayOf<Package>()
         val gson = Gson()
         val reader: InputStreamReader
 
         when (mode) {
-            "Test4" -> {
-                reader = InputStreamReader(resources.openRawResource(R.raw.test_packages))
-                packages = gson.fromJson(reader, Array<Package>::class.java)
-            }
 
             "Town5" -> {
                 reader = InputStreamReader(resources.openRawResource(R.raw.town_packages5))
@@ -1177,11 +1172,6 @@ class MainActivity : ComponentActivity() {
     private fun restoreStartLocation(mode: String): Location {
         var startLocation = Location()
         when (mode) {
-            "Test" -> {
-                val reader =
-                    InputStreamReader(resources.openRawResource(R.raw.test_start_location))
-                startLocation = Gson().fromJson(reader, Location::class.java)
-            }
 
             "City" -> {
                 val reader =
@@ -1204,11 +1194,6 @@ class MainActivity : ComponentActivity() {
     private fun restoreEndLocation(mode: String): Location {
         var endLocation = Location()
         when (mode) {
-            "Test" -> {
-                val reader =
-                    InputStreamReader(resources.openRawResource(R.raw.test_end_location))
-                endLocation = Gson().fromJson(reader, Location::class.java)
-            }
 
             "City" -> {
                 val reader =
