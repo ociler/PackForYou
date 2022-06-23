@@ -20,9 +20,9 @@ fun PackForYouTheme(
 }
 
 private val LightColors = lightColorScheme(
-    primary = White,
+    primary = Black,
     onPrimary = Grey,
-    secondary = Black,
+    secondary = Grey,
     onSecondary = Grey,
     error = Red800,
     background = White

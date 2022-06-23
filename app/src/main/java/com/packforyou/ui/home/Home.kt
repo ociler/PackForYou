@@ -27,7 +27,11 @@ import com.packforyou.data.models.Route
 import com.packforyou.ui.atlas.Atlas
 import com.packforyou.ui.atlas.AtlasViewModelImpl
 import com.packforyou.ui.atlas.CasetaAtlas
-import com.packforyou.ui.theme.PackForYouTypography
+import com.packforyou.ui.components.DropDownList
+import com.packforyou.ui.theme.Black
+import com.packforyou.ui.theme.CustomExposedDropdownMenu
+import com.packforyou.ui.theme.CustomTextFieldColors
+import com.packforyou.ui.theme.White
 import kotlinx.coroutines.launch
 
 //This will be the main screen. Exists just to be able to use the packages and the map on the same screen
@@ -172,8 +176,8 @@ fun AddPackage() {
 
         },
         properties = DialogProperties(
-            dismissOnBackPress = false,
-            dismissOnClickOutside = false
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true
         )
     )
 }
@@ -243,15 +247,15 @@ fun SetEndLocation() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BodyContent() {
-        Card(
-            modifier = Modifier
-                .fillMaxHeight(.6f)
-                .fillMaxWidth(1f)
-                .padding(horizontal = 20.dp),
-            shape = RoundedCornerShape(40.dp)
-        ) {
-            CasetaAtlas()
-        }
+    Card(
+        modifier = Modifier
+            .fillMaxHeight(.48f)
+            .fillMaxWidth(1f)
+            .padding(top = 10.dp, start = 20.dp, end = 20.dp),
+        shape = RoundedCornerShape(40.dp)
+    ) {
+        CasetaAtlas()
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -263,7 +267,7 @@ fun CompleteDialogContent(
 ) {
     Card(
         modifier = Modifier
-            .fillMaxHeight(.95f)
+            .fillMaxHeight(.96f)
             .fillMaxWidth(1f),
         shape = RoundedCornerShape(40.dp)
     ) {
@@ -315,29 +319,60 @@ private fun TitleAndButton(title: String, dialogState: MutableState<Boolean>) {
 private fun BottomButtons(successButtonText: String, dialogState: MutableState<Boolean>) {
     var directionText by remember { mutableStateOf("") }
     var clientText by remember { mutableStateOf("") }
-    var sendType by remember { mutableStateOf("Hello World") }
 
     Column(
         modifier = Modifier
             .fillMaxWidth(1f)
             .fillMaxWidth(1f)
-            .padding(20.dp),
-        verticalArrangement = Arrangement.Center
+            .padding(horizontal = 30.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.SpaceAround
     ) {
 
         OutlinedTextField(
             value = directionText,
             onValueChange = { directionText = it },
-            label = { Text("Direction") }
+            label = { Text("Direction") },
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Black,
+                unfocusedBorderColor = Black,
+                textColor = Black
+            ),
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Removes content",
+                    modifier = Modifier.clickable {
+                        directionText = ""
+                    }
+                )
+            }
         )
+
+        Spacer(Modifier.height(5.dp))
 
         OutlinedTextField(
             value = clientText,
             onValueChange = { clientText = it },
-            label = { Text("Client") }
+            label = { Text("Client") } ,
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Black,
+                unfocusedBorderColor = Black,
+                textColor = Black
+            ),
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Removes content",
+                    modifier = Modifier.clickable {
+                        clientText = ""
+                    }
+                )
+            }
         )
 
+        Spacer(Modifier.height(5.dp))
 
+        UrgencySpinner() //TODO change style
 
         Button(
             onClick = {
@@ -345,11 +380,68 @@ private fun BottomButtons(successButtonText: String, dialogState: MutableState<B
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
-            shape = RoundedCornerShape(16.dp)
+                .padding(30.dp),
+            shape = RoundedCornerShape(10.dp)
         ) {
-            Text(text = successButtonText, fontSize = 20.sp)
+            Text(
+                text = successButtonText,
+                fontSize = 18.sp,
+                modifier = Modifier.padding(vertical = 5.dp),
+                color = White
+            )
         }
 
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UrgencySpinner() {
+
+    val urgencyOptions = listOf(
+        "Very Urgent",
+        "Urgent",
+        "Not Urgent"
+    )
+    var expanded by remember { mutableStateOf(false) }
+    var selectedOptionText by remember { mutableStateOf(urgencyOptions[0]) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = {
+            expanded = !expanded
+        },
+        modifier = Modifier.padding(top = 5.dp)
+    ) {
+        TextField(
+            readOnly = true,
+            value = selectedOptionText,
+            onValueChange = { },
+            label = { Text("Urgency") },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(
+                    expanded = expanded
+                )
+            },
+            colors = CustomExposedDropdownMenu()
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = {
+                expanded = false
+            },
+        ) {
+            urgencyOptions.forEach { selectionOption ->
+                DropdownMenuItem(
+                    onClick = {
+                        selectedOptionText = selectionOption
+                        expanded = false
+                    },
+                    text = {
+                        Text(text = selectionOption)
+                    }
+                )
+            }
+        }
     }
 }
