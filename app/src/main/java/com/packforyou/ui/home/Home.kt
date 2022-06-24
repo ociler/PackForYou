@@ -6,12 +6,22 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Scaffold
+import androidx.compose.material.*
+import androidx.compose.material.Shapes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,15 +33,16 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.packforyou.data.models.Route
 import com.packforyou.ui.atlas.Atlas
 import com.packforyou.ui.atlas.AtlasViewModelImpl
 import com.packforyou.ui.atlas.CasetaAtlas
 import com.packforyou.ui.components.DropDownList
-import com.packforyou.ui.theme.Black
-import com.packforyou.ui.theme.CustomExposedDropdownMenu
-import com.packforyou.ui.theme.CustomTextFieldColors
-import com.packforyou.ui.theme.White
+import com.packforyou.ui.packages.IPackagesViewModel
+import com.packforyou.ui.packages.Packages
+import com.packforyou.ui.packages.PackagesViewModelImpl
+import com.packforyou.ui.theme.*
 import kotlinx.coroutines.launch
 
 //This will be the main screen. Exists just to be able to use the packages and the map on the same screen
@@ -40,12 +51,17 @@ lateinit var addPackageState: MutableState<Boolean>
 lateinit var editPackageState: MutableState<Boolean>
 lateinit var setEndLocationState: MutableState<Boolean>
 
+
 lateinit var actionTitle: String
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Home(owner: ViewModelStoreOwner, route: Route) {
-    val scaffoldState = rememberScaffoldState()
+    val sheetState = rememberBottomSheetScaffoldState()
     val scope = rememberCoroutineScope()
+
+    val packagesViewModel =
+        ViewModelProvider(owner)[PackagesViewModelImpl::class.java]
 
     val atlasViewModel =
         ViewModelProvider(owner)[AtlasViewModelImpl::class.java]
@@ -63,22 +79,20 @@ fun Home(owner: ViewModelStoreOwner, route: Route) {
         mutableStateOf(false)
     }
 
-    Scaffold(
-        scaffoldState = scaffoldState,
+    BottomSheetScaffold(
+        scaffoldState = sheetState,
         topBar = {
             AppBar(
                 onNavigationIconClick = {
                     scope.launch {
-                        scaffoldState.drawerState.open()
+                        sheetState.drawerState.open()
                     }
                 }
             )
         },
-        drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
+        drawerGesturesEnabled = sheetState.drawerState.isOpen,
         drawerContent = {
-
-
-            DrawerHeader(scaffoldState)
+            DrawerHeader(sheetState)
             DrawerBody(
                 items = listOf(
                     MenuItem(
@@ -115,7 +129,7 @@ fun Home(owner: ViewModelStoreOwner, route: Route) {
                     }
 
                     scope.launch {
-                        scaffoldState.drawerState.close()
+                        sheetState.drawerState.close()
                     }
                 }
             )
@@ -131,20 +145,25 @@ fun Home(owner: ViewModelStoreOwner, route: Route) {
                 )
             }
         },
-        content = { padding ->
-            Box(
-                modifier = Modifier
-                    .padding(padding)
-                    .fillMaxSize()
-            ) {
-                Atlas(
-                    atlasViewModel = atlasViewModel,
-                    route = route
-                )
-            }
-        }
+        sheetContent = {
+            Packages(packagesViewModel = packagesViewModel)
+        },
+        sheetShape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
+        modifier = Modifier.background(color = Color.Transparent)
 
-    )
+    ) { padding ->
+        Box(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+        ) {
+            Atlas(
+                atlasViewModel = atlasViewModel,
+                route = route
+            )
+        }
+    }
+
 
     if (addPackageState.value) {
         AddPackage()
@@ -307,7 +326,7 @@ private fun TitleAndButton(title: String, dialogState: MutableState<Boolean>) {
             Text(
                 text = title,
                 fontSize = 18.sp,
-                style = MaterialTheme.typography.displayMedium,
+                style = PackForYouTypography.displayMedium,
                 modifier = Modifier.padding(start = 58.dp)
             )
 
@@ -353,7 +372,7 @@ private fun BottomButtons(successButtonText: String, dialogState: MutableState<B
         OutlinedTextField(
             value = clientText,
             onValueChange = { clientText = it },
-            label = { Text("Client") } ,
+            label = { Text("Client") },
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 focusedBorderColor = Black,
                 unfocusedBorderColor = Black,
@@ -444,4 +463,15 @@ fun UrgencySpinner() {
             }
         }
     }
+}
+
+
+@ExperimentalMaterialApi
+@Composable
+fun HomeScreen() {
+    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
+        bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
+    )
+    val coroutineScope = rememberCoroutineScope()
+
 }

@@ -11,5 +11,6 @@ data class Package(
     var client: Client? = null,
     var location: Location = Location(),
     var deliveryMan: DeliveryMan? = null,
-    var message: Message? = null
+    var message: Message? = null,
+    var state: PackageState = PackageState.MESSAGE_NOT_SENT
 )

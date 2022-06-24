@@ -12,13 +12,13 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.tasks.await
 
 interface IFirebaseRemoteDatabase {
-    fun getAllDeliveryMen(): Flow<State<List<DeliveryMan>>>
-    fun getDeliveryManPackages(deliveryManId: String): Flow<State<List<Package>>>
+    fun getAllDeliveryMen(): Flow<CallbackState<List<DeliveryMan>>>
+    fun getDeliveryManPackages(deliveryManId: String): Flow<CallbackState<List<Package>>>
 
-    fun addDeliveryMan(deliveryMan: DeliveryMan): Flow<State<DocumentReference>>
-    fun addPackage(packge: Package): Flow<State<DocumentReference>>
-    fun addLocation(location: Location): Flow<State<DocumentReference>>
-    fun addClient(client: Client): Flow<State<DocumentReference>>
+    fun addDeliveryMan(deliveryMan: DeliveryMan): Flow<CallbackState<DocumentReference>>
+    fun addPackage(packge: Package): Flow<CallbackState<DocumentReference>>
+    fun addLocation(location: Location): Flow<CallbackState<DocumentReference>>
+    fun addClient(client: Client): Flow<CallbackState<DocumentReference>>
 }
 
 val DELIVERYMEN_REF = "deliveryMen"
@@ -37,94 +37,94 @@ class FirebaseRemoteDatabaseImpl(
     private val locationCollection: CollectionReference = rootRef.collection(LOCATION_REF)
     private val clientCollection: CollectionReference = rootRef.collection(CLIENT_REF)
 
-    override fun getAllDeliveryMen(): Flow<State<List<DeliveryMan>>> {
+    override fun getAllDeliveryMen(): Flow<CallbackState<List<DeliveryMan>>> {
         return flow {
-            emit(State.loading())
+            emit(CallbackState.loading())
 
             val snapshot = deliveryMenCollection.get().await()
             val deliveryMen = snapshot.toObjects(DeliveryMan::class.java)
 
             // Emit success state with data
-            emit(State.success(deliveryMen))
+            emit(CallbackState.success(deliveryMen))
 
         }.catch {
             // If exception is thrown, emit failed state along with message.
-            emit(State.failed(it.message.toString()))
+            emit(CallbackState.failed(it.message.toString()))
         }.flowOn(Dispatchers.IO)
     }
 
 
-    override fun addDeliveryMan(deliveryMan: DeliveryMan): Flow<State<DocumentReference>> {
+    override fun addDeliveryMan(deliveryMan: DeliveryMan): Flow<CallbackState<DocumentReference>> {
         return flow {
-            emit(State.loading())
+            emit(CallbackState.loading())
 
             val deliveryManRef = deliveryMenCollection.document(deliveryMan.id)
             deliveryManRef.set(deliveryMan)
             
-            emit(State.success(deliveryManRef))
+            emit(CallbackState.success(deliveryManRef))
 
         }.catch {
-            emit(State.failed(it.message.toString()))
+            emit(CallbackState.failed(it.message.toString()))
         }.flowOn(Dispatchers.IO)
     }
 
 
-    override fun getDeliveryManPackages(deliveryManId: String): Flow<State<List<Package>>> {
+    override fun getDeliveryManPackages(deliveryManId: String): Flow<CallbackState<List<Package>>> {
         return flow {
-            emit(State.loading())
+            emit(CallbackState.loading())
 
             val snapshot = packagesCollection.whereEqualTo("deliveryMan", deliveryManId).get().await()
             val packages = snapshot.toObjects(Package::class.java).toList()
 
             // Emit success state with data
             if (packages.isNotEmpty()) {
-                emit(State.success(packages))
+                emit(CallbackState.success(packages))
             }
 
         }.catch {
-            emit(State.failed(it.message.toString()))
+            emit(CallbackState.failed(it.message.toString()))
         }.flowOn(Dispatchers.IO)
     }
 
-    override fun addPackage(packge: Package): Flow<State<DocumentReference>> {
+    override fun addPackage(packge: Package): Flow<CallbackState<DocumentReference>> {
         return flow {
-            emit(State.loading())
+            emit(CallbackState.loading())
 
             val packageRef = packagesCollection.document(packge.numPackage.toString())
             packageRef.set(packge).await()
 
-            emit(State.success(packageRef))
+            emit(CallbackState.success(packageRef))
 
         }.catch {
-            emit(State.failed(it.message.toString()))
+            emit(CallbackState.failed(it.message.toString()))
         }.flowOn(Dispatchers.IO)
     }
 
-    override fun addLocation(location: Location): Flow<State<DocumentReference>> {
+    override fun addLocation(location: Location): Flow<CallbackState<DocumentReference>> {
         return flow {
-            emit(State.loading())
+            emit(CallbackState.loading())
 
             val locationRef = locationCollection.document(location.address)
             locationRef.set(location).await()
 
-            emit(State.success(locationRef))
+            emit(CallbackState.success(locationRef))
 
         }.catch {
-            emit(State.failed(it.message.toString()))
+            emit(CallbackState.failed(it.message.toString()))
         }.flowOn(Dispatchers.IO)
     }
 
-    override fun addClient(client: Client): Flow<State<DocumentReference>> {
+    override fun addClient(client: Client): Flow<CallbackState<DocumentReference>> {
         return flow {
-            emit(State.loading())
+            emit(CallbackState.loading())
 
             val clientRef = clientCollection.document(client.id)
             clientRef.set(client).await()
 
-            emit(State.success(clientRef))
+            emit(CallbackState.success(clientRef))
 
         }.catch {
-            emit(State.failed(it.message.toString()))
+            emit(CallbackState.failed(it.message.toString()))
         }.flowOn(Dispatchers.IO)
     }
 

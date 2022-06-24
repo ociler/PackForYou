@@ -10,6 +10,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.packforyou.R
+import com.packforyou.ui.theme.PackForYouTypography
 
 @Composable
 fun AppBar(
@@ -22,7 +23,7 @@ fun AppBar(
                     id = R.string.app_name
                 ),
                 textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.displayMedium,
+                style = PackForYouTypography.displayMedium,
                 fontSize = 25.sp
             )
         },

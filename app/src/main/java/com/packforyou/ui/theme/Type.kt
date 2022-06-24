@@ -47,11 +47,11 @@ val PackForYouTypography = Typography(
     displayMedium = TextStyle(
         fontFamily = Inter,
         fontWeight = FontWeight.Normal,
-        fontSize = 15.sp
+        fontSize = 8.sp
     ),
     bodyMedium = TextStyle(
         fontFamily = Inter,
         fontWeight = FontWeight.Normal,
         fontSize = 15.sp
-    ),
+    )
 )

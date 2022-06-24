@@ -21,11 +21,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.packforyou.R
+import com.packforyou.ui.theme.PackForYouTypography
 import kotlinx.coroutines.launch
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun DrawerHeader(scaffoldState: ScaffoldState) {
+fun DrawerHeader(scaffoldState: BottomSheetScaffoldState) {
     val scope = rememberCoroutineScope()
     Box(
         modifier = Modifier
@@ -50,7 +52,7 @@ fun DrawerHeader(scaffoldState: ScaffoldState) {
             text = "PackForYou",
             fontSize = 25.sp,
             textAlign = TextAlign.Right,
-            style = MaterialTheme.typography.displayMedium,
+            style = PackForYouTypography.displayMedium,
             modifier = Modifier
                 .padding(end = 20.dp)
                 .align(Alignment.CenterEnd)

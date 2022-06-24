@@ -3,7 +3,7 @@ package com.packforyou.data.repositories
 import com.packforyou.data.models.DeliveryMan
 import com.packforyou.data.dataSources.IFirebaseRemoteDatabase
 import com.packforyou.data.models.Client
-import com.packforyou.data.models.State
+import com.packforyou.data.models.CallbackState
 
 
 interface IUsersRepository {
@@ -23,15 +23,15 @@ class UsersRepositoryImpl(
 
         dataSource.getAllDeliveryMen().collect { state->
             when (state) {
-                is State.Loading -> {
+                is CallbackState.Loading -> {
                     println("Wait! It's loading")
                 }
 
-                is State.Success -> {
+                is CallbackState.Success -> {
                    deliveryMen = state.data
                 }
 
-                is State.Failed -> println("Failed! ${state.message}")
+                is CallbackState.Failed -> println("Failed! ${state.message}")
             }
         }
         return deliveryMen
@@ -40,14 +40,14 @@ class UsersRepositoryImpl(
     override suspend fun addDeliveryMan(deliveryMan: DeliveryMan) {
         dataSource.addDeliveryMan(deliveryMan).collect { state ->
             when (state) {
-                is State.Loading -> {
+                is CallbackState.Loading -> {
                 }
 
-                is State.Success -> {
+                is CallbackState.Success -> {
                     println("DeliveryMan Added")
                 }
 
-                is State.Failed -> {
+                is CallbackState.Failed -> {
                     println("Failed! ${state.message}")
                 }
             }
@@ -57,14 +57,14 @@ class UsersRepositoryImpl(
     override suspend fun addClient(client: Client) {
         dataSource.addClient(client).collect { state ->
             when (state) {
-                is State.Loading -> {
+                is CallbackState.Loading -> {
                 }
 
-                is State.Success -> {
+                is CallbackState.Success -> {
                     println("Client Added")
                 }
 
-                is State.Failed -> {
+                is CallbackState.Failed -> {
                     println("Failed! ${state.message}")
                 }
             }

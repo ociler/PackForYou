@@ -70,15 +70,15 @@ class PackagesAndAtlasRepositoryImpl(
 
         dataSource.getDeliveryManPackages(deliveryManId).collect { state ->
             when (state) {
-                is State.Loading -> {
+                is CallbackState.Loading -> {
                     println("Wait! It's loading")
                 }
 
-                is State.Success -> {
+                is CallbackState.Success -> {
                     packages = state.data
                 }
 
-                is State.Failed -> println("Failed! ${state.message}")
+                is CallbackState.Failed -> println("Failed! ${state.message}")
             }
         }
         return packages
@@ -111,14 +111,14 @@ class PackagesAndAtlasRepositoryImpl(
     override suspend fun addPackage(packge: Package) {
         dataSource.addPackage(packge).collect { state ->
             when (state) {
-                is State.Loading -> {
+                is CallbackState.Loading -> {
                 }
 
-                is State.Success -> {
+                is CallbackState.Success -> {
                     println("Package Added")
                 }
 
-                is State.Failed -> {
+                is CallbackState.Failed -> {
                     println("Failed! ${state.message}")
                 }
             }
@@ -195,10 +195,10 @@ class PackagesAndAtlasRepositoryImpl(
 
         getLeg(originPackage.location, destinationPackage.location).collect { state ->
             when (state) {
-                is State.Loading -> {
+                is CallbackState.Loading -> {
                 }
 
-                is State.Success -> {
+                is CallbackState.Success -> {
                     //here we already have the data
                     travelTimeArray[originPackage.numPackage][destinationPackage.numPackage] =
                         state.data.duration!!
@@ -215,7 +215,7 @@ class PackagesAndAtlasRepositoryImpl(
 
                 }
 
-                is State.Failed -> {
+                is CallbackState.Failed -> {
                     println("Failed! ${state.message}")
                 }
             }
@@ -227,10 +227,10 @@ class PackagesAndAtlasRepositoryImpl(
 
         getLeg(originLocation, destinationPackage.location).collect { state ->
             when (state) {
-                is State.Loading -> {
+                is CallbackState.Loading -> {
                 }
 
-                is State.Success -> {
+                is CallbackState.Success -> {
                     //we already have our data
                     startTravelTimeArray[destinationPackage.numPackage] = state.data.duration!!
                     startDistanceArray[destinationPackage.numPackage] = state.data.distance!!
@@ -249,7 +249,7 @@ class PackagesAndAtlasRepositoryImpl(
 
                 }
 
-                is State.Failed -> {
+                is CallbackState.Failed -> {
                     println("Failed! ${state.message}")
                 }
             }
@@ -261,10 +261,10 @@ class PackagesAndAtlasRepositoryImpl(
     private suspend fun enqueueEndLeg(originPackage: Package, destinationLocation: Location) {
         getLeg(originPackage.location, destinationLocation).collect { state ->
             when (state) {
-                is State.Loading -> {
+                is CallbackState.Loading -> {
                 }
 
-                is State.Success -> {
+                is CallbackState.Success -> {
                     //we already have our data
                     endTravelTimeArray[originPackage.numPackage] = state.data.duration!!
                     endDistanceArray[originPackage.numPackage] = state.data.distance!!
@@ -280,7 +280,7 @@ class PackagesAndAtlasRepositoryImpl(
 
                 }
 
-                is State.Failed -> {
+                is CallbackState.Failed -> {
                     println("Failed! ${state.message}")
                 }
             }
@@ -288,9 +288,9 @@ class PackagesAndAtlasRepositoryImpl(
         }
     }
 
-    private suspend fun getLeg(origin: Location, destination: Location): Flow<State<Leg>> {
+    private suspend fun getLeg(origin: Location, destination: Location): Flow<CallbackState<Leg>> {
         return flow {
-            emit(State.loading())
+            emit(CallbackState.loading())
 
             val oLatLong = getStringLatLongFromLocation(origin)
             val dLatLong = getStringLatLongFromLocation(destination)
@@ -301,11 +301,11 @@ class PackagesAndAtlasRepositoryImpl(
                 distanceAndTime.rows[0].elements[0].distance.value,
                 distanceAndTime.rows[0].elements[0].duration.value
             )
-            emit(State.success(leg))
+            emit(CallbackState.success(leg))
 
         }.catch {
             // If exception is thrown, emit failed state along with message.
-            emit(State.failed(it.message.toString()))
+            emit(CallbackState.failed(it.message.toString()))
         }.flowOn(Dispatchers.IO)
     }
 

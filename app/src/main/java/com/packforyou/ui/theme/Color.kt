@@ -34,3 +34,8 @@ val Red300 = Color(0xffea6d7e)
 val White = Color(0xffffffff)
 val Black = Color(0xff000000)
 val Grey = Color(0xff222222)
+
+val NotConfirmed = Color(0xffababab)
+val Cancelled = Color(0xffeb0000)
+val NewLocation = Color(0xffe6eb00)
+val Confirmed = Color(0xff00eb3c)
