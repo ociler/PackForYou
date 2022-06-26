@@ -101,7 +101,6 @@ fun DrawerFooter(modifier: Modifier = Modifier) {
             }
             .padding(12.dp)
     ) {
-
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier

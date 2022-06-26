@@ -25,6 +25,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -134,22 +135,19 @@ fun Home(owner: ViewModelStoreOwner, route: Route) {
                 }
             )
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .wrapContentSize(align = Alignment.BottomCenter)
-                    .padding(8.dp)
-            ) {
-                DrawerFooter(
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+            Spacer(Modifier.weight(1f))
+            DrawerFooter()
         },
         sheetContent = {
             Packages(packagesViewModel = packagesViewModel)
         },
         sheetShape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
-        modifier = Modifier.background(color = Color.Transparent)
+        sheetElevation = 10.dp,
+        sheetPeekHeight = 70.dp,
+        backgroundColor = Color.Transparent,
+        modifier = Modifier
+            .fillMaxHeight()
+            .clip(RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp))
 
     ) { padding ->
         Box(
@@ -341,8 +339,6 @@ private fun BottomButtons(successButtonText: String, dialogState: MutableState<B
 
     Column(
         modifier = Modifier
-            .fillMaxWidth(1f)
-            .fillMaxWidth(1f)
             .padding(horizontal = 30.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.SpaceAround
     ) {

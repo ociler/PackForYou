@@ -3,12 +3,22 @@ package com.packforyou.ui.packages
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
+import androidx.compose.material.FractionalThreshold
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -19,74 +29,117 @@ import com.packforyou.data.models.*
 import com.packforyou.ui.theme.*
 
 
-@Preview
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun PackageItemPreview() {
+fun PackageItem(pckge: Package) {
+    val dismissState = rememberDismissState(
+        initialValue = DismissValue.Default,
+        confirmStateChange = {
+            if (it == DismissValue.DismissedToStart) {
+                pckge.isDelivered = true
+            } else if (it == DismissValue.DismissedToEnd) {
+                //TODO remove package
+                pckge.isDelivered = false
+            }
+            true
+        }
+    )
     Column(
-        modifier = Modifier
-            .fillMaxHeight()
-            .padding(horizontal = 25.dp),
-        verticalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.padding(horizontal = 5.dp)
     ) {
-        PackageItem(
-            pckge = Package(
-                location = Location(
-                    address = "Avd Universitat 44"
-                ),
-                client = Client(name = "Esther Frasquet"),
-                urgency = Urgency.URGENT,
-                state = PackageState.NEW_LOCATION
-            )
-        )
+        SwipeToDismiss(
+            state = dismissState,
+            dismissThresholds = { FractionalThreshold(0.4f) },
+            background = {
+                val color = when (dismissState.dismissDirection) {
+                    DismissDirection.StartToEnd, DismissDirection.EndToStart -> Black
+                    null -> Color.Transparent
+                }
 
-        PackageItem(
-            pckge = Package(
-                location = Location(
-                    address = "Carrer Arquitecte Arnau 30, Valencia"
-                ),
-                client = Client(name = "Esther Frasquet"),
-                note = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown.",
-                state = PackageState.CONFIRMED
-            )
-        )
+                val direction = dismissState.dismissDirection
 
-        PackageItem(
-            pckge = Package(
-                location = Location(
-                    address = "Avd Universitat 44"
-                ),
-                client = Client(name = "Esther Frasquet"),
-                state = PackageState.POSTPONED_DELIVERY
-            )
-        )
+                if (direction == DismissDirection.StartToEnd) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(color)
+                            .padding(8.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .padding(start = 20.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_delete),
+                                contentDescription = "Deletes the package",
+                                tint = Color.White,
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .size(42.dp)
+                            )
+                        }
 
-        PackageItem(
-            pckge = Package(
-                location = Location(
-                    address = "Avd Universitat 44"
-                ),
-                client = Client(name = "Esther Frasquet"),
-                urgency = Urgency.VERY_URGENT,
-                state = PackageState.NOT_CONFIRMED
-            )
-        )
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(color)
+                            .padding(8.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .padding(end = 20.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_mark_as_delivered),
+                                contentDescription = "Marks a package as delivered",
+                                tint = Color.White,
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .size(42.dp),
+                            )
+
+                        }
+                    }
+                }
+            },
+            modifier = Modifier
+                .background(Color.Transparent)
+                .wrapContentWidth()
+
+        ) {
+            PackageCard(pckge = pckge)
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        StateIcon(state = pckge.state)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PackageItem(pckge: Package) {
-    Column {
+fun PackageCard(pckge: Package) {
+    Surface(
+        elevation = 10.dp,
+        color = White, shape = RoundedCornerShape(25.dp)
+    ) {
         Card(
             shape = RoundedCornerShape(25.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
-            colors = CardDefaults.cardColors(containerColor = White)
+            colors = CardDefaults.cardColors(containerColor = White),
 
-        ) {
-            Column(
-                Modifier.padding(15.dp)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(
+                Modifier
+                    .padding(15.dp)
+                    .wrapContentSize()
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
@@ -107,13 +160,14 @@ fun PackageItem(pckge: Package) {
                     UrgencyIcon(
                         urgency = pckge.urgency
                     )
-
                 }
-                if (!pckge.note.isNullOrBlank()) {
-
+                if (!pckge.note.isNullOrBlank()) { //TODO correct the little card under the card.
+                    // idk why because of this block of code this little card appears always.
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_package_note),
                             "Package note"
@@ -131,10 +185,6 @@ fun PackageItem(pckge: Package) {
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        StateIcon(state = pckge.state)
     }
 }
 
