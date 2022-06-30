@@ -45,7 +45,7 @@ fun PackageItem(pckge: Package) {
         }
     )
     Column(
-        modifier = Modifier.padding(horizontal = 5.dp)
+        modifier = Modifier.padding(horizontal = 15.dp)
     ) {
         SwipeToDismiss(
             state = dismissState,
@@ -58,51 +58,54 @@ fun PackageItem(pckge: Package) {
 
                 val direction = dismissState.dismissDirection
 
-                if (direction == DismissDirection.StartToEnd) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(color)
-                            .padding(8.dp)
-                    ) {
-                        Column(
+                Surface(shape = RoundedCornerShape(25.dp)) {
+                    if (direction == DismissDirection.StartToEnd) {
+                        Box(
                             modifier = Modifier
-                                .align(Alignment.CenterStart)
-                                .padding(start = 20.dp)
+                                .fillMaxSize()
+                                .background(color)
+                                .padding(20.dp)
                         ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_delete),
-                                contentDescription = "Deletes the package",
-                                tint = Color.White,
+                            Column(
                                 modifier = Modifier
-                                    .align(Alignment.CenterHorizontally)
-                                    .size(42.dp)
-                            )
+                                    .align(Alignment.CenterStart)
+                                    .padding(end = 20.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_mark_as_delivered),
+                                    contentDescription = "Marks a package as delivered",
+                                    tint = Color.White,
+                                    modifier = Modifier
+                                        .align(Alignment.CenterHorizontally)
+                                        .size(32.dp),
+                                )
+
+                            }
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(color)
+                                .padding(20.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .align(Alignment.CenterEnd)
+                                    .padding(start = 20.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_delete),
+                                    contentDescription = "Deletes the package",
+                                    tint = Color.White,
+                                    modifier = Modifier
+                                        .align(Alignment.CenterHorizontally)
+                                        .size(32.dp)
+                                )
+                            }
+
                         }
 
-                    }
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(color)
-                            .padding(8.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .align(Alignment.CenterEnd)
-                                .padding(end = 20.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_mark_as_delivered),
-                                contentDescription = "Marks a package as delivered",
-                                tint = Color.White,
-                                modifier = Modifier
-                                    .align(Alignment.CenterHorizontally)
-                                    .size(42.dp),
-                            )
-
-                        }
                     }
                 }
             },
@@ -123,15 +126,20 @@ fun PackageItem(pckge: Package) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PackageCard(pckge: Package) {
+
+    val color = if (pckge.state == PackageState.POSTPONED_DELIVERY)
+        PostponedCard
+    else
+        White
+
     Surface(
         elevation = 10.dp,
-        color = White, shape = RoundedCornerShape(25.dp)
+        color = color, shape = RoundedCornerShape(25.dp)
     ) {
         Card(
             shape = RoundedCornerShape(25.dp),
-            colors = CardDefaults.cardColors(containerColor = White),
-
-            ) {
+            colors = CardDefaults.cardColors(containerColor = color)
+        ) {
             Column(
                 Modifier
                     .padding(15.dp)
@@ -155,7 +163,7 @@ fun PackageCard(pckge: Package) {
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(30.dp))
+                    Spacer(modifier = Modifier.width(15.dp))
 
                     UrgencyIcon(
                         urgency = pckge.urgency
@@ -195,8 +203,8 @@ fun UrgencyIcon(urgency: Urgency?, modifier: Modifier = Modifier) {
         Urgency.VERY_URGENT -> "Urgent Delivery"
         else -> "Standard Delivery"
     }
-    Box(
-        Modifier
+    Box(modifier =
+        modifier
             .clip(RoundedCornerShape(30.dp))
             .background(Color.Black)
     ) {

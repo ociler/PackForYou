@@ -1,36 +1,36 @@
 package com.packforyou.ui.packages;
 
-import android.annotation.SuppressLint
-import android.widget.Space
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PaintingStyle.Companion.Stroke
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.maps.android.compose.Circle
 import com.packforyou.R
 import com.packforyou.data.models.*
 import com.packforyou.ui.theme.Black
-import com.packforyou.ui.theme.NotConfirmed
 import com.packforyou.ui.theme.PackForYouTypography
 import com.packforyou.ui.theme.White
+import androidx.compose.ui.graphics.vector.VectorProperty.*
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.Dp
 
 @Composable
 fun Packages(
@@ -40,7 +40,7 @@ fun Packages(
     val packages = listOf(
         Package(
             location = Location(
-                address = "Avd Universitat 44"
+                address = "Avd Universitat 44 Valencia Espanya"
             ),
             client = Client(name = "Esther Frasquet"),
             urgency = Urgency.URGENT,
@@ -84,14 +84,13 @@ fun Packages(
         )
     )
 
-    Column {
+    Column(Modifier.fillMaxHeight(.9f)) {
 
         Column(
             Modifier
                 .padding(horizontal = 20.dp)
-                .weight(1f),
-
-            ) {
+                .weight(1f)
+        ) {
 
             Divider(
                 thickness = 5.dp,
@@ -99,7 +98,7 @@ fun Packages(
                 modifier = Modifier
                     .padding(
                         start = 60.dp, end = 60.dp,
-                        top = 20.dp, bottom = 45.dp
+                        top = 20.dp, bottom = 22.dp
                     )
                     .clip(RoundedCornerShape(50.dp))
             )
@@ -112,14 +111,65 @@ fun Packages(
                 item {
                     FilterButton()
                 }
-                items(packages) { pckge ->
-                    PackageItem(pckge = pckge)
-                    Spacer(modifier = Modifier.height(25.dp))
+
+                item {
+
+                    Box {
+                        Column {
+                            packages.forEachIndexed { index, pckge ->
+
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Canvas(
+                                        modifier = Modifier.size(10.dp),
+                                        onDraw = {
+                                            drawCircle(color = Black)
+                                        }
+                                    )
+
+                                    Text(
+                                        text = "REF ${pckge.numPackage}",
+                                        style = PackForYouTypography.displayLarge,
+                                        modifier = Modifier.padding(start = 5.dp)
+                                    )
+                                }
+
+                                Spacer(Modifier.width(10.dp))
+
+                                Column {
+                                    Spacer(Modifier.height(15.dp))
+
+                                    PackageItem(pckge = pckge)
+
+                                    Spacer(modifier = Modifier.height(35.dp))
+                                }
+                            }
+                        }
+
+                        //We are drawing the line taking into account the list height
+                        Canvas(
+                            modifier = Modifier
+                                .height(50.dp)
+                        ) {
+                            val height = size.height
+
+                            drawLine(
+                                start = Offset(x = 13f, y = 45f),
+                                end = Offset(x = 13f, y = height + 5f),
+                                color = Color.Black,
+                                strokeWidth = 6f,
+                                pathEffect = PathEffect.dashPathEffect(
+                                    floatArrayOf(30f, 20f), phase = 0f
+                                )
+                            )
+                        }
+
+                    }
                 }
+
             }
         }
 
-        StartRouteButton()
+        StartRouteRectangularButton()
     }
 }
 
@@ -148,7 +198,7 @@ fun FilterButton() {
 }
 
 @Composable
-fun StartRouteButton(){
+fun StartRouteRectangularButton() {
     Button(
         onClick = {
             //TODO start route

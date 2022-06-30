@@ -50,9 +50,8 @@ fun DrawerHeader(scaffoldState: BottomSheetScaffoldState) {
 
         Text(
             text = "PackForYou",
-            fontSize = 25.sp,
             textAlign = TextAlign.Right,
-            style = PackForYouTypography.displayMedium,
+            style = PackForYouTypography.headlineMedium,
             modifier = Modifier
                 .padding(end = 20.dp)
                 .align(Alignment.CenterEnd)

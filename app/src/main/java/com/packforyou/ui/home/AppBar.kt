@@ -10,7 +10,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.packforyou.R
+import com.packforyou.ui.theme.Black
 import com.packforyou.ui.theme.PackForYouTypography
+import com.packforyou.ui.theme.White
 
 @Composable
 fun AppBar(
@@ -23,15 +25,15 @@ fun AppBar(
                     id = R.string.app_name
                 ),
                 textAlign = TextAlign.Center,
-                style = PackForYouTypography.displayMedium,
-                fontSize = 25.sp
+                style = PackForYouTypography.headlineMedium
             )
         },
         actions = {
             IconButton(onClick = { /* doSomething() */ }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_delivered_packages),
-                    contentDescription = "Delivered icon"
+                    contentDescription = "Delivered icon",
+                    tint = Black
                 )
             }
         },
@@ -42,7 +44,8 @@ fun AppBar(
                     contentDescription = "Toggle drawer"
                 )
             }
-        }
+        },
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = White)
     )
 }
 

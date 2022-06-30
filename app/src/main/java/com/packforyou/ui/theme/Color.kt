@@ -39,3 +39,5 @@ val NotConfirmed = Color(0xffababab)
 val Cancelled = Color(0xffeb0000)
 val NewLocation = Color(0xffe6eb00)
 val Confirmed = Color(0xff00eb3c)
+
+val PostponedCard = Color(0xFFFFE4E4)

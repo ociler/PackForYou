@@ -7,18 +7,17 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.Shapes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
@@ -28,21 +27,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.packforyou.R
 import com.packforyou.data.models.Route
 import com.packforyou.ui.atlas.Atlas
 import com.packforyou.ui.atlas.AtlasViewModelImpl
 import com.packforyou.ui.atlas.CasetaAtlas
-import com.packforyou.ui.components.DropDownList
-import com.packforyou.ui.packages.IPackagesViewModel
 import com.packforyou.ui.packages.Packages
 import com.packforyou.ui.packages.PackagesViewModelImpl
+import com.packforyou.ui.packages.StartRouteRectangularButton
 import com.packforyou.ui.theme.*
 import kotlinx.coroutines.launch
 
@@ -147,7 +146,6 @@ fun Home(owner: ViewModelStoreOwner, route: Route) {
         backgroundColor = Color.Transparent,
         modifier = Modifier
             .fillMaxHeight()
-            .clip(RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp))
 
     ) { padding ->
         Box(
@@ -155,10 +153,22 @@ fun Home(owner: ViewModelStoreOwner, route: Route) {
                 .padding(padding)
                 .fillMaxSize()
         ) {
-            Atlas(
-                atlasViewModel = atlasViewModel,
-                route = route
-            )
+            Box(Modifier.fillMaxSize()) {
+                Atlas(
+                    atlasViewModel = atlasViewModel,
+                    route = route
+                )
+                Column {
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    StartRouteRoundedButton(
+                        modifier = Modifier.padding(
+                            start = 15.dp,
+                            bottom = 10.dp
+                        )
+                    )
+                }
+            }
         }
     }
 
@@ -470,4 +480,43 @@ fun HomeScreen() {
     )
     val coroutineScope = rememberCoroutineScope()
 
+}
+
+@Composable
+fun StartRouteRoundedButton(modifier: Modifier = Modifier) {
+    Surface(
+        shape = RoundedCornerShape(10.dp),
+        color = Black,
+        modifier = modifier
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .clickable {
+                    //TODO start route
+                    println("Starting route")
+                }
+.padding(vertical = 5.dp, horizontal = 10.dp)
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Start Route",
+                    color = White,
+                    style = PackForYouTypography.bodyMedium,
+                    fontSize = 20.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Icon(
+                painter = painterResource(id = R.drawable.ic_navigation),
+                contentDescription = "Starts the navigation",
+                tint = White,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+    }
 }

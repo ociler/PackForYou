@@ -49,9 +49,20 @@ val PackForYouTypography = Typography(
         fontWeight = FontWeight.Normal,
         fontSize = 8.sp
     ),
+    displayLarge = TextStyle(
+        fontFamily = Inter,
+        fontWeight = FontWeight.Normal,
+        fontSize = 18.sp
+    ),
     bodyMedium = TextStyle(
         fontFamily = Inter,
         fontWeight = FontWeight.Normal,
         fontSize = 15.sp
+    ),
+    headlineMedium = TextStyle(
+        fontFamily = Inter,
+        fontWeight = FontWeight.Normal,
+        fontSize = 25.sp
     )
+
 )
