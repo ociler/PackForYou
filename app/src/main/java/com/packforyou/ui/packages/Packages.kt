@@ -1,5 +1,6 @@
 package com.packforyou.ui.packages;
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,8 +31,10 @@ import com.packforyou.ui.theme.PackForYouTypography
 import com.packforyou.ui.theme.White
 import androidx.compose.ui.graphics.vector.VectorProperty.*
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun Packages(
     packagesViewModel: IPackagesViewModel
@@ -84,6 +87,8 @@ fun Packages(
         )
     )
 
+    val columnHeightInPx = mutableStateOf(0)
+
     Column(Modifier.fillMaxHeight(.9f)) {
 
         Column(
@@ -115,8 +120,33 @@ fun Packages(
                 item {
 
                     Box {
-                        Column {
-                            packages.forEachIndexed { index, pckge ->
+
+
+                        //We are drawing the line taking into account the list height
+                        Canvas(
+                            modifier = Modifier
+                                .height( with(LocalDensity.current) { columnHeightInPx.value.toDp() })
+                        ) {
+
+                            val height = size.height
+
+                            drawLine(
+                                start = Offset(x = 13f, y = 45f),
+                                end = Offset(x = 13f, y = height),
+                                color = Color.Black,
+                                strokeWidth = 6f,
+                                pathEffect = PathEffect.dashPathEffect(
+                                    floatArrayOf(30f, 20f), phase = 0f
+                                )
+                            )
+                        }
+
+                        Column(modifier = Modifier.onGloballyPositioned {
+                            //we get the height in px of the column when it is already composed.
+                            //It is a callback, so we need to use a mutableState
+                            columnHeightInPx.value = it.size.height
+                        }) {
+                            packages.forEach { pckge ->
 
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Canvas(
@@ -143,24 +173,6 @@ fun Packages(
                                     Spacer(modifier = Modifier.height(35.dp))
                                 }
                             }
-                        }
-
-                        //We are drawing the line taking into account the list height
-                        Canvas(
-                            modifier = Modifier
-                                .height(50.dp)
-                        ) {
-                            val height = size.height
-
-                            drawLine(
-                                start = Offset(x = 13f, y = 45f),
-                                end = Offset(x = 13f, y = height + 5f),
-                                color = Color.Black,
-                                strokeWidth = 6f,
-                                pathEffect = PathEffect.dashPathEffect(
-                                    floatArrayOf(30f, 20f), phase = 0f
-                                )
-                            )
                         }
 
                     }
