@@ -708,7 +708,7 @@ class PackagesViewModelImpl @Inject constructor(
                     address = "Avd Universitat 44"
                 ),
                 client = Client(name = "Esther Frasquet"),
-                state = PackageState.POSTPONED_DELIVERY,
+                state = PackageState.NEW_LOCATION,
                 numPackage = 2
             ),
 
@@ -729,7 +729,7 @@ class PackagesViewModelImpl @Inject constructor(
                 client = Client(name = "Esther Frasquet"),
                 urgency = Urgency.VERY_URGENT,
                 note = "olei",
-                state = PackageState.NOT_CONFIRMED,
+                state = PackageState.CONFIRMED,
                 numPackage = 4
             )
         )

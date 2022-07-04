@@ -83,9 +83,8 @@ fun DeliveredPackages(dialogState: MutableState<Boolean>, deliveredPackages: Lis
                         .fillMaxHeight()
                 ) {
                     items(deliveredPackages) { pckge ->
-                        SimplePackageItem(pckge = pckge, modifier = Modifier.padding(horizontal = 45.dp))
+                        SimplePackageItem(pckge = pckge, modifier = Modifier.padding(horizontal = 30.dp))
                         Spacer(Modifier.height(20.dp))
-
                     }
                 }
             }

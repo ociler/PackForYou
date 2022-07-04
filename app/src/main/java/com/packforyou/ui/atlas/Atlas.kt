@@ -3,32 +3,25 @@ package com.packforyou.ui.atlas
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import com.google.android.gms.maps.model.*
 import com.google.maps.android.compose.*
 import com.packforyou.data.models.Location
 import com.packforyou.data.models.Package
 import com.packforyou.data.models.Route
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import com.packforyou.R
-import java.io.BufferedReader
-import java.io.File
-import java.io.InputStreamReader
+import com.packforyou.data.models.PackageState
 
 @Composable
 fun Atlas(atlasViewModel: IAtlasViewModel, route: Route) {
@@ -201,40 +194,35 @@ fun bitmapDescriptorFromVector(
 fun AtlasWithGivenRoute(route: Route, viewModel: IAtlasViewModel) {
     if (route.packages == null || route.deliveryMan == null) return
 
-    val firstLocation: Location
+    var firstLocationIfNotCurrent: Location? = null
+    var endLocation: Location? = null
+
 
     var latLong: LatLng
-    val locations = arrayListOf<Location>()
 
-    //if there is no currentLocation, we will get the first package. If there is, we add it to the locations list
-    //we will use this list to set the pointers
-    if (route.deliveryMan!!.currentLocation != null) {
-        firstLocation = route.deliveryMan!!.currentLocation!!
-        locations.add(firstLocation)
-    } else {
-        firstLocation = route.packages!![0].location
+    //if there is no currentLocation, we will get the first package as start location.
+    if (route.deliveryMan!!.currentLocation == null) {
+        firstLocationIfNotCurrent = route.packages!![0].location
     }
 
-    latLong = LatLng(firstLocation.latitude, firstLocation.longitude)
+    //we use this to set the camera
+    val startLocation = firstLocationIfNotCurrent ?: route.deliveryMan!!.currentLocation
+
+    latLong = LatLng(startLocation!!.latitude, startLocation.longitude)
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(latLong, 12f)
     }
 
-    route.packages!!.forEach {
-        locations.add(it.location)
-    }
-
-    //and now we add the endLocation in case it exists
-    if (route.deliveryMan!!.endLocation != null) {
-        val endLocation = route.deliveryMan!!.endLocation!!
-        locations.add(endLocation)
-    }
+    //we add the endLocation in case it exists
+    endLocation = route.deliveryMan!!.endLocation!!
 
     //We observe this pointsList, that is a mutable data that will change when we get the response of DirectionsAPI
     val pointsList by viewModel.observePointsList().observeAsState(emptyList())
 
     val scope = rememberCoroutineScope()
+
+    var markerIcon = 0
 
     scope.launch {
         viewModel.computeDirectionsAPIResponse(route)
@@ -248,41 +236,71 @@ fun AtlasWithGivenRoute(route: Route, viewModel: IAtlasViewModel) {
         )
 
     ) {
-        locations.forEachIndexed { index, location ->
+        route.packages!!.forEachIndexed { index, pckg ->
+            val location = pckg.location
             latLong = LatLng(location.latitude, location.longitude)
 
-            when (index) {
-                0 -> {
+            if (index == 0) { //we want to set the startLocation icon
+                if (firstLocationIfNotCurrent == null) { //if currentLocation exists
+                    val currentLocation = route.deliveryMan!!.currentLocation
+                    latLong = LatLng(currentLocation!!.latitude, currentLocation.longitude)
                     Marker(
                         state = MarkerState(position = latLong),
                         title = location.address,
                         snippet = "Start Location",
-                        icon = BitmapDescriptorFactory.fromResource(R.drawable.home)
+                        icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_start_location)
                     )
-                }
+                    //we set the icon on currentLocation and then we go to packages[0]
 
-                locations.lastIndex -> {
+                } else { //there is no currentLocation, so our startLocation is the first package
                     Marker(
                         state = MarkerState(position = latLong),
                         title = location.address,
-                        snippet = "End Location",
-                        icon = BitmapDescriptorFactory.fromResource(R.drawable.finish)
+                        snippet = "Start Location",
+                        icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_start_location)
                     )
-                }
-                else -> {
-                    Marker(
-                        state = MarkerState(position = latLong),
-                        title = location.address,
-                        snippet = "Stop number: $index"
-                    )
+                    //and then we continue to the next iteration.
+                    return@forEachIndexed
                 }
             }
+
+            markerIcon = getProperMarker(pckg.state)
+            MarkerInfoWindow(
+                state = MarkerState(position = latLong),
+                title = location.address,
+                snippet = "Stop number: $index",
+                icon = BitmapDescriptorFactory.fromResource(markerIcon)
+            ) {
+                Column {
+                    Text(it.title ?: "Default Marker Title", color = Color.Blue)
+                    Text(it.snippet ?: "Default Marker Snippet", color = Color.Red)
+                } 
+            }
         }
+
         Polyline(
             points = pointsList,
             color = Color.Blue
         )
 
     }
+}
+
+private fun getProperMarker(state: PackageState): Int {
+    return when (state) {
+
+        PackageState.CONFIRMED -> {
+            R.drawable.ic_confirmed_marker
+        }
+
+        PackageState.NEW_LOCATION -> {
+            R.drawable.ic_new_location_marker
+        }
+        else -> {
+            R.drawable.ic_not_confirmed_marker
+        }
+    }
+
+    //TODO we should add some markers to define the Urgency of the package
 }
 

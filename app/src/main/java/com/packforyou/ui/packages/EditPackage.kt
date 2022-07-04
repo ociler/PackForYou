@@ -1,5 +1,6 @@
 package com.packforyou.ui.packages
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -105,7 +106,11 @@ fun SelectPackageToEdit(dialogState: MutableState<Boolean>, packages: List<Packa
 
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 5.dp)
+                            modifier = Modifier
+                                .padding(horizontal = 5.dp)
+                                .clickable {
+                                    selectedPackage.value = pckge
+                                }
                         ) {
 
                             RadioButton(
@@ -115,6 +120,7 @@ fun SelectPackageToEdit(dialogState: MutableState<Boolean>, packages: List<Packa
                             SimplePackageItem(
                                 pckge = pckge,
                                 modifier = Modifier.padding(end = 25.dp)
+
                             )
                         }
 

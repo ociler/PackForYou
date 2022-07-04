@@ -10,7 +10,8 @@
     },
     "note": "",
     "numPackage": 4,
-    "urgency": "NOT_URGENT"
+    "urgency": "NOT_URGENT",
+    "state": "CONFIRMED"
   },
   {
     "isDelivered": false,
@@ -23,7 +24,8 @@
     },
     "note": "",
     "numPackage": 1,
-    "urgency": "NOT_URGENT"
+    "urgency": "URGENT",
+    "state": "NOT_CONFIRMED"
   },
   {
     "isDelivered": false,
@@ -36,7 +38,8 @@
     },
     "note": "",
     "numPackage": 7,
-    "urgency": "NOT_URGENT"
+    "urgency": "NOT_URGENT",
+    "state": "NOT_CONFIRMED"
   },
   {
     "isDelivered": false,
@@ -49,7 +52,8 @@
     },
     "note": "",
     "numPackage": 9,
-    "urgency": "NOT_URGENT"
+    "urgency": "VERY_URGENT",
+    "state": "CONFIRMED"
   },
   {
     "isDelivered": false,
@@ -62,6 +66,7 @@
     },
     "note": "",
     "numPackage": 3,
-    "urgency": "NOT_URGENT"
+    "urgency": "NOT_URGENT",
+    "state": "NEW_LOCATION"
   }
 ]

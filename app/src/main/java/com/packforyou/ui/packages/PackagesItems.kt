@@ -249,7 +249,7 @@ fun StateIcon(state: PackageState, modifier: Modifier = Modifier) {
     }
 
     Box(
-        Modifier
+        modifier
             .clip(RoundedCornerShape(30.dp))
             .background(color)
     ) {

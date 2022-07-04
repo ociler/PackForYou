@@ -188,9 +188,9 @@ fun PackageAtlas() {
 fun UrgencySpinner() {
 
     val urgencyOptions = listOf(
-        "Very Urgent",
+        "Not Urgent",
         "Urgent",
-        "Not Urgent"
+        "Very Urgent"
     )
     var expanded by remember { mutableStateOf(false) }
     var selectedOptionText by remember { mutableStateOf(urgencyOptions[0]) }

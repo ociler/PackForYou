@@ -8,10 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.sp
 import com.packforyou.R
 import com.packforyou.ui.packages.DeliveredPackages
 import com.packforyou.ui.packages.IPackagesViewModel
@@ -46,6 +43,7 @@ fun AppBar(
             IconButton(onClick = {
                 deliveredPackagesState.value = true
             }) {
+
                 Icon(
                     painter = painterResource(id = R.drawable.ic_delivered_packages),
                     contentDescription = "Delivered icon",
