@@ -17,7 +17,9 @@ val Poppins = FontFamily(
 )
 
 val Inter = FontFamily(
-    Font(R.font.inter_medium, FontWeight.Medium)
+    Font(R.font.inter_medium, FontWeight.Medium),
+    Font(R.font.inter_bold, FontWeight.Bold),
+    Font(R.font.inter_semibold, FontWeight.SemiBold)
 )
 
 val Roboto = FontFamily(

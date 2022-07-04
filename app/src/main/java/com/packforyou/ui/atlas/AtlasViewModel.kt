@@ -15,6 +15,7 @@ interface IAtlasViewModel{
 
     suspend fun computeDirectionsAPIResponse(route: Route)
     fun observePointsList(): MutableLiveData<List<LatLng>>
+    fun getMapStyleString(): String
 }
 
 @HiltViewModel
@@ -37,5 +38,11 @@ class AtlasViewModelImpl @Inject constructor(
 
     override fun observePointsList(): MutableLiveData<List<LatLng>> {
         return pointsList
+    }
+
+    override fun getMapStyleString(): String {
+        val filePath = "json/map_style.json"
+
+        return this::class.java.classLoader?.getResource(filePath)!!.readText()
     }
 }

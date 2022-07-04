@@ -1,8 +1,11 @@
 package com.packforyou.ui.home
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
@@ -10,14 +13,25 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.packforyou.R
+import com.packforyou.ui.packages.DeliveredPackages
+import com.packforyou.ui.packages.IPackagesViewModel
 import com.packforyou.ui.theme.Black
 import com.packforyou.ui.theme.PackForYouTypography
 import com.packforyou.ui.theme.White
 
+
 @Composable
 fun AppBar(
-    onNavigationIconClick: () -> Unit
+    onNavigationIconClick: () -> Unit,
+    packagesViewModel: IPackagesViewModel
 ) {
+
+    var deliveredPackagesState = remember {
+        mutableStateOf(false)
+    }
+
+    var deliveredPackages = packagesViewModel.getExamplePackages()
+
     CenterAlignedTopAppBar(
         title = {
             Text(
@@ -29,7 +43,9 @@ fun AppBar(
             )
         },
         actions = {
-            IconButton(onClick = { /* doSomething() */ }) {
+            IconButton(onClick = {
+                deliveredPackagesState.value = true
+            }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_delivered_packages),
                     contentDescription = "Delivered icon",
@@ -47,5 +63,13 @@ fun AppBar(
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = White)
     )
+
+    if (deliveredPackagesState.value) {
+
+        DeliveredPackages(
+            dialogState = deliveredPackagesState,
+            deliveredPackages = deliveredPackages
+        )
+    }
 }
 

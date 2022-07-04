@@ -16,6 +16,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import com.google.android.gms.maps.model.*
 import com.google.maps.android.compose.*
@@ -25,6 +26,9 @@ import com.packforyou.data.models.Route
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import com.packforyou.R
+import java.io.BufferedReader
+import java.io.File
+import java.io.InputStreamReader
 
 @Composable
 fun Atlas(atlasViewModel: IAtlasViewModel, route: Route) {
@@ -238,7 +242,11 @@ fun AtlasWithGivenRoute(route: Route, viewModel: IAtlasViewModel) {
 
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
-        cameraPositionState = cameraPositionState
+        cameraPositionState = cameraPositionState,
+        properties = MapProperties(
+            mapStyleOptions = MapStyleOptions(viewModel.getMapStyleString())
+        )
+
     ) {
         locations.forEachIndexed { index, location ->
             latLong = LatLng(location.latitude, location.longitude)

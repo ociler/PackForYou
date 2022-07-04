@@ -152,13 +152,11 @@ fun PackageCard(pckge: Package) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = pckge.location.address,
-                            fontWeight = FontWeight.Bold,
                             style = PackForYouTypography.bodyMedium
                         )
                         Spacer(Modifier.height(5.dp))
                         Text(
                             text = pckge.client!!.name,
-                            fontWeight = FontWeight.Bold,
                             style = PackForYouTypography.bodyMedium
                         )
                     }
@@ -203,7 +201,8 @@ fun UrgencyIcon(urgency: Urgency?, modifier: Modifier = Modifier) {
         Urgency.VERY_URGENT -> "Urgent Delivery"
         else -> "Standard Delivery"
     }
-    Box(modifier =
+    Box(
+        modifier =
         modifier
             .clip(RoundedCornerShape(30.dp))
             .background(Color.Black)
@@ -263,5 +262,62 @@ fun StateIcon(state: PackageState, modifier: Modifier = Modifier) {
             maxLines = 1
         )
 
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SimplePackageItem(pckge: Package, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        Text(
+            text = "REF ${pckge.numPackage}",
+            style = PackForYouTypography.displayLarge,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(start = 5.dp)
+        )
+        Spacer(Modifier.width(10.dp))
+        Surface(
+            shadowElevation = 10.dp,
+            color = White, shape = RoundedCornerShape(25.dp)
+        ) {
+            Card(
+                shape = RoundedCornerShape(25.dp),
+                colors = CardDefaults.cardColors(containerColor = White),
+                modifier = Modifier.wrapContentSize()
+            ) {
+                Column(
+                    Modifier
+                        .padding(15.dp)
+                ) {
+                    Column {
+                        Text(
+                            text = pckge.location.address,
+                            style = PackForYouTypography.bodyMedium
+                        )
+                        Spacer(Modifier.height(5.dp))
+                        Text(
+                            text = pckge.client!!.name,
+                            style = PackForYouTypography.bodyMedium
+                        )
+
+                        Spacer(Modifier.height(5.dp))
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            Spacer(
+                                Modifier.weight(1f)
+                            )
+                            UrgencyIcon(
+                                urgency = pckge.urgency
+                            )
+                        }
+                    }
+
+                }
+            }
+        }
     }
 }

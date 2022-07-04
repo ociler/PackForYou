@@ -10,9 +10,7 @@ import com.google.firebase.firestore.GeoPoint
 import com.packforyou.api.ICallbackAPICalls
 import com.packforyou.api.ICallbackDirectionsResponse
 import com.packforyou.data.directionsDataClases.DirectionsResponse
-import com.packforyou.data.models.Location
-import com.packforyou.data.models.Package
-import com.packforyou.data.models.Route
+import com.packforyou.data.models.*
 import com.packforyou.data.repositories.IPackagesAndAtlasRepository
 import com.packforyou.ui.utils.PermutationsIteratively
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,6 +24,8 @@ import kotlin.collections.ArrayList
 interface IPackagesViewModel {
     fun addPackage(packge: Package)
     fun getAddressFromLocation(geoPoint: GeoPoint, context: Context): String
+
+    fun getExamplePackages(): List<Package>
 
     fun computeDistanceBetweenAllPackages(packages: List<Package>)
 
@@ -84,7 +84,6 @@ interface IPackagesViewModel {
 
     fun computePermutations(size: Int)
 
-
     fun observeTravelTimeArray(): MutableLiveData<Array<IntArray>>
     fun getStartTravelTimeArray(): IntArray
     fun getEndTravelTimeArray(): IntArray
@@ -95,6 +94,7 @@ interface IPackagesViewModel {
 
     fun observeDirectionsResponse(): MutableLiveData<DirectionsResponse>
     fun observeOptimizedDirectionsAPIRoute(): MutableLiveData<Route>
+
     fun setStartTravelTimeArray(startTravelTimeArray: IntArray)
     fun setEndTravelTimeArray(endTravelTimeArray: IntArray)
     fun setDistanceArray(distanceArray: Array<IntArray>)
@@ -679,6 +679,62 @@ class PackagesViewModelImpl @Inject constructor(
 
     override fun setEndDistanceArray(endDistanceArray: IntArray) {
         globalEndDistanceArray = endDistanceArray
+    }
+
+    override fun getExamplePackages(): List<Package> {
+        val packages = listOf(
+            Package(
+                location = Location(
+                    address = "Avd Universitat 44 Valencia Espanya"
+                ),
+                client = Client(name = "Esther Frasquet"),
+                urgency = Urgency.URGENT,
+                state = PackageState.NEW_LOCATION,
+                numPackage = 0
+            ),
+
+            Package(
+                location = Location(
+                    address = "Carrer Arquitecte Arnau 30, Valencia"
+                ),
+                client = Client(name = "Esther Frasquet"),
+                note = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown.",
+                state = PackageState.CONFIRMED,
+                numPackage = 1
+            ),
+
+            Package(
+                location = Location(
+                    address = "Avd Universitat 44"
+                ),
+                client = Client(name = "Esther Frasquet"),
+                state = PackageState.POSTPONED_DELIVERY,
+                numPackage = 2
+            ),
+
+            Package(
+                location = Location(
+                    address = "Avd Universitat 44"
+                ),
+                client = Client(name = "Esther Frasquet"),
+                urgency = Urgency.VERY_URGENT,
+                state = PackageState.NOT_CONFIRMED,
+                numPackage = 3
+            ),
+
+            Package(
+                location = Location(
+                    address = "Avd Universitat 44"
+                ),
+                client = Client(name = "Esther Frasquet"),
+                urgency = Urgency.VERY_URGENT,
+                note = "olei",
+                state = PackageState.NOT_CONFIRMED,
+                numPackage = 4
+            )
+        )
+
+        return packages
     }
 
 }

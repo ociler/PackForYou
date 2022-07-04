@@ -40,53 +40,7 @@ fun Packages(
     packagesViewModel: IPackagesViewModel
 ) {
 
-    val packages = listOf(
-        Package(
-            location = Location(
-                address = "Avd Universitat 44 Valencia Espanya"
-            ),
-            client = Client(name = "Esther Frasquet"),
-            urgency = Urgency.URGENT,
-            state = PackageState.NEW_LOCATION
-        ),
-
-        Package(
-            location = Location(
-                address = "Carrer Arquitecte Arnau 30, Valencia"
-            ),
-            client = Client(name = "Esther Frasquet"),
-            note = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown.",
-            state = PackageState.CONFIRMED
-        ),
-
-        Package(
-            location = Location(
-                address = "Avd Universitat 44"
-            ),
-            client = Client(name = "Esther Frasquet"),
-            state = PackageState.POSTPONED_DELIVERY
-        ),
-
-        Package(
-            location = Location(
-                address = "Avd Universitat 44"
-            ),
-            client = Client(name = "Esther Frasquet"),
-            urgency = Urgency.VERY_URGENT,
-            state = PackageState.NOT_CONFIRMED
-        ),
-
-        Package(
-            location = Location(
-                address = "Avd Universitat 44"
-            ),
-            client = Client(name = "Esther Frasquet"),
-            urgency = Urgency.VERY_URGENT,
-            note = "olei",
-            state = PackageState.NOT_CONFIRMED
-        )
-    )
-
+    val packages = packagesViewModel.getExamplePackages()
     val columnHeightInPx = mutableStateOf(0)
 
     Column(Modifier.fillMaxHeight(.9f)) {
