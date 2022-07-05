@@ -32,6 +32,8 @@ import com.packforyou.data.models.*
 import com.packforyou.ui.packages.StateIcon
 import com.packforyou.ui.theme.*
 
+lateinit var cameraPositionState: CameraPositionState
+
 @Composable
 fun Atlas(atlasViewModel: IAtlasViewModel, route: Route) {
     AtlasWithGivenRoute(route, atlasViewModel)
@@ -42,7 +44,7 @@ fun Atlas(atlasViewModel: IAtlasViewModel, route: Route) {
 fun CasetaAtlas() {
     val caseta = LatLng(39.485749, -0.3563635)
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(caseta, 10f)
+        position = CameraPosition.fromLatLngZoom(caseta, 100f)
     }
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
@@ -213,8 +215,8 @@ fun AtlasWithGivenRoute(route: Route, viewModel: IAtlasViewModel) {
 
     latLong = LatLng(firstLocation.latitude, firstLocation.longitude)
 
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(latLong, 12f)
+    cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(latLong, 16.5f)
     }
 
     //we add the endLocation in case it exists
