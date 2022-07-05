@@ -107,10 +107,11 @@ fun SelectPackageToEdit(dialogState: MutableState<Boolean>, packages: List<Packa
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .padding(horizontal = 5.dp)
+                                .fillMaxWidth()
                                 .clickable {
                                     selectedPackage.value = pckge
                                 }
+                                .padding(horizontal = 5.dp)
                         ) {
 
                             RadioButton(
@@ -119,14 +120,13 @@ fun SelectPackageToEdit(dialogState: MutableState<Boolean>, packages: List<Packa
                             )
                             SimplePackageItem(
                                 pckge = pckge,
-                                modifier = Modifier.padding(end = 25.dp)
-
+                                modifier = Modifier
+                                    .padding(end = 25.dp)
                             )
                         }
 
                         Spacer(Modifier.height(20.dp))
                     }
-
                 }
                 EditPackageButton()
             }

@@ -9,7 +9,7 @@ data class Package(
     var deliveryDate: Date? = null,
     var note: String? = "",
     var urgency: Urgency? = Urgency.NOT_URGENT,
-    var client: Client? = null,
+    var client: Client = Client(),
     var location: Location = Location(),
     var deliveryMan: DeliveryMan? = null,
     var message: Message? = null,

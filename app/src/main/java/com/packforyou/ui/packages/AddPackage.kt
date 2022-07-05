@@ -129,13 +129,12 @@ fun AddPackage(dialogState: MutableState<Boolean>, packge: Package? = null) {
                                 textColor = Black
                             ),
                             trailingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = "Removes content",
-                                    modifier = Modifier.clickable {
-                                        clientText = ""
-                                    }
-                                )
+                                IconButton(onClick = { clientText = "" }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Removes content"
+                                    )
+                                }
                             }
                         )
 

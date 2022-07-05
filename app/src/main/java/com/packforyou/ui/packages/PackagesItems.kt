@@ -119,7 +119,7 @@ fun PackageItem(pckge: Package) {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        StateIcon(state = pckge.state)
+        StateIcon(state = pckge.state, modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp))
     }
 }
 
@@ -249,15 +249,14 @@ fun StateIcon(state: PackageState, modifier: Modifier = Modifier) {
     }
 
     Box(
-        modifier
+        Modifier
             .clip(RoundedCornerShape(30.dp))
             .background(color)
     ) {
         Text(
             text = caption,
             color = Color.White,
-            modifier = Modifier
-                .padding(horizontal = 8.dp, vertical = 5.dp),
+            modifier = modifier,
             style = PackForYouTypography.bodyMedium,
             maxLines = 1
         )

@@ -1,39 +1,27 @@
 package com.packforyou.ui.home
 
-import android.content.Context
-import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import com.packforyou.R
+import com.packforyou.data.models.Location
 import com.packforyou.data.models.Package
 import com.packforyou.data.models.Route
 import com.packforyou.ui.atlas.Atlas
 import com.packforyou.ui.atlas.AtlasViewModelImpl
-import com.packforyou.ui.packages.AddPackage
-import com.packforyou.ui.packages.SelectPackageToEdit
-import com.packforyou.ui.packages.Packages
-import com.packforyou.ui.packages.PackagesViewModelImpl
+import com.packforyou.ui.packages.*
 import com.packforyou.ui.theme.Black
 import com.packforyou.ui.theme.PackForYouTypography
 import com.packforyou.ui.theme.White
@@ -43,7 +31,7 @@ import kotlinx.coroutines.launch
 
 lateinit var addPackageState: MutableState<Boolean>
 lateinit var selectPackageToEditState: MutableState<Boolean>
-lateinit var setEndLocationState: MutableState<Boolean>
+lateinit var defineEndLocationState: MutableState<Boolean>
 
 var choosenPackage = Package() //TODO
 
@@ -69,7 +57,7 @@ fun Home(owner: ViewModelStoreOwner, route: Route) {
         mutableStateOf(false)
     }
 
-    setEndLocationState = remember {
+    defineEndLocationState = remember {
         mutableStateOf(false)
     }
 
@@ -118,8 +106,8 @@ fun Home(owner: ViewModelStoreOwner, route: Route) {
                             addPackageState.value = true
                         }
 
-                        "setLatestLocation" -> {
-                            setEndLocationState.value = true
+                        "setLastLocation" -> {
+                            defineEndLocationState.value = true
                         }
                     }
 
@@ -176,65 +164,19 @@ fun Home(owner: ViewModelStoreOwner, route: Route) {
         SelectPackageToEdit(selectPackageToEditState, packagesViewModel.getExamplePackages())
     }
 
-    if (setEndLocationState.value) {
-        SetEndLocation()
-    }
-}
-
-@Composable
-fun SetEndLocation() {
-    // Context to toast a message
-    val ctx: Context = LocalContext.current
-
-    // Code to Show and Dismiss Dialog
-    if (addPackageState.value) {
-        Dialog(
-            onDismissRequest = { setEndLocationState.value = false },
-            content = {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    "Closes alert",
-                    modifier = Modifier.clickable {
-                        addPackageState.value = false
-                    }
-                )
-
-                CompleteDialogContent("Set End Location", addPackageState, "OK")
-            },
-            properties = DialogProperties(
-                dismissOnBackPress = false,
-                dismissOnClickOutside = false
+    if (defineEndLocationState.value) {
+        SetLastLocation(
+            dialogState = defineEndLocationState,
+            lastLocations = listOf(
+                Location(address = "Valencia"),
+                Location(address = "El Hierro la mejor isla del mundo entero ", latitude = 2.0),
+                Location(address = "El Hierro la mejor isla del mundo entero ", latitude = 3.0),
+                Location(address = "El Hierro la mejor isla del mundo entero ", latitude = 4.0),
             )
         )
-    } else {
-        Toast.makeText(ctx, "Dialog Closed", Toast.LENGTH_SHORT).show()
     }
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CompleteDialogContent(
-    title: String,
-    dialogState: MutableState<Boolean>,
-    successButtonText: String
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxHeight(.96f)
-            .fillMaxWidth(1f),
-        shape = RoundedCornerShape(40.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-
-        }
-    }
-}
 
 
 @ExperimentalMaterialApi
@@ -261,7 +203,7 @@ fun StartRouteRoundedButton(modifier: Modifier = Modifier) {
                     //TODO start route
                     println("Starting route")
                 }
-.padding(vertical = 5.dp, horizontal = 10.dp)
+                .padding(vertical = 5.dp, horizontal = 10.dp)
         ) {
             Row(
                 horizontalArrangement = Arrangement.Center
