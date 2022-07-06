@@ -22,7 +22,7 @@ import com.packforyou.ui.theme.White
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StartRoute(packagesList: List<Package>) {
+fun StartRouteScreen(packagesList: List<Package>) {
     var currentPosition by remember {
         mutableStateOf(0)
     }

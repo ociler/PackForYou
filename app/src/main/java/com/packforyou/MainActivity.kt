@@ -4,30 +4,17 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Divider
-import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.compose.rememberNavController
 import com.google.gson.Gson
 import com.packforyou.data.models.DeliveryMan
 import com.packforyou.data.models.Location
 import com.packforyou.data.models.Package
 import com.packforyou.data.models.Route
+import com.packforyou.navigation.SetupNavGraph
 import com.packforyou.ui.theme.PackForYouTheme
-import com.packforyou.ui.atlas.Atlas
 import com.packforyou.ui.atlas.AtlasViewModelImpl
 import com.packforyou.ui.atlas.IAtlasViewModel
 import com.packforyou.ui.home.*
@@ -35,7 +22,6 @@ import com.packforyou.ui.login.ILoginViewModel
 import com.packforyou.ui.login.LoginViewModelImpl
 import com.packforyou.ui.packages.*
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import java.io.InputStreamReader
 import kotlin.system.measureNanoTime
 import kotlin.system.measureTimeMillis
@@ -91,7 +77,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             PackForYouTheme {
-                Home(owner = this, route = notOptimizedRoute)
+                val navController = rememberNavController()
+                SetupNavGraph(navController = navController, owner = this, route = notOptimizedRoute)
             }
         }
 

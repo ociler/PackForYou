@@ -15,10 +15,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.navigation.NavController
 import com.packforyou.R
 import com.packforyou.data.models.Location
 import com.packforyou.data.models.Package
 import com.packforyou.data.models.Route
+import com.packforyou.navigation.Screen
 import com.packforyou.ui.atlas.Atlas
 import com.packforyou.ui.atlas.AtlasViewModelImpl
 import com.packforyou.ui.packages.*
@@ -34,13 +36,15 @@ lateinit var selectPackageToEditState: MutableState<Boolean>
 lateinit var defineEndLocationState: MutableState<Boolean>
 
 var choosenPackage = Package() //TODO
+private lateinit var globalNavController: NavController
 
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun Home(owner: ViewModelStoreOwner, route: Route) {
+fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: Route) {
     val sheetState = rememberBottomSheetScaffoldState()
     val scope = rememberCoroutineScope()
+    globalNavController = navController
 
     val packagesViewModel =
         ViewModelProvider(owner)[PackagesViewModelImpl::class.java]
@@ -177,18 +181,6 @@ fun Home(owner: ViewModelStoreOwner, route: Route) {
     }
 }
 
-
-
-@ExperimentalMaterialApi
-@Composable
-fun HomeScreen() {
-    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
-        bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
-    )
-    val coroutineScope = rememberCoroutineScope()
-
-}
-
 @Composable
 fun StartRouteRoundedButton(modifier: Modifier = Modifier) {
     Surface(
@@ -201,7 +193,8 @@ fun StartRouteRoundedButton(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .clickable {
                     //TODO start route
-                    println("Starting route")
+                    globalNavController.navigate(route = Screen.StartRoute.route)
+
                 }
                 .padding(vertical = 5.dp, horizontal = 10.dp)
         ) {

@@ -1,5 +1,6 @@
 package com.packforyou.ui.login
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -14,10 +15,10 @@ import com.packforyou.data.models.DeliveryMan
 private lateinit var deliveryMen: List<DeliveryMan>
 
 @Composable
-fun Login(
-    loginViewModel: ILoginViewModel
-) {
-
+fun LoginScreen() {
+    Box(Modifier.fillMaxSize()) {
+        Text(text = "LOGIN SCREEN")
+    }
 }
 /*
 private fun getAllDeliveryMan(viewModel: LoginViewModelImpl): List<DeliveryMan> {
