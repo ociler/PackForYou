@@ -169,7 +169,7 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
 
 
     if (addPackageState.value) {
-        AddPackage(addPackageState)
+        AddPackage(dialogState = addPackageState, owner = owner)
     }
 
     if (selectPackageToEditState.value) {

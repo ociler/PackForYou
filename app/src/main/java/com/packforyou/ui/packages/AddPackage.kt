@@ -11,24 +11,54 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.packforyou.data.models.Package
-import com.packforyou.ui.atlas.CasetaAtlas
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
+import com.google.android.gms.maps.model.*
+import com.google.maps.android.compose.*
+import com.packforyou.R
+import com.packforyou.data.models.*
+import com.packforyou.navigation.ArgumentsHolder
+import com.packforyou.ui.atlas.AtlasViewModelImpl
 import com.packforyou.ui.theme.Black
 import com.packforyou.ui.theme.CustomExposedDropdownMenu
 import com.packforyou.ui.theme.PackForYouTypography
 import com.packforyou.ui.theme.White
+import java.util.*
+import kotlin.random.Random
+
+var selectedOption = Urgency.NOT_URGENT
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddPackage(dialogState: MutableState<Boolean>, packge: Package? = null) {
+fun AddPackage(
+    dialogState: MutableState<Boolean>,
+    packge: Package? = null,
+    owner: ViewModelStoreOwner
+) {
 
-    var directionText by remember { mutableStateOf("") }
+    var addressText by remember { mutableStateOf("") }
     var clientText by remember { mutableStateOf("") }
+
+    val atlasViewModel =
+        ViewModelProvider(owner)[AtlasViewModelImpl::class.java]
+    val packagesViewModel =
+        ViewModelProvider(owner)[PackagesViewModelImpl::class.java]
+
+    var parsedLatLng: LatLng? by remember { mutableStateOf(LatLng(39.485749, -0.3563635)) }
+    val focusRequester = FocusRequester()
+    val context = LocalContext.current
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(parsedLatLng!!, 20f)
+    }
 
 
     Dialog(
@@ -88,8 +118,32 @@ fun AddPackage(dialogState: MutableState<Boolean>, packge: Package? = null) {
                         .background(White),
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
+                    //MAP
+                    Card(
+                        modifier = Modifier
+                            .fillMaxHeight(.48f)
+                            .fillMaxWidth()
+                            .padding(top = 10.dp, start = 20.dp, end = 20.dp),
+                        shape = RoundedCornerShape(40.dp)
+                    ) {
 
-                    PackageAtlas()
+                        GoogleMap(
+                            cameraPositionState = cameraPositionState,
+                            properties = MapProperties(
+                                mapStyleOptions = MapStyleOptions(atlasViewModel.getMapStyleString())
+                            )
+                        ) {
+                            if (parsedLatLng != null) {
+                                Marker(
+                                    state = MarkerState(position = parsedLatLng!!),
+                                    icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_black_marker)
+                                )
+                                cameraPositionState.position =
+                                    CameraPosition.fromLatLngZoom(parsedLatLng!!, 18f)
+                            }
+                        }
+                    }
+
 
                     Column( //TextFields and bottom button
                         modifier = Modifier
@@ -98,23 +152,37 @@ fun AddPackage(dialogState: MutableState<Boolean>, packge: Package? = null) {
                     ) {
 
                         OutlinedTextField(
-                            value = directionText,
-                            onValueChange = { directionText = it },
-                            label = { Text("Direction") },
+                            value = addressText,
+                            onValueChange = { addressText = it },
+                            label = { Text("Address") },
                             colors = TextFieldDefaults.outlinedTextFieldColors(
                                 focusedBorderColor = Black,
                                 unfocusedBorderColor = Black,
                                 textColor = Black
                             ),
+                            singleLine = true,
                             trailingIcon = {
                                 Icon(
                                     imageVector = Icons.Default.Close,
                                     contentDescription = "Removes content",
                                     modifier = Modifier.clickable {
-                                        directionText = ""
+                                        addressText = ""
                                     }
                                 )
-                            }
+                            },
+                            //I want to parse the input address when it's not focused anymore.
+                            //This way it is not constantly trying to parse an uncompleted direction.
+                            //It only will try the parse when the user finishes his input.
+                            modifier = Modifier
+                                .focusRequester(focusRequester)
+                                .onFocusChanged {
+                                    if (!it.isFocused) {
+                                        parsedLatLng = packagesViewModel.getLocationFromAddress(
+                                            context = context,
+                                            strAddress = addressText
+                                        )
+                                    }
+                                }
                         )
 
                         Spacer(Modifier.height(5.dp))
@@ -128,6 +196,7 @@ fun AddPackage(dialogState: MutableState<Boolean>, packge: Package? = null) {
                                 unfocusedBorderColor = Black,
                                 textColor = Black
                             ),
+                            singleLine = true,
                             trailingIcon = {
                                 IconButton(onClick = { clientText = "" }) {
                                     Icon(
@@ -144,6 +213,28 @@ fun AddPackage(dialogState: MutableState<Boolean>, packge: Package? = null) {
 
                         Button(
                             onClick = {
+                                if (parsedLatLng != null) {
+                                    val newPackage = Package(
+                                        numPackage = Random.nextInt(
+                                            0,
+                                            1000
+                                        ), //TODO create hash function
+                                        deliveryDate = Date(System.currentTimeMillis()),
+                                        isDelivered = false,
+                                        urgency = selectedOption,
+                                        client = Client(name = clientText),
+                                        location = Location(
+                                            address = addressText,
+                                            latitude = parsedLatLng!!.latitude,
+                                            longitude = parsedLatLng!!.longitude
+                                        ),
+                                        deliveryMan = null, //TODO current deliveryman
+                                        state = PackageState.CONFIRMED
+                                    )
+
+                                    ArgumentsHolder.packagesList =
+                                        ArgumentsHolder.packagesList.plus(newPackage)
+                                }
                                 dialogState.value = false
                             },
                             modifier = Modifier
@@ -167,20 +258,6 @@ fun AddPackage(dialogState: MutableState<Boolean>, packge: Package? = null) {
     }
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun PackageAtlas() {
-    Card( //Map
-        modifier = Modifier
-            .fillMaxHeight(.48f)
-            .fillMaxWidth(1f)
-            .padding(top = 10.dp, start = 20.dp, end = 20.dp),
-        shape = RoundedCornerShape(40.dp)
-    ) {
-        CasetaAtlas() //TODO add corresponding map
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -219,18 +296,28 @@ fun UrgencySpinner() {
                 expanded = false
             },
         ) {
-            urgencyOptions.forEach { selectionOption ->
+            urgencyOptions.forEach { urgencyType ->
                 DropdownMenuItem(
                     onClick = {
-                        selectedOptionText = selectionOption
+                        selectedOptionText = urgencyType
                         expanded = false
+                        selectedOption = getUrgencyGivenText(selectedOptionText)
                     },
                     text = {
-                        Text(text = selectionOption)
+                        Text(text = urgencyType)
                     }
                 )
             }
         }
+    }
+}
+
+
+private fun getUrgencyGivenText(text: String): Urgency {
+    return when (text) {
+        "Very urgent" -> Urgency.VERY_URGENT
+        "Urgent" -> Urgency.URGENT
+        else -> Urgency.NOT_URGENT
     }
 }
 

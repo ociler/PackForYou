@@ -109,7 +109,7 @@ fun StartRouteScreen(
                 text = "Next Package:",
                 style = PackForYouTypography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(start = 15.dp, bottom = 10.dp)
+                modifier = Modifier.padding(start = 15.dp, bottom = 10.dp, top = 12.dp)
             )
             Divider(Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(20.dp))
