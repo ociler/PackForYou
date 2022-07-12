@@ -35,7 +35,8 @@ fun SetupNavGraph(
         composable(
             route = Screen.StartRoute.route
         ) {
-            StartRouteScreen(packagesList = route.packages!!)
+            val packages = ArgumentsHolder.packagesList
+            StartRouteScreen(packagesList = packages, navController = navController, owner = owner)
         }
     }
 }

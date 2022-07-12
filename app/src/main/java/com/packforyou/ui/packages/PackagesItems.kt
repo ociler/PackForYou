@@ -26,20 +26,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.packforyou.R
 import com.packforyou.data.models.*
+import com.packforyou.navigation.ArgumentsHolder
 import com.packforyou.ui.theme.*
 
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun PackageItem(pckge: Package) {
+fun PackageItem(pckge: Package, index: Int = 0) {
     val dismissState = rememberDismissState(
         initialValue = DismissValue.Default,
         confirmStateChange = {
             if (it == DismissValue.DismissedToStart) {
-                pckge.isDelivered = true
-            } else if (it == DismissValue.DismissedToEnd) {
                 //TODO remove package
-                pckge.isDelivered = false
+                ArgumentsHolder.packagesList = ArgumentsHolder.packagesList.drop(index)
+                println("Adios crack")
+            } else if (it == DismissValue.DismissedToEnd) {
+                pckge.isDelivered = true
             }
             true
         }
@@ -156,7 +158,7 @@ fun PackageCard(pckge: Package) {
                         )
                         Spacer(Modifier.height(5.dp))
                         Text(
-                            text = pckge.client!!.name,
+                            text = pckge.client.name,
                             style = PackForYouTypography.bodyMedium
                         )
                     }
@@ -296,7 +298,7 @@ fun SimplePackageItem(pckge: Package, modifier: Modifier = Modifier) {
                         )
                         Spacer(Modifier.height(5.dp))
                         Text(
-                            text = pckge.client!!.name,
+                            text = pckge.client.name,
                             style = PackForYouTypography.bodyMedium
                         )
 

@@ -685,7 +685,9 @@ class PackagesViewModelImpl @Inject constructor(
         val packages = listOf(
             Package(
                 location = Location(
-                    address = "Avd Universitat 44 Valencia Espanya"
+                    address = "Avd Universitat 44 Valencia Espanya",
+                    latitude = 39.872713,
+                    longitude = -0.844302
                 ),
                 client = Client(name = "Esther Frasquet"),
                 urgency = Urgency.URGENT,
@@ -695,7 +697,9 @@ class PackagesViewModelImpl @Inject constructor(
 
             Package(
                 location = Location(
-                    address = "Carrer Arquitecte Arnau 30, Valencia"
+                    address = "Carrer Arquitecte Arnau 30, Valencia",
+                    latitude = 38.804918,
+                    longitude = -0.879529
                 ),
                 client = Client(name = "Esther Frasquet"),
                 note = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown.",
@@ -705,7 +709,9 @@ class PackagesViewModelImpl @Inject constructor(
 
             Package(
                 location = Location(
-                    address = "Avd Universitat 44"
+                    address = "Avd Universitat 44",
+                    latitude = 38.872713,
+                    longitude = -0.754302
                 ),
                 client = Client(name = "Esther Frasquet"),
                 state = PackageState.NEW_LOCATION,
@@ -714,7 +720,9 @@ class PackagesViewModelImpl @Inject constructor(
 
             Package(
                 location = Location(
-                    address = "Avd Universitat 44"
+                    address = "Avd Universitat 44",
+                    latitude = 37.872713,
+                    longitude = -0.784302
                 ),
                 client = Client(name = "Esther Frasquet"),
                 urgency = Urgency.VERY_URGENT,
@@ -724,7 +732,9 @@ class PackagesViewModelImpl @Inject constructor(
 
             Package(
                 location = Location(
-                    address = "Avd Universitat 44"
+                    address = "Avd Universitat 44",
+                    latitude = 38.752713,
+                    longitude = -0.864302
                 ),
                 client = Client(name = "Esther Frasquet"),
                 urgency = Urgency.VERY_URGENT,
@@ -733,7 +743,6 @@ class PackagesViewModelImpl @Inject constructor(
                 numPackage = 4
             )
         )
-
         return packages
     }
 

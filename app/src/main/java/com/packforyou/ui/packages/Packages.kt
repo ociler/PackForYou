@@ -1,47 +1,46 @@
 package com.packforyou.ui.packages;
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PaintingStyle.Companion.Stroke
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.google.maps.android.compose.Circle
+import androidx.navigation.NavController
 import com.packforyou.R
-import com.packforyou.data.models.*
+import com.packforyou.data.models.Package
+import com.packforyou.navigation.ArgumentsHolder
+import com.packforyou.navigation.Screen
 import com.packforyou.ui.theme.Black
 import com.packforyou.ui.theme.PackForYouTypography
 import com.packforyou.ui.theme.White
-import androidx.compose.ui.graphics.vector.VectorProperty.*
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Dp
 
-@SuppressLint("UnrememberedMutableState")
 @Composable
 fun Packages(
-    packagesViewModel: IPackagesViewModel
+    navController: NavController,
+    packagesViewModel: IPackagesViewModel,
+    packages: MutableState<List<Package>>
 ) {
 
-    val packages = packagesViewModel.getExamplePackages()
-    val columnHeightInPx = mutableStateOf(0)
+    val columnHeightInPx = remember {
+        mutableStateOf(0)
+    }
 
     Column(Modifier.fillMaxHeight(.9f)) {
 
@@ -79,7 +78,7 @@ fun Packages(
                         //We are drawing the line taking into account the list height
                         Canvas(
                             modifier = Modifier
-                                .height( with(LocalDensity.current) { columnHeightInPx.value.toDp() })
+                                .height(with(LocalDensity.current) { columnHeightInPx.value.toDp() })
                         ) {
 
                             val height = size.height
@@ -100,7 +99,7 @@ fun Packages(
                             //It is a callback, so we need to use a mutableState
                             columnHeightInPx.value = it.size.height
                         }) {
-                            packages.forEach { pckge ->
+                            packages.value.forEachIndexed { index, pckge ->
 
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Canvas(
@@ -122,7 +121,7 @@ fun Packages(
                                 Column {
                                     Spacer(Modifier.height(15.dp))
 
-                                    PackageItem(pckge = pckge)
+                                    PackageItem(pckge = pckge, index = index)
 
                                     Spacer(modifier = Modifier.height(35.dp))
                                 }
@@ -134,7 +133,7 @@ fun Packages(
             }
         }
 
-        StartRouteRectangularButton()
+        StartRouteRectangularButton(navController, packages.value.toMutableList())
     }
 }
 
@@ -163,11 +162,12 @@ fun FilterButton() {
 }
 
 @Composable
-fun StartRouteRectangularButton() {
+fun StartRouteRectangularButton(navController: NavController, packagesToStartRoute: List<Package>) {
     Button(
         onClick = {
             //TODO start route
-            println("Starting route")
+            ArgumentsHolder.packagesList = packagesToStartRoute
+            navController.navigate(route = Screen.StartRoute.route)
         },
         colors = ButtonDefaults.buttonColors(containerColor = Black),
         modifier = Modifier

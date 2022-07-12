@@ -6,6 +6,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -19,15 +20,16 @@ import com.packforyou.ui.theme.White
 
 @Composable
 fun AppBar(
+    navigationIcon: ImageVector,
     onNavigationIconClick: () -> Unit,
     packagesViewModel: IPackagesViewModel
 ) {
 
-    var deliveredPackagesState = remember {
+    val deliveredPackagesState = remember {
         mutableStateOf(false)
     }
 
-    var deliveredPackages = packagesViewModel.getExamplePackages()
+    val deliveredPackages = packagesViewModel.getExamplePackages()
 
     CenterAlignedTopAppBar(
         title = {
@@ -54,7 +56,7 @@ fun AppBar(
         navigationIcon = {
             IconButton(onClick = onNavigationIconClick) {
                 Icon(
-                    imageVector = Icons.Filled.Menu,
+                    imageVector = navigationIcon,
                     contentDescription = "Toggle drawer"
                 )
             }

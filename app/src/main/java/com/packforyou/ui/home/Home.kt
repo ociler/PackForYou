@@ -4,6 +4,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -20,6 +22,7 @@ import com.packforyou.R
 import com.packforyou.data.models.Location
 import com.packforyou.data.models.Package
 import com.packforyou.data.models.Route
+import com.packforyou.navigation.ArgumentsHolder
 import com.packforyou.navigation.Screen
 import com.packforyou.ui.atlas.Atlas
 import com.packforyou.ui.atlas.AtlasViewModelImpl
@@ -35,16 +38,13 @@ lateinit var addPackageState: MutableState<Boolean>
 lateinit var selectPackageToEditState: MutableState<Boolean>
 lateinit var defineEndLocationState: MutableState<Boolean>
 
-var choosenPackage = Package() //TODO
-private lateinit var globalNavController: NavController
-
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: Route) {
+
     val sheetState = rememberBottomSheetScaffoldState()
     val scope = rememberCoroutineScope()
-    globalNavController = navController
 
     val packagesViewModel =
         ViewModelProvider(owner)[PackagesViewModelImpl::class.java]
@@ -52,6 +52,12 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
     val atlasViewModel =
         ViewModelProvider(owner)[AtlasViewModelImpl::class.java]
 
+    ArgumentsHolder.packagesList = packagesViewModel.getExamplePackages()
+    ArgumentsHolder.atlasViewModel = atlasViewModel
+
+    val packages = remember {
+        mutableStateOf(ArgumentsHolder.packagesList)
+    }
 
     addPackageState = remember {
         mutableStateOf(false)
@@ -69,12 +75,13 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
         scaffoldState = sheetState,
         topBar = {
             AppBar(
+                navigationIcon = Icons.Filled.Menu,
                 onNavigationIconClick = {
                     scope.launch {
                         sheetState.drawerState.open()
                     }
                 },
-                packagesViewModel
+                packagesViewModel = packagesViewModel
             )
         },
         drawerGesturesEnabled = sheetState.drawerState.isOpen,
@@ -125,7 +132,7 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
             DrawerFooter()
         },
         sheetContent = {
-            Packages(packagesViewModel = packagesViewModel)
+            Packages(navController = navController, packagesViewModel = packagesViewModel, packages = packages)
         },
         sheetShape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
         sheetElevation = 10.dp,
@@ -148,7 +155,8 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
                 Column {
                     Spacer(modifier = Modifier.weight(1f))
 
-                    StartRouteRoundedButton(
+                    StartRouteRoundedButton(navController = navController,
+                        packagesToStartRoute = packages.value,
                         modifier = Modifier.padding(
                             start = 15.dp,
                             bottom = 10.dp
@@ -182,7 +190,7 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
 }
 
 @Composable
-fun StartRouteRoundedButton(modifier: Modifier = Modifier) {
+fun StartRouteRoundedButton(navController: NavController, packagesToStartRoute: List<Package>, modifier: Modifier = Modifier) {
     Surface(
         shape = RoundedCornerShape(10.dp),
         color = Black,
@@ -193,7 +201,8 @@ fun StartRouteRoundedButton(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .clickable {
                     //TODO start route
-                    globalNavController.navigate(route = Screen.StartRoute.route)
+                    ArgumentsHolder.packagesList = packagesToStartRoute
+                    navController.navigate(route = Screen.StartRoute.route)
 
                 }
                 .padding(vertical = 5.dp, horizontal = 10.dp)
