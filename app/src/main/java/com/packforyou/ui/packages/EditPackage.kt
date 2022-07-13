@@ -8,10 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.SpanStyle
@@ -21,18 +18,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.ViewModelStoreOwner
 import com.packforyou.data.models.Package
 import com.packforyou.ui.theme.Black
 import com.packforyou.ui.theme.PackForYouTypography
 import com.packforyou.ui.theme.White
 
-lateinit var selectedPackage: MutableState<Package>
-lateinit var editPackageState: MutableState<Boolean>
+private lateinit var editPackageState: MutableState<Boolean>
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SelectPackageToEdit(dialogState: MutableState<Boolean>, packages: List<Package>) {
-    selectedPackage = remember { mutableStateOf(packages[0]) }
+fun SelectPackageToEdit(
+    dialogState: MutableState<Boolean>,
+    packages: List<Package>,
+    owner: ViewModelStoreOwner
+) {
+    var selectedPackage by remember { mutableStateOf(packages[0]) }
     editPackageState = remember { mutableStateOf(false) }
 
     Dialog(
@@ -109,14 +110,14 @@ fun SelectPackageToEdit(dialogState: MutableState<Boolean>, packages: List<Packa
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    selectedPackage.value = pckge
+                                    selectedPackage = pckge
                                 }
                                 .padding(horizontal = 5.dp)
                         ) {
 
                             RadioButton(
-                                selected = selectedPackage.value.numPackage == pckge.numPackage,
-                                onClick = { selectedPackage.value = pckge }
+                                selected = selectedPackage.numPackage == pckge.numPackage,
+                                onClick = { selectedPackage = pckge }
                             )
                             SimplePackageItem(
                                 pckge = pckge,
@@ -128,20 +129,23 @@ fun SelectPackageToEdit(dialogState: MutableState<Boolean>, packages: List<Packa
                         Spacer(Modifier.height(20.dp))
                     }
                 }
-                EditPackageButton()
+                EditPackageButton(
+                    selectedPackage = selectedPackage
+                )
             }
         }
     }
 
     if (editPackageState.value) {
-        dialogState.value = false
-        EditPackage()
+        //I give dialogState bc this way, when the user closes the AddPackage Dialog
+        //he will also close the SelectPackageToEdit one
+        AddPackage(dialogState = dialogState, packge = selectedPackage, owner = owner)
     }
 }
 
 
 @Composable
-fun EditPackageButton() {
+fun EditPackageButton(selectedPackage: Package) {
     Button(
         onClick = {
             editPackageState.value = true
@@ -157,7 +161,7 @@ fun EditPackageButton() {
                     append("Edit: ")
                 }
                 withStyle(style = SpanStyle(fontSize = 15.sp)) {
-                    append("Package ${selectedPackage.value.numPackage}")
+                    append("Package ${selectedPackage.numPackage}")
                 }
             },
             color = White,
@@ -166,9 +170,4 @@ fun EditPackageButton() {
         )
 
     }
-}
-
-@Composable
-fun EditPackage(packge: Package? = null) {
-    //TODO
 }

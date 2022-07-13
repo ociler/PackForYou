@@ -34,9 +34,9 @@ import kotlinx.coroutines.launch
 
 //This will be the main screen. Exists just to be able to use the packages and the map on the same screen
 
-lateinit var addPackageState: MutableState<Boolean>
-lateinit var selectPackageToEditState: MutableState<Boolean>
-lateinit var defineEndLocationState: MutableState<Boolean>
+private lateinit var addPackageState: MutableState<Boolean>
+private lateinit var selectPackageToEditState: MutableState<Boolean>
+private lateinit var defineEndLocationState: MutableState<Boolean>
 
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -173,7 +173,7 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
     }
 
     if (selectPackageToEditState.value) {
-        SelectPackageToEdit(selectPackageToEditState, packagesViewModel.getExamplePackages())
+        SelectPackageToEdit(dialogState = selectPackageToEditState, packages = packages.value, owner = owner)
     }
 
     if (defineEndLocationState.value) {

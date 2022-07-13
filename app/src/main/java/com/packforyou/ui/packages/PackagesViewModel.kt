@@ -178,7 +178,7 @@ class PackagesViewModelImpl @Inject constructor(
     fun getLocationFromAddress(strAddress: String?, context: Context): LatLng? {
         val coder = Geocoder(context)
         val address: List<Address>?
-        var p1: LatLng? = null
+        val p1: LatLng
         try {
             address = coder.getFromLocationName(strAddress, 5)
             if (address == null) {
@@ -191,7 +191,7 @@ class PackagesViewModelImpl @Inject constructor(
             )
 
             return p1
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             e.printStackTrace()
         }
         return null

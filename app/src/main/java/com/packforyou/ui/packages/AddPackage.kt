@@ -44,9 +44,11 @@ fun AddPackage(
     packge: Package? = null,
     owner: ViewModelStoreOwner
 ) {
+    val packageAddress = packge?.location?.address ?: ""
+    val packageClient = packge?.client?.name ?: ""
 
-    var addressText by remember { mutableStateOf("") }
-    var clientText by remember { mutableStateOf("") }
+    var addressText by remember { mutableStateOf(packageAddress) }
+    var clientText by remember { mutableStateOf(packageClient) }
 
     val atlasViewModel =
         ViewModelProvider(owner)[AtlasViewModelImpl::class.java]
@@ -101,8 +103,9 @@ fun AddPackage(
                             modifier = Modifier
                                 .fillMaxWidth()
                         ) {
+                            val title = if(packge != null) "Add Package" else "Edit Package"
                             Text(
-                                text = "Add Package",
+                                text = title,
                                 fontSize = 18.sp,
                                 style = PackForYouTypography.displayMedium,
                                 fontWeight = FontWeight.SemiBold
