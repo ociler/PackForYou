@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,20 +33,22 @@ import com.packforyou.ui.theme.*
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun PackageItem(pckge: Package, index: Int = 0) {
+fun PackageItem(pckge: Package, index: Int = 0, packages: MutableState<List<Package>>? = null) {
     val dismissState = rememberDismissState(
         initialValue = DismissValue.Default,
         confirmStateChange = {
             if (it == DismissValue.DismissedToStart) {
                 //TODO remove package
-                ArgumentsHolder.packagesList = ArgumentsHolder.packagesList.drop(index)
-                println("Adios crack")
+                ArgumentsHolder.packagesList = ArgumentsHolder.packagesList.minusElement(pckge)
+                packages!!.value = ArgumentsHolder.packagesList
+
             } else if (it == DismissValue.DismissedToEnd) {
                 pckge.isDelivered = true
             }
             true
         }
     )
+
     Column(
         modifier = Modifier.padding(horizontal = 15.dp)
     ) {
@@ -121,7 +124,10 @@ fun PackageItem(pckge: Package, index: Int = 0) {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        StateIcon(state = pckge.state, modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp))
+        StateIcon(
+            state = pckge.state,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
+        )
     }
 }
 

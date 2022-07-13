@@ -53,11 +53,11 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
         ViewModelProvider(owner)[AtlasViewModelImpl::class.java]
 
     ArgumentsHolder.packagesList = packagesViewModel.getExamplePackages()
-    ArgumentsHolder.atlasViewModel = atlasViewModel
 
     val packages = remember {
         mutableStateOf(ArgumentsHolder.packagesList)
     }
+    println("")
 
     addPackageState = remember {
         mutableStateOf(false)
@@ -132,7 +132,7 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
             DrawerFooter()
         },
         sheetContent = {
-            Packages(navController = navController, packagesViewModel = packagesViewModel, packages = packages)
+            PackagesScreen(navController = navController, packagesViewModel = packagesViewModel, packages = packages)
         },
         sheetShape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
         sheetElevation = 10.dp,
@@ -174,6 +174,7 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
 
     if (selectPackageToEditState.value) {
         SelectPackageToEdit(dialogState = selectPackageToEditState, packages = packages.value, owner = owner)
+        //TODO CAMBIAR TIPO DE DATO EDIT PACKAGE
     }
 
     if (defineEndLocationState.value) {

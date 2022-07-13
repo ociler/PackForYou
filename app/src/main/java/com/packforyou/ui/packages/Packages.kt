@@ -5,7 +5,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.DismissValue
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -31,8 +35,9 @@ import com.packforyou.ui.theme.Black
 import com.packforyou.ui.theme.PackForYouTypography
 import com.packforyou.ui.theme.White
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun Packages(
+fun PackagesScreen(
     navController: NavController,
     packagesViewModel: IPackagesViewModel,
     packages: MutableState<List<Package>>
@@ -70,6 +75,36 @@ fun Packages(
                     FilterButton()
                 }
 
+                items(packages.value, {pckge: Package -> pckge.numPackage}) { pckge ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Canvas(
+                            modifier = Modifier.size(10.dp),
+                            onDraw = {
+                                drawCircle(color = Black)
+                            }
+                        )
+
+                        Text(
+                            text = "REF ${pckge.numPackage}",
+                            style = PackForYouTypography.displayLarge,
+                            modifier = Modifier.padding(start = 5.dp)
+                        )
+                    }
+
+                    Spacer(Modifier.width(10.dp))
+
+                    Column {
+                        Spacer(Modifier.height(15.dp))
+
+                        PackageItem(pckge = pckge, index = 0, packages = packages)
+
+                        Spacer(modifier = Modifier.height(35.dp))
+                    }
+                }
+
+//TODO try to implement the line between packages
+/*
+
                 item {
 
                     Box {
@@ -97,7 +132,7 @@ fun Packages(
                         Column(modifier = Modifier.onGloballyPositioned {
                             //we get the height in px of the column when it is already composed.
                             //It is a callback, so we need to use a mutableState
-                            columnHeightInPx.value = it.size.height
+                            //columnHeightInPx.value = it.size.height
                         }) {
                             packages.value.forEachIndexed { index, pckge ->
 
@@ -121,7 +156,7 @@ fun Packages(
                                 Column {
                                     Spacer(Modifier.height(15.dp))
 
-                                    PackageItem(pckge = pckge, index = index)
+                                    PackageItem(pckge = pckge, index = index, packages = packages)
 
                                     Spacer(modifier = Modifier.height(35.dp))
                                 }
@@ -130,10 +165,12 @@ fun Packages(
 
                     }
                 }
+
+ */
             }
         }
 
-        StartRouteRectangularButton(navController, packages.value.toMutableList())
+        StartRouteRectangularButton(navController, packages.value)
     }
 }
 
@@ -165,7 +202,6 @@ fun FilterButton() {
 fun StartRouteRectangularButton(navController: NavController, packagesToStartRoute: List<Package>) {
     Button(
         onClick = {
-            //TODO start route
             ArgumentsHolder.packagesList = packagesToStartRoute
             navController.navigate(route = Screen.StartRoute.route)
         },
