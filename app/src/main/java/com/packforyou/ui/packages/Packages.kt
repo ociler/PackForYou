@@ -43,10 +43,6 @@ fun PackagesScreen(
     packages: MutableState<List<Package>>
 ) {
 
-    val columnHeightInPx = remember {
-        mutableStateOf(0)
-    }
-
     Column(Modifier.fillMaxHeight(.9f)) {
 
         Column(
@@ -75,30 +71,72 @@ fun PackagesScreen(
                     FilterButton()
                 }
 
-                items(packages.value, {pckge: Package -> pckge.numPackage}) { pckge ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Canvas(
-                            modifier = Modifier.size(10.dp),
-                            onDraw = {
-                                drawCircle(color = Black)
-                            }
-                        )
 
-                        Text(
-                            text = "REF ${pckge.numPackage}",
-                            style = PackForYouTypography.displayLarge,
-                            modifier = Modifier.padding(start = 5.dp)
-                        )
+                //we need the key value because if we don't use it, the column will recognize each
+                //element by his position on the column and, if we remove it, the column will be confused
+                //and will mark as dismissed the element below of it because the column thinks that it is
+                //this one the dismissed one as it's on the position the removed element was.
+                //With the key parameter, the lazy column will take the numPackage as the way
+                //to recognize each element
+                items(packages.value, key = { pckge: Package -> pckge.numPackage }) { pckge ->
+                    val columnHeightInPx = remember {
+                        mutableStateOf(0)
                     }
 
-                    Spacer(Modifier.width(10.dp))
+                    Box {
 
-                    Column {
-                        Spacer(Modifier.height(15.dp))
+                        //Pointed line
+                        Canvas(
+                            modifier = Modifier
+                                .height(with(LocalDensity.current) { columnHeightInPx.value.toDp() })
+                        ) {
 
-                        PackageItem(pckge = pckge, index = 0, packages = packages)
+                            val height = size.height
 
-                        Spacer(modifier = Modifier.height(35.dp))
+                            drawLine(
+                                start = Offset(x = 13f, y = 45f),
+                                end = Offset(x = 13f, y = height + 30f),
+                                color = Color.Black,
+                                strokeWidth = 6f,
+                                pathEffect = PathEffect.dashPathEffect(
+                                    floatArrayOf(30f, 20f), phase = 0f
+                                )
+                            )
+                        }
+
+                        Column(modifier = Modifier.onGloballyPositioned {
+                            //we get the height in px of the column (item) when it is already composed.
+                            //it is a callback so it needs to be a mutableState
+                            columnHeightInPx.value = it.size.height
+                        }) {
+
+
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Canvas(
+                                    modifier = Modifier.size(10.dp),
+                                    onDraw = {
+                                        drawCircle(color = Black)
+                                    }
+                                )
+
+                                Text(
+                                    text = "REF ${pckge.numPackage}",
+                                    style = PackForYouTypography.displayLarge,
+                                    modifier = Modifier.padding(start = 5.dp)
+                                )
+                            }
+
+                            Spacer(Modifier.width(10.dp))
+
+                            Column {
+                                Spacer(Modifier.height(15.dp))
+
+                                PackageItem(pckge = pckge, packages = packages)
+
+                                Spacer(modifier = Modifier.height(35.dp))
+                            }
+                        }
+
                     }
                 }
 

@@ -33,7 +33,7 @@ import com.packforyou.ui.theme.*
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun PackageItem(pckge: Package, index: Int = 0, packages: MutableState<List<Package>>? = null) {
+fun PackageItem(pckge: Package, packages: MutableState<List<Package>>? = null) {
     val dismissState = rememberDismissState(
         initialValue = DismissValue.Default,
         confirmStateChange = {
