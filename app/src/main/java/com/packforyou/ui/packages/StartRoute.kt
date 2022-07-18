@@ -127,7 +127,15 @@ fun StartRouteScreen(
 
                 LazyColumn {
                     item {
-                        PackageItem(pckge = currentPackage)
+                        Column(modifier = Modifier.padding(horizontal = 15.dp)) {
+                            PackageCard(pckge = currentPackage)
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            StateIcon(
+                                state = currentPackage.state,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
+                            )
+                        }
                     }
                 }
             }
