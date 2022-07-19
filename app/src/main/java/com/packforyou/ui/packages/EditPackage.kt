@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,10 +31,10 @@ private lateinit var editPackageState: MutableState<Boolean>
 @Composable
 fun SelectPackageToEdit(
     dialogState: MutableState<Boolean>,
-    packages: List<Package>,
+    packages: MutableState<List<Package>>,
     owner: ViewModelStoreOwner
 ) {
-    var selectedPackage by remember { mutableStateOf(packages[0]) }
+    var selectedPackage by remember { mutableStateOf(packages.value[0]) }
     editPackageState = remember { mutableStateOf(false) }
 
     Dialog(
@@ -80,7 +81,8 @@ fun SelectPackageToEdit(
                             Text(
                                 text = "Edit package",
                                 fontSize = 18.sp,
-                                style = PackForYouTypography.displayMedium
+                                style = PackForYouTypography.displayMedium,
+                                fontWeight = FontWeight.SemiBold
                             )
                         }
                     }
@@ -103,7 +105,7 @@ fun SelectPackageToEdit(
                     item {
                         Spacer(modifier = Modifier.height(20.dp))
                     }
-                    items(packages) { pckge ->
+                    items(packages.value) { pckge ->
 
                         Row(
                             verticalAlignment = Alignment.CenterVertically,

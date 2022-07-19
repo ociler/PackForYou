@@ -13,6 +13,7 @@ import com.packforyou.api.ICallbackDirectionsResponse
 import com.packforyou.data.directionsDataClases.DirectionsResponse
 import com.packforyou.data.models.*
 import com.packforyou.data.repositories.IPackagesAndAtlasRepository
+import com.packforyou.ui.login.CurrentSession
 import com.packforyou.ui.utils.PermutationsIteratively
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -101,6 +102,9 @@ interface IPackagesViewModel {
     fun setDistanceArray(distanceArray: Array<IntArray>)
     fun setStartDistanceArray(startDistanceArray: IntArray)
     fun setEndDistanceArray(endDistanceArray: IntArray)
+    fun removePackage(pckge: Package)
+    fun getExampleLastLocations(): List<Location>
+    fun removePackageFromForDeliveryList(pckge: Package)
 }
 
 @HiltViewModel
@@ -169,9 +173,12 @@ class PackagesViewModelImpl @Inject constructor(
 
 
     override fun addPackage(packge: Package) {
+        CurrentSession.packagesForToday.value = CurrentSession.packagesForToday.value.plus(packge)
+        CurrentSession.packagesToDeliver.value = CurrentSession.packagesToDeliver.value.plus(packge)
         viewModelScope.launch {
             repository.addPackage(packge)
         }
+        println()
 
     }
 
@@ -681,6 +688,24 @@ class PackagesViewModelImpl @Inject constructor(
 
     override fun setEndDistanceArray(endDistanceArray: IntArray) {
         globalEndDistanceArray = endDistanceArray
+    }
+
+    override fun removePackage(pckge: Package) {
+        //TODO remove from database
+    }
+
+    override fun getExampleLastLocations(): List<Location> {
+        return listOf(
+            Location(address = "Valencia"),
+            Location(address = "El Hierro la mejor isla del mundo entero ", latitude = 2.0),
+            Location(address = "El Hierro la mejor isla del mundo entero ", latitude = 3.0),
+            Location(address = "El Hierro la mejor isla del mundo entero ", latitude = 4.0),
+        )
+    }
+
+    override fun removePackageFromForDeliveryList(pckge: Package) {
+        CurrentSession.packagesToDeliver.value =
+            CurrentSession.packagesToDeliver.value.minusElement(pckge)
     }
 
     override fun getExamplePackages(): List<Package> {

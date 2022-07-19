@@ -108,7 +108,7 @@ class PackagesAndAtlasRepositoryImpl(
         endDistanceArray = IntArray(size)
     }
 
-    override suspend fun addPackage(packge: Package) {
+    override suspend fun addPackage(packge: Package) { //TODO fix database connections
         dataSource.addPackage(packge).collect { state ->
             when (state) {
                 is CallbackState.Loading -> {

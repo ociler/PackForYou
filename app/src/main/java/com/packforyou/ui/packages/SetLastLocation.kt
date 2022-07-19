@@ -150,7 +150,9 @@ fun SetLastLocationItem(location: Location) {
         Spacer(modifier = Modifier.weight(1f))
 
         IconButton(
-            onClick = { /*TODO remove this last location*/ },
+            onClick = {
+                      /*TODO remove this last location*/
+                      },
             modifier = Modifier.padding(end = 10.dp)
         ) {
             Icon(

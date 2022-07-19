@@ -5,7 +5,7 @@ import java.util.*
 data class Package(
     var numPackage: Int = 0,
     var order: Int? = 0,
-    var isDelivered: Boolean? = false,
+    var isDelivered: Boolean = false,
     var deliveryDate: Date? = null,
     var note: String? = "",
     var urgency: Urgency? = Urgency.NOT_URGENT,

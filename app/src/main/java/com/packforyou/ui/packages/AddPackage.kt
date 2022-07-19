@@ -1,5 +1,6 @@
 package com.packforyou.ui.packages
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -28,10 +29,12 @@ import com.packforyou.R
 import com.packforyou.data.models.*
 import com.packforyou.navigation.ArgumentsHolder
 import com.packforyou.ui.atlas.AtlasViewModelImpl
+import com.packforyou.ui.login.CurrentSession
 import com.packforyou.ui.theme.Black
 import com.packforyou.ui.theme.CustomExposedDropdownMenu
 import com.packforyou.ui.theme.PackForYouTypography
 import com.packforyou.ui.theme.White
+import kotlinx.coroutines.currentCoroutineContext
 import java.util.*
 import kotlin.random.Random
 
@@ -61,6 +64,9 @@ fun AddPackage(
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(parsedLatLng!!, 20f)
     }
+
+
+    val caption = if (packge == null) "Add Package" else "Edit Package"
 
 
     Dialog(
@@ -103,9 +109,8 @@ fun AddPackage(
                             modifier = Modifier
                                 .fillMaxWidth()
                         ) {
-                            val title = if(packge != null) "Add Package" else "Edit Package"
                             Text(
-                                text = title,
+                                text = caption,
                                 fontSize = 18.sp,
                                 style = PackForYouTypography.displayMedium,
                                 fontWeight = FontWeight.SemiBold
@@ -217,28 +222,52 @@ fun AddPackage(
                         Button(
                             onClick = {
                                 if (parsedLatLng != null) {
-                                    val newPackage = Package(
-                                        numPackage = Random.nextInt(
-                                            0,
-                                            1000
-                                        ), //TODO create hash function
-                                        deliveryDate = Date(System.currentTimeMillis()),
-                                        isDelivered = false,
-                                        urgency = selectedOption,
-                                        client = Client(name = clientText),
-                                        location = Location(
+                                    if (packge == null) {
+                                        val newPackage = Package(
+                                            numPackage = Random.nextInt(
+                                                0,
+                                                1000
+                                            ), //TODO create hash function
+                                            deliveryDate = Date(System.currentTimeMillis()),
+                                            isDelivered = false,
+                                            urgency = selectedOption,
+                                            client = Client(name = clientText),
+                                            location = Location(
+                                                address = addressText,
+                                                latitude = parsedLatLng!!.latitude,
+                                                longitude = parsedLatLng!!.longitude
+                                            ),
+                                            deliveryMan = CurrentSession.deliveryMan,
+                                            state = PackageState.CONFIRMED
+                                        )
+
+                                        packagesViewModel.addPackage(newPackage)
+
+                                    } else { //Editing package
+
+                                        val newLocation = Location(
                                             address = addressText,
                                             latitude = parsedLatLng!!.latitude,
                                             longitude = parsedLatLng!!.longitude
-                                        ),
-                                        deliveryMan = null, //TODO current deliveryman
-                                        state = PackageState.CONFIRMED
-                                    )
+                                        )
 
-                                    ArgumentsHolder.packagesList =
-                                        ArgumentsHolder.packagesList.plus(newPackage)
+                                        val editedPackage = packge.copy(
+                                            location = newLocation,
+                                            client = packge.client.copy(name = clientText),
+                                            urgency = selectedOption
+                                        )
+
+                                        packagesViewModel.removePackageFromForDeliveryList(pckge = packge)
+                                        packagesViewModel.addPackage(packge = editedPackage)
+                                    }
+                                    dialogState.value = false
+                                } else {
+                                    Toast.makeText(
+                                        context,
+                                        "Address not recognized. Please set a valid address.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
-                                dialogState.value = false
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -246,7 +275,7 @@ fun AddPackage(
                             shape = RoundedCornerShape(10.dp)
                         ) {
                             Text(
-                                text = "Add Package",
+                                text = caption,
                                 fontSize = 18.sp,
                                 modifier = Modifier.padding(vertical = 5.dp),
                                 color = White

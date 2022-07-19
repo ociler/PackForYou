@@ -247,7 +247,7 @@ fun AtlasWithGivenRoute(route: Route, viewModel: IAtlasViewModel) {
         if (route.deliveryMan!!.currentLocation != null) {
             val currentLocation = route.deliveryMan!!.currentLocation
             latLong = LatLng(currentLocation!!.latitude, currentLocation.longitude)
-            MarkerInfoWindow( //TODO change info window of start and end location
+            MarkerInfoWindow(
                 state = MarkerState(position = latLong),
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_start_location)
             ) {
@@ -275,12 +275,12 @@ fun AtlasWithGivenRoute(route: Route, viewModel: IAtlasViewModel) {
         //We set end location in case it exists
         if (endLocation != null) {
             latLong = LatLng(endLocation.latitude, endLocation.longitude)
-            Marker(
+            MarkerInfoWindow( //TODO change finish icon
                 state = MarkerState(position = latLong),
-                title = endLocation.address,
-                snippet = "End Location",
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.finish)
-            )
+            ) {
+                CustomEndMarkerWindow(endLocation = endLocation)
+            }
         }
 
         Polyline(
@@ -305,8 +305,6 @@ private fun getProperMarker(state: PackageState): Int {
             R.drawable.ic_not_confirmed_marker
         }
     }
-
-    //TODO we should add some markers to define the Urgency of the package
 }
 
 @Composable

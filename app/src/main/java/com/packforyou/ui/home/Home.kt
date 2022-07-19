@@ -26,6 +26,7 @@ import com.packforyou.navigation.ArgumentsHolder
 import com.packforyou.navigation.Screen
 import com.packforyou.ui.atlas.Atlas
 import com.packforyou.ui.atlas.AtlasViewModelImpl
+import com.packforyou.ui.login.CurrentSession
 import com.packforyou.ui.packages.*
 import com.packforyou.ui.theme.Black
 import com.packforyou.ui.theme.PackForYouTypography
@@ -52,12 +53,19 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
     val atlasViewModel =
         ViewModelProvider(owner)[AtlasViewModelImpl::class.java]
 
-    ArgumentsHolder.packagesList = packagesViewModel.getExamplePackages()
+    //for some reason this code is repeated so many times, but we want to set this just once
+    if(CurrentSession.firstAccess) {
+        CurrentSession.packagesForToday = mutableStateOf(packagesViewModel.getExamplePackages())
+        CurrentSession.packagesToDeliver = mutableStateOf(CurrentSession.packagesForToday.value)
+        CurrentSession.lastLocationsList = packagesViewModel.getExampleLastLocations()
+        CurrentSession.deliveryMan = route.deliveryMan
 
-    val packages = remember {
-        mutableStateOf(ArgumentsHolder.packagesList)
+        CurrentSession.firstAccess = false
     }
-    println("")
+
+    val packages = CurrentSession.packagesToDeliver
+
+    CurrentSession.packagesToDeliver
 
     addPackageState = remember {
         mutableStateOf(false)
@@ -132,7 +140,11 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
             DrawerFooter()
         },
         sheetContent = {
-            PackagesScreen(navController = navController, packagesViewModel = packagesViewModel, packages = packages)
+            PackagesScreen(
+                navController = navController,
+                packagesViewModel = packagesViewModel,
+                packages = packages
+            )
         },
         sheetShape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
         sheetElevation = 10.dp,
@@ -155,7 +167,8 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
                 Column {
                     Spacer(modifier = Modifier.weight(1f))
 
-                    StartRouteRoundedButton(navController = navController,
+                    StartRouteRoundedButton(
+                        navController = navController,
                         packagesToStartRoute = packages.value,
                         modifier = Modifier.padding(
                             start = 15.dp,
@@ -173,25 +186,28 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
     }
 
     if (selectPackageToEditState.value) {
-        SelectPackageToEdit(dialogState = selectPackageToEditState, packages = packages.value, owner = owner)
+        SelectPackageToEdit(
+            dialogState = selectPackageToEditState,
+            packages = packages,
+            owner = owner
+        )
         //TODO CAMBIAR TIPO DE DATO EDIT PACKAGE
     }
 
     if (defineEndLocationState.value) {
         SetLastLocation(
             dialogState = defineEndLocationState,
-            lastLocations = listOf(
-                Location(address = "Valencia"),
-                Location(address = "El Hierro la mejor isla del mundo entero ", latitude = 2.0),
-                Location(address = "El Hierro la mejor isla del mundo entero ", latitude = 3.0),
-                Location(address = "El Hierro la mejor isla del mundo entero ", latitude = 4.0),
-            )
+            lastLocations = CurrentSession.lastLocationsList
         )
     }
 }
 
 @Composable
-fun StartRouteRoundedButton(navController: NavController, packagesToStartRoute: List<Package>, modifier: Modifier = Modifier) {
+fun StartRouteRoundedButton(
+    navController: NavController,
+    packagesToStartRoute: List<Package>,
+    modifier: Modifier = Modifier
+) {
     Surface(
         shape = RoundedCornerShape(10.dp),
         color = Black,

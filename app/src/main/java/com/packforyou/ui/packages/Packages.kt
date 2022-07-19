@@ -35,7 +35,6 @@ import com.packforyou.ui.theme.Black
 import com.packforyou.ui.theme.PackForYouTypography
 import com.packforyou.ui.theme.White
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PackagesScreen(
     navController: NavController,
@@ -131,7 +130,7 @@ fun PackagesScreen(
                             Column {
                                 Spacer(Modifier.height(15.dp))
 
-                                PackageItem(pckge = pckge, packages = packages)
+                                PackageItem(pckge = pckge, viewModel = packagesViewModel)
 
                                 Spacer(modifier = Modifier.height(35.dp))
                             }
@@ -139,72 +138,6 @@ fun PackagesScreen(
 
                     }
                 }
-
-//TODO try to implement the line between packages
-/*
-
-                item {
-
-                    Box {
-
-
-                        //We are drawing the line taking into account the list height
-                        Canvas(
-                            modifier = Modifier
-                                .height(with(LocalDensity.current) { columnHeightInPx.value.toDp() })
-                        ) {
-
-                            val height = size.height
-
-                            drawLine(
-                                start = Offset(x = 13f, y = 45f),
-                                end = Offset(x = 13f, y = height),
-                                color = Color.Black,
-                                strokeWidth = 6f,
-                                pathEffect = PathEffect.dashPathEffect(
-                                    floatArrayOf(30f, 20f), phase = 0f
-                                )
-                            )
-                        }
-
-                        Column(modifier = Modifier.onGloballyPositioned {
-                            //we get the height in px of the column when it is already composed.
-                            //It is a callback, so we need to use a mutableState
-                            //columnHeightInPx.value = it.size.height
-                        }) {
-                            packages.value.forEachIndexed { index, pckge ->
-
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Canvas(
-                                        modifier = Modifier.size(10.dp),
-                                        onDraw = {
-                                            drawCircle(color = Black)
-                                        }
-                                    )
-
-                                    Text(
-                                        text = "REF ${pckge.numPackage}",
-                                        style = PackForYouTypography.displayLarge,
-                                        modifier = Modifier.padding(start = 5.dp)
-                                    )
-                                }
-
-                                Spacer(Modifier.width(10.dp))
-
-                                Column {
-                                    Spacer(Modifier.height(15.dp))
-
-                                    PackageItem(pckge = pckge, index = index, packages = packages)
-
-                                    Spacer(modifier = Modifier.height(35.dp))
-                                }
-                            }
-                        }
-
-                    }
-                }
-
- */
             }
         }
 

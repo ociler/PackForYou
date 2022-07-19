@@ -28,21 +28,22 @@ import androidx.compose.ui.unit.dp
 import com.packforyou.R
 import com.packforyou.data.models.*
 import com.packforyou.navigation.ArgumentsHolder
+import com.packforyou.ui.login.CurrentSession
 import com.packforyou.ui.theme.*
 
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun PackageItem(pckge: Package, packages: MutableState<List<Package>>? = null) {
+fun PackageItem(pckge: Package, viewModel: IPackagesViewModel) {
     val dismissState = rememberDismissState(
         initialValue = DismissValue.Default,
         confirmStateChange = {
             if (it == DismissValue.DismissedToStart) {
                 //TODO remove package
-                ArgumentsHolder.packagesList = ArgumentsHolder.packagesList.minusElement(pckge)
-                packages!!.value = ArgumentsHolder.packagesList
+                viewModel.removePackageFromForDeliveryList(pckge) //we remove it from the packagesToDeliverList, not forever
 
             } else if (it == DismissValue.DismissedToEnd) {
+                viewModel.removePackageFromForDeliveryList(pckge) //we remove it from the packagesToDeliverList
                 pckge.isDelivered = true
             }
             true

@@ -11,6 +11,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.packforyou.R
+import com.packforyou.ui.login.CurrentSession
 import com.packforyou.ui.packages.DeliveredPackages
 import com.packforyou.ui.packages.IPackagesViewModel
 import com.packforyou.ui.theme.Black
@@ -28,8 +29,6 @@ fun AppBar(
     val deliveredPackagesState = remember {
         mutableStateOf(false)
     }
-
-    val deliveredPackages = packagesViewModel.getExamplePackages()
 
     CenterAlignedTopAppBar(
         title = {
@@ -65,6 +64,9 @@ fun AppBar(
     )
 
     if (deliveredPackagesState.value) {
+        val deliveredPackages = CurrentSession.packagesForToday.value.filter { pckge ->
+            pckge.isDelivered
+        }
 
         DeliveredPackages(
             dialogState = deliveredPackagesState,
