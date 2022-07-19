@@ -5,30 +5,20 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.FractionalThreshold
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Outline
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.packforyou.R
 import com.packforyou.data.models.*
-import com.packforyou.navigation.ArgumentsHolder
-import com.packforyou.ui.login.CurrentSession
 import com.packforyou.ui.theme.*
 
 
@@ -40,10 +30,10 @@ fun PackageItem(pckge: Package, viewModel: IPackagesViewModel) {
         confirmStateChange = {
             if (it == DismissValue.DismissedToStart) {
                 //TODO remove package
-                viewModel.removePackageFromForDeliveryList(pckge) //we remove it from the packagesToDeliverList, not forever
+                viewModel.removePackageFromToDeliverList(pckge)
 
             } else if (it == DismissValue.DismissedToEnd) {
-                viewModel.removePackageFromForDeliveryList(pckge) //we remove it from the packagesToDeliverList
+                viewModel.removePackageFromToDeliverList(pckge)
                 pckge.isDelivered = true
             }
             true

@@ -104,7 +104,7 @@ interface IPackagesViewModel {
     fun setEndDistanceArray(endDistanceArray: IntArray)
     fun removePackage(pckge: Package)
     fun getExampleLastLocations(): List<Location>
-    fun removePackageFromForDeliveryList(pckge: Package)
+    fun removePackageFromToDeliverList(pckge: Package)
 }
 
 @HiltViewModel
@@ -703,9 +703,11 @@ class PackagesViewModelImpl @Inject constructor(
         )
     }
 
-    override fun removePackageFromForDeliveryList(pckge: Package) {
+    override fun removePackageFromToDeliverList(pckge: Package) {
         CurrentSession.packagesToDeliver.value =
-            CurrentSession.packagesToDeliver.value.minusElement(pckge)
+            CurrentSession.packagesToDeliver.value.filter {
+                it.numPackage != pckge.numPackage
+            }
     }
 
     override fun getExamplePackages(): List<Package> {

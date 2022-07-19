@@ -1,22 +1,17 @@
 package com.packforyou.ui.packages
 
-import android.graphics.drawable.Icon
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavController
@@ -25,17 +20,15 @@ import com.google.maps.android.compose.*
 import com.packforyou.R
 import com.packforyou.data.models.Package
 import com.packforyou.ui.atlas.AtlasViewModelImpl
-import com.packforyou.ui.atlas.IAtlasViewModel
 import com.packforyou.ui.home.AppBar
 import com.packforyou.ui.theme.Black
 import com.packforyou.ui.theme.PackForYouTypography
 import com.packforyou.ui.theme.White
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StartRouteScreen(
-    packagesList: List<Package>,
+    packagesList: MutableState<List<Package>>,
     navController: NavController,
     owner: ViewModelStoreOwner
 ) {
@@ -51,15 +44,15 @@ fun StartRouteScreen(
     }
 
     var currentPackage by remember {
-        mutableStateOf(packagesList[0])
+        mutableStateOf(packagesList.value[0])
     }
 
     var previousPackage by remember {
-        mutableStateOf(packagesList[0])
+        mutableStateOf(packagesList.value[0])
     }
 
     var nextPackage by remember {
-        mutableStateOf(packagesList[1])
+        mutableStateOf(packagesList.value[1])
     }
 
     var markerPosition = LatLng(currentPackage.location.latitude, currentPackage.location.longitude)
@@ -88,7 +81,7 @@ fun StartRouteScreen(
                     mapStyleOptions = MapStyleOptions(atlasViewModel.getMapStyleString())
                 )
             ) {
-                packagesList.forEach {
+                packagesList.value.forEach {
                     markerPosition = LatLng(it.location.latitude, it.location.longitude)
                     Marker(
                         state = MarkerState(position = markerPosition),
@@ -142,77 +135,79 @@ fun StartRouteScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            //BACK ARROW
-            Row(Modifier.padding(horizontal = 10.dp)) {
-                if (currentPosition != 0) {
-                    Surface(onClick = {
-                        currentPackage = packagesList[currentPosition - 1]
-                        currentPosition--
-                        markerPosition = LatLng(
-                            currentPackage.location.latitude,
-                            currentPackage.location.longitude
-                        )
-                        cameraPositionState.position =
-                            CameraPosition.fromLatLngZoom(markerPosition, 18f)
-                    }) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            previousPackage = packagesList[currentPosition - 1]
-                            Icon(
-                                imageVector = Icons.Default.ArrowBack,
-                                contentDescription = "Go to previous package"
+            Column {
+                Row(Modifier.padding(horizontal = 10.dp)) {
+                    //BACK ARROW
+                    if (currentPosition != 0) {
+                        Surface(onClick = {
+                            currentPackage = packagesList.value[currentPosition - 1]
+                            currentPosition--
+                            markerPosition = LatLng(
+                                currentPackage.location.latitude,
+                                currentPackage.location.longitude
                             )
-                            Spacer(modifier = Modifier.width(5.dp))
-                            Text(
-                                text = "REF ${previousPackage.numPackage}",
-                                style = PackForYouTypography.bodySmall,
-                                fontWeight = FontWeight.SemiBold
+                            cameraPositionState.position =
+                                CameraPosition.fromLatLngZoom(markerPosition, 18f)
+                        }) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                previousPackage = packagesList.value[currentPosition - 1]
+                                Icon(
+                                    imageVector = Icons.Default.ArrowBack,
+                                    contentDescription = "Go to previous package"
+                                )
+                                Spacer(modifier = Modifier.width(5.dp))
+                                Text(
+                                    text = "REF ${previousPackage.numPackage}",
+                                    style = PackForYouTypography.bodySmall,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    //FORWARD ARROW
+                    if (currentPosition != packagesList.value.lastIndex) {
+                        Surface(onClick = {
+                            currentPackage = packagesList.value[currentPosition + 1]
+                            currentPosition++
+                            markerPosition = LatLng(
+                                currentPackage.location.latitude,
+                                currentPackage.location.longitude
                             )
+                            cameraPositionState.position =
+                                CameraPosition.fromLatLngZoom(markerPosition, 18f)
+                        }) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                nextPackage = packagesList.value[currentPosition + 1]
+                                Text(
+                                    text = "REF ${nextPackage.numPackage}",
+                                    style = PackForYouTypography.bodySmall,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Spacer(modifier = Modifier.width(5.dp))
+                                Icon(
+                                    imageVector = Icons.Default.ArrowForward,
+                                    contentDescription = "Go to next package"
+                                )
+                            }
                         }
                     }
                 }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                //FORWARD ARROW
-                if (currentPosition != packagesList.lastIndex) {
-                    Surface(onClick = {
-                        currentPackage = packagesList[currentPosition + 1]
-                        currentPosition++
-                        markerPosition = LatLng(
-                            currentPackage.location.latitude,
-                            currentPackage.location.longitude
-                        )
-                        cameraPositionState.position =
-                            CameraPosition.fromLatLngZoom(markerPosition, 18f)
-                    }) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            nextPackage = packagesList[currentPosition + 1]
-                            Text(
-                                text = "REF ${nextPackage.numPackage}",
-                                style = PackForYouTypography.bodySmall,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Spacer(modifier = Modifier.width(5.dp))
-                            Icon(
-                                imageVector = Icons.Default.ArrowForward,
-                                contentDescription = "Go to next package"
-                            )
-                        }
-                    }
-                }
+                MarkAsDeliveredButton(currentPackage, packagesViewModel)
             }
-
-            MarkAsDeliveredButton(currentPackage)
         }
     }
 }
 
 @Composable
-fun MarkAsDeliveredButton(pckg: Package) {
+fun MarkAsDeliveredButton(pckg: Package, viewModel: IPackagesViewModel) {
     Button(
         onClick = {
             pckg.isDelivered = true
-            //TODO we need to do something else I guess
+            viewModel.removePackageFromToDeliverList(pckg)
+            //TODO fix the mark as delivered and outbounds issue
         },
         colors = ButtonDefaults.buttonColors(containerColor = Black),
         modifier = Modifier

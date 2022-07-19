@@ -217,10 +217,7 @@ fun StartRouteRoundedButton(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .clickable {
-                    //TODO start route
-                    ArgumentsHolder.packagesList = packagesToStartRoute
                     navController.navigate(route = Screen.StartRoute.route)
-
                 }
                 .padding(vertical = 5.dp, horizontal = 10.dp)
         ) {

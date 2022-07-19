@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.packforyou.data.models.Route
 import com.packforyou.ui.home.HomeScreen
+import com.packforyou.ui.login.CurrentSession
 import com.packforyou.ui.login.LoginScreen
 import com.packforyou.ui.packages.StartRouteScreen
 
@@ -35,7 +36,7 @@ fun SetupNavGraph(
         composable(
             route = Screen.StartRoute.route
         ) {
-            val packages = ArgumentsHolder.packagesList
+            val packages = CurrentSession.packagesToDeliver
             StartRouteScreen(packagesList = packages, navController = navController, owner = owner)
         }
     }

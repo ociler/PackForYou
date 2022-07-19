@@ -27,14 +27,12 @@ import com.google.android.gms.maps.model.*
 import com.google.maps.android.compose.*
 import com.packforyou.R
 import com.packforyou.data.models.*
-import com.packforyou.navigation.ArgumentsHolder
 import com.packforyou.ui.atlas.AtlasViewModelImpl
 import com.packforyou.ui.login.CurrentSession
 import com.packforyou.ui.theme.Black
 import com.packforyou.ui.theme.CustomExposedDropdownMenu
 import com.packforyou.ui.theme.PackForYouTypography
 import com.packforyou.ui.theme.White
-import kotlinx.coroutines.currentCoroutineContext
 import java.util.*
 import kotlin.random.Random
 
@@ -257,7 +255,7 @@ fun AddPackage(
                                             urgency = selectedOption
                                         )
 
-                                        packagesViewModel.removePackageFromForDeliveryList(pckge = packge)
+                                        packagesViewModel.removePackageFromToDeliverList(pckge = packge)
                                         packagesViewModel.addPackage(packge = editedPackage)
                                     }
                                     dialogState.value = false
