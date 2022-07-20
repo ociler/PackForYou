@@ -35,7 +35,7 @@ import com.packforyou.ui.theme.*
 lateinit var cameraPositionState: CameraPositionState
 
 @Composable
-fun Atlas(atlasViewModel: IAtlasViewModel, route: Route) {
+fun AtlasScreen(atlasViewModel: IAtlasViewModel, route: Route) {
     AtlasWithGivenRoute(route, atlasViewModel)
     //CasetaAtlas()
 }
@@ -240,7 +240,6 @@ fun AtlasWithGivenRoute(route: Route, viewModel: IAtlasViewModel) {
         properties = MapProperties(
             mapStyleOptions = MapStyleOptions(viewModel.getMapStyleString())
         )
-
     ) {
 
         //We set startLocation in case it exists

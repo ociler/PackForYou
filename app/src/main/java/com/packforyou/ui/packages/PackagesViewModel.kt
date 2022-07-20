@@ -26,6 +26,7 @@ import kotlin.collections.ArrayList
 interface IPackagesViewModel {
     fun addPackage(packge: Package)
     fun getAddressFromLocation(geoPoint: GeoPoint, context: Context): String
+    fun getLocationFromAddress(address: String?, context: Context) : LatLng?
 
     fun getExamplePackages(): List<Package>
 
@@ -105,6 +106,9 @@ interface IPackagesViewModel {
     fun removePackage(pckge: Package)
     fun getExampleLastLocations(): List<Location>
     fun removePackageFromToDeliverList(pckge: Package)
+    fun removeLastLocation(location: Location)
+    fun addLastLocation(location: Location)
+    fun setLastLocation(location: Location)
 }
 
 @HiltViewModel
@@ -182,7 +186,7 @@ class PackagesViewModelImpl @Inject constructor(
 
     }
 
-    fun getLocationFromAddress(strAddress: String?, context: Context): LatLng? {
+    override fun getLocationFromAddress(strAddress: String?, context: Context): LatLng? {
         val coder = Geocoder(context)
         val address: List<Address>?
         val p1: LatLng
@@ -708,6 +712,23 @@ class PackagesViewModelImpl @Inject constructor(
             CurrentSession.packagesToDeliver.value.filter {
                 it.numPackage != pckge.numPackage
             }
+    }
+
+    override fun removeLastLocation(location: Location) {
+        CurrentSession.lastLocationsList.value =
+            CurrentSession.lastLocationsList.value.minus(location)
+    }
+
+    override fun addLastLocation(location: Location) {
+        CurrentSession.lastLocationsList.value = CurrentSession.lastLocationsList.value.plus(location)
+        //TODO add to the database
+    }
+
+    override fun setLastLocation(location: Location) {
+        if(CurrentSession.deliveryMan != null) {
+            CurrentSession.deliveryMan!!.endLocation = location
+        }
+        //TODO tell this to the database
     }
 
     override fun getExamplePackages(): List<Package> {

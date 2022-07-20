@@ -9,6 +9,6 @@ object CurrentSession {
     var deliveryMan: DeliveryMan? = null
     lateinit var packagesForToday: MutableState<List<Package>>
     lateinit var packagesToDeliver: MutableState<List<Package>>
-    lateinit var lastLocationsList: List<Location>
+    lateinit var lastLocationsList: MutableState<List<Location>>
     var firstAccess = true
 }

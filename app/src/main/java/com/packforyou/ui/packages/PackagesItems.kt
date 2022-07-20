@@ -21,6 +21,7 @@ import com.packforyou.R
 import com.packforyou.data.models.*
 import com.packforyou.ui.theme.*
 
+const val MAX_NOTE_LINES = 7
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -124,7 +125,7 @@ fun PackageItem(pckge: Package, viewModel: IPackagesViewModel) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PackageCard(pckge: Package) {
+fun PackageCard(pckge: Package, isStartRoute: Boolean = false) {
 
     val color = if (pckge.state == PackageState.POSTPONED_DELIVERY)
         PostponedCard
@@ -183,7 +184,8 @@ fun PackageCard(pckge: Package) {
                         Text(
                             text = pckge.note!!,
                             textAlign = TextAlign.Justify,
-                            style = PackForYouTypography.bodyMedium
+                            style = PackForYouTypography.bodyMedium,
+                            maxLines = if(isStartRoute) MAX_NOTE_LINES else Int.MAX_VALUE
                         )
 
                     }

@@ -20,7 +20,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.NavOptions
 import com.packforyou.R
+import com.packforyou.navigation.Screen
+import com.packforyou.ui.login.CurrentSession
+import com.packforyou.ui.login.ILoginViewModel
+import com.packforyou.ui.login.LoginViewModelImpl
 import com.packforyou.ui.theme.PackForYouTypography
 import kotlinx.coroutines.launch
 
@@ -90,13 +96,18 @@ fun DrawerBody(
 }
 
 @Composable
-fun DrawerFooter(modifier: Modifier = Modifier) {
+fun DrawerFooter(navController: NavController, loginViewModel: ILoginViewModel, modifier: Modifier = Modifier) {
     Divider(color = Color.Black, thickness = 1.dp)
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                println("Logged out") //TODO log out function
+               //TODO log out function
+                loginViewModel.logOut()
+                navController.navigate(route = Screen.Login.route) {
+                    popUpTo(0)
+                }
+
             }
             .padding(12.dp)
     ) {

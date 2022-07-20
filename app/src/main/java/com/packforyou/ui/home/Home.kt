@@ -19,14 +19,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavController
 import com.packforyou.R
-import com.packforyou.data.models.Location
 import com.packforyou.data.models.Package
 import com.packforyou.data.models.Route
-import com.packforyou.navigation.ArgumentsHolder
 import com.packforyou.navigation.Screen
-import com.packforyou.ui.atlas.Atlas
+import com.packforyou.ui.atlas.AtlasScreen
 import com.packforyou.ui.atlas.AtlasViewModelImpl
 import com.packforyou.ui.login.CurrentSession
+import com.packforyou.ui.login.LoginViewModelImpl
 import com.packforyou.ui.packages.*
 import com.packforyou.ui.theme.Black
 import com.packforyou.ui.theme.PackForYouTypography
@@ -53,11 +52,14 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
     val atlasViewModel =
         ViewModelProvider(owner)[AtlasViewModelImpl::class.java]
 
+    val loginViewModel =
+        ViewModelProvider(owner)[LoginViewModelImpl::class.java]
+
     //for some reason this code is repeated so many times, but we want to set this just once
     if(CurrentSession.firstAccess) {
         CurrentSession.packagesForToday = mutableStateOf(packagesViewModel.getExamplePackages())
         CurrentSession.packagesToDeliver = mutableStateOf(CurrentSession.packagesForToday.value)
-        CurrentSession.lastLocationsList = packagesViewModel.getExampleLastLocations()
+        CurrentSession.lastLocationsList = mutableStateOf(packagesViewModel.getExampleLastLocations())
         CurrentSession.deliveryMan = route.deliveryMan
 
         CurrentSession.firstAccess = false
@@ -137,7 +139,7 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
             )
 
             Spacer(Modifier.weight(1f))
-            DrawerFooter()
+            DrawerFooter(navController = navController, loginViewModel = loginViewModel)
         },
         sheetContent = {
             PackagesScreen(
@@ -160,7 +162,7 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
                 .fillMaxSize()
         ) {
             Box(Modifier.fillMaxSize()) {
-                Atlas(
+                AtlasScreen(
                     atlasViewModel = atlasViewModel,
                     route = route
                 )
@@ -191,13 +193,13 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
             packages = packages,
             owner = owner
         )
-        //TODO CAMBIAR TIPO DE DATO EDIT PACKAGE
     }
 
     if (defineEndLocationState.value) {
         SetLastLocation(
             dialogState = defineEndLocationState,
-            lastLocations = CurrentSession.lastLocationsList
+            lastLocations = CurrentSession.lastLocationsList.value,
+            viewModel = packagesViewModel
         )
     }
 }

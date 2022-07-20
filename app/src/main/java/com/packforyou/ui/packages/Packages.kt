@@ -6,15 +6,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.DismissValue
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -70,24 +68,30 @@ fun PackagesScreen(
                     FilterButton()
                 }
 
-
                 //we need the key value because if we don't use it, the column will recognize each
                 //element by his position on the column and, if we remove it, the column will be confused
                 //and will mark as dismissed the element below of it because the column thinks that it is
                 //this one the dismissed one as it's on the position the removed element was.
                 //With the key parameter, the lazy column will take the numPackage as the way
                 //to recognize each element
-                items(packages.value, key = { pckge: Package -> pckge.numPackage }) { pckge ->
+                itemsIndexed(packages.value, key = { _: Int, pckge: Package ->
+                    pckge.numPackage
+                }) { index, pckge ->
+
                     val columnHeightInPx = remember {
                         mutableStateOf(0)
                     }
 
                     Box {
-
                         //Pointed line
                         Canvas(
-                            modifier = Modifier
-                                .height(with(LocalDensity.current) { columnHeightInPx.value.toDp() })
+                            modifier = if (index != packages.value.lastIndex) {
+                                Modifier
+                                    .height(with(LocalDensity.current) { columnHeightInPx.value.toDp() })
+                            } else {
+                                Modifier
+                                    .fillMaxHeight() //TODO fix not painted line
+                            }
                         ) {
 
                             val height = size.height
@@ -173,7 +177,6 @@ fun FilterButton() {
 fun StartRouteRectangularButton(navController: NavController, packagesToStartRoute: List<Package>) {
     Button(
         onClick = {
-            ArgumentsHolder.packagesList = packagesToStartRoute
             navController.navigate(route = Screen.StartRoute.route)
         },
         colors = ButtonDefaults.buttonColors(containerColor = Black),

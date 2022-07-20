@@ -71,8 +71,8 @@ fun StartRouteScreen(
                 packagesViewModel = packagesViewModel
             )
         }
-    ) {
-        Column(modifier = Modifier.padding(it)) {
+    ) { paddingValues ->
+        Column(modifier = Modifier.padding(paddingValues)) {
 
             GoogleMap(
                 modifier = Modifier.fillMaxHeight(.35f),
@@ -105,10 +105,11 @@ fun StartRouteScreen(
                 modifier = Modifier.padding(start = 15.dp, bottom = 10.dp, top = 12.dp)
             )
             Divider(Modifier.fillMaxWidth())
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.weight(1f)
             ) {
                 Text(
                     text = "REF ${currentPackage.numPackage}",
@@ -116,12 +117,14 @@ fun StartRouteScreen(
                     fontWeight = FontWeight.SemiBold
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 LazyColumn {
                     item {
                         Column(modifier = Modifier.padding(horizontal = 15.dp)) {
-                            PackageCard(pckge = currentPackage)
+                            Box(modifier = Modifier.padding(top = 5.dp)) {
+                                PackageCard(pckge = currentPackage, isStartRoute = true)
+                            }
                             Spacer(modifier = Modifier.height(12.dp))
 
                             StateIcon(
@@ -132,8 +135,7 @@ fun StartRouteScreen(
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.weight(1f))
+            //TODO pensar la millor manera de solucionar quan hi ha molt de text en la targeta
 
             Column {
                 Row(Modifier.padding(horizontal = 10.dp)) {
