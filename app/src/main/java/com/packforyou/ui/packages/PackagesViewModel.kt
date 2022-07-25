@@ -17,7 +17,6 @@ import com.packforyou.ui.login.CurrentSession
 import com.packforyou.ui.utils.PermutationsIteratively
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import java.io.IOException
 import java.util.*
 import javax.inject.Inject
 import kotlin.collections.ArrayList
@@ -726,7 +725,7 @@ class PackagesViewModelImpl @Inject constructor(
 
     override fun setLastLocation(location: Location) {
         if(CurrentSession.deliveryMan != null) {
-            CurrentSession.deliveryMan!!.endLocation = location
+            CurrentSession.deliveryMan!!.lastLocation = location
         }
         //TODO tell this to the database
     }

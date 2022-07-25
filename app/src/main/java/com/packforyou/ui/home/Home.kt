@@ -55,16 +55,6 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
     val loginViewModel =
         ViewModelProvider(owner)[LoginViewModelImpl::class.java]
 
-    //for some reason this code is repeated so many times, but we want to set this just once
-    if(CurrentSession.firstAccess) {
-        CurrentSession.packagesForToday = mutableStateOf(packagesViewModel.getExamplePackages())
-        CurrentSession.packagesToDeliver = mutableStateOf(CurrentSession.packagesForToday.value)
-        CurrentSession.lastLocationsList = mutableStateOf(packagesViewModel.getExampleLastLocations())
-        CurrentSession.deliveryMan = route.deliveryMan
-
-        CurrentSession.firstAccess = false
-    }
-
     val packages = CurrentSession.packagesToDeliver
 
     CurrentSession.packagesToDeliver

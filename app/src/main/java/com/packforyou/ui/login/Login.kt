@@ -1,16 +1,11 @@
 package com.packforyou.ui.login
 
-import android.app.Activity.RESULT_OK
 import android.content.Context
-import android.content.Intent
 import android.widget.Toast
-import androidx.activity.compose.ManagedActivityResultLauncher
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -19,8 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -28,18 +21,17 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavController
-import com.firebase.ui.auth.AuthUI
-import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
-import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
-import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.google.maps.android.compose.*
-import com.packforyou.data.models.DeliveryMan
+import com.packforyou.data.models.*
 import com.packforyou.navigation.Screen
 import com.packforyou.ui.theme.Black
-import com.google.firebase.auth.EmailAuthCredential
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.ktx.Firebase
+import java.io.InputStreamReader
+import java.util.*
 
 var user: FirebaseUser? = null
 private lateinit var deliveryMen: List<DeliveryMan>
@@ -101,7 +93,7 @@ fun LoginScreen(navController: NavController, owner: ViewModelStoreOwner) {
 
         Button(
             onClick = {
-                if(mailText.isBlank()){
+                if (mailText.isBlank()) {
                     Toast.makeText(context, "Your email cannot be empty", Toast.LENGTH_LONG)
                         .show()
                 } else if (passwordText.isBlank()) {
@@ -131,6 +123,26 @@ private fun tryLogin(
 ) {
     val loginCallback = object : ILoginCallback {
         override fun onLoginSuccess() {
+
+            //get firebase user
+            val user = FirebaseAuth.getInstance().currentUser!!
+
+            //if I want to add a user
+/*
+            //get reference
+            val ref = FirebaseFirestore.getInstance().collection("deliveryMen")
+
+            val deliveryManRef = ref.document(user.uid)
+
+            val deliveryMan = viewModel.getExampleDeliveryMan()
+            deliveryManRef.set(deliveryMan)
+
+ */
+
+
+
+
+
             navController.navigate(route = Screen.Home.route) {
                 popUpTo(0)
             }

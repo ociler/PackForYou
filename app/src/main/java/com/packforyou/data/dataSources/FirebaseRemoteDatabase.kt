@@ -14,6 +14,7 @@ import kotlinx.coroutines.tasks.await
 interface IFirebaseRemoteDatabase {
     fun getAllDeliveryMen(): Flow<CallbackState<List<DeliveryMan>>>
     fun getDeliveryManPackages(deliveryManId: String): Flow<CallbackState<List<Package>>>
+    fun getDeliveryMan(uid: String): Flow<CallbackState<DeliveryMan>>
 
     fun addDeliveryMan(deliveryMan: DeliveryMan): Flow<CallbackState<DocumentReference>>
     fun addPackage(packge: Package): Flow<CallbackState<DocumentReference>>
@@ -21,10 +22,10 @@ interface IFirebaseRemoteDatabase {
     fun addClient(client: Client): Flow<CallbackState<DocumentReference>>
 }
 
-val DELIVERYMEN_REF = "deliveryMen"
-val PACKAGES_REF = "packages"
-val LOCATION_REF = "locations"
-val CLIENT_REF = "clients"
+const val DELIVERYMEN_REF = "deliveryMen"
+const val PACKAGES_REF = "packages"
+const val LOCATION_REF = "locations"
+const val CLIENT_REF = "clients"
 
 class FirebaseRemoteDatabaseImpl(
     private val rootRef: FirebaseFirestore = FirebaseFirestore.getInstance() //igual esto val la pena posar-ho fora del constructor i tindre la classe sense paràmetres
@@ -60,7 +61,7 @@ class FirebaseRemoteDatabaseImpl(
 
             val deliveryManRef = deliveryMenCollection.document(deliveryMan.id)
             deliveryManRef.set(deliveryMan)
-            
+
             emit(CallbackState.success(deliveryManRef))
 
         }.catch {
@@ -73,7 +74,8 @@ class FirebaseRemoteDatabaseImpl(
         return flow {
             emit(CallbackState.loading())
 
-            val snapshot = packagesCollection.whereEqualTo("deliveryMan", deliveryManId).get().await()
+            val snapshot =
+                packagesCollection.whereEqualTo("deliveryMan", deliveryManId).get().await()
             val packages = snapshot.toObjects(Package::class.java).toList()
 
             // Emit success state with data
@@ -128,6 +130,21 @@ class FirebaseRemoteDatabaseImpl(
         }.flowOn(Dispatchers.IO)
     }
 
+    override fun getDeliveryMan(uid: String): Flow<CallbackState<DeliveryMan>> {
+        return flow {
+            emit(CallbackState.loading())
+
+            val snapshot = deliveryMenCollection.document(uid).get().await()
+            val deliveryMan = snapshot.toObject(DeliveryMan::class.java)
+
+            // Emit success state with data
+            if(deliveryMan != null)
+            emit(CallbackState.success(deliveryMan))
+
+        }.catch {
+            emit(CallbackState.failed(it.message.toString()))
+        }.flowOn(Dispatchers.IO)
+    }
 
 
 }

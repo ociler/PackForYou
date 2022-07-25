@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -19,7 +18,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -203,7 +201,7 @@ fun bitmapDescriptorFromVector(
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun AtlasWithGivenRoute(route: Route, viewModel: IAtlasViewModel) {
-    if (route.packages == null || route.deliveryMan == null) return
+    if (route.deliveryMan == null) return
 
     var latLong: LatLng
 
@@ -211,7 +209,7 @@ fun AtlasWithGivenRoute(route: Route, viewModel: IAtlasViewModel) {
     //we use this to set the camera
     val firstLocation = if (route.deliveryMan!!.currentLocation != null)
         route.deliveryMan!!.currentLocation!!
-    else route.packages!![0].location
+    else route.packages[0].location
 
     latLong = LatLng(firstLocation.latitude, firstLocation.longitude)
 
@@ -220,7 +218,7 @@ fun AtlasWithGivenRoute(route: Route, viewModel: IAtlasViewModel) {
     }
 
     //we add the endLocation in case it exists
-    val endLocation = route.deliveryMan!!.endLocation
+    val endLocation = route.deliveryMan!!.lastLocation
 
     //We observe this pointsList, that is a mutable data that will change when we get the response of DirectionsAPI
     val pointsList by viewModel.observePointsList().observeAsState(emptyList())

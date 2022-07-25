@@ -127,12 +127,6 @@ dependencies {
     //authentication firebase
     implementation 'com.google.android.gms:play-services-auth:20.2.0'
     implementation 'com.google.firebase:firebase-auth:21.0.6'
-    implementation 'com.firebaseui:firebase-ui-auth:7.2.0'
-
-    //Activity
-    implementation 'androidx.appcompat:appcompat:1.4.2'
-    implementation 'androidx.activity:activity-ktx:1.5.0'
-    implementation 'androidx.fragment:fragment-ktx:1.5.0'
 
 
 }

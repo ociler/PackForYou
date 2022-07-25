@@ -72,7 +72,7 @@ class MainActivity : ComponentActivity() {
 
 
         val deliveryMan =
-            DeliveryMan().copy(currentLocation = startLocation, endLocation = endLocation)
+            DeliveryMan().copy(currentLocation = startLocation, lastLocation = endLocation)
 
 
         setContent {

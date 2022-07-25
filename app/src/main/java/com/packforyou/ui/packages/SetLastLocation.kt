@@ -45,7 +45,11 @@ fun SetLastLocation(
     lastLocations: List<Location>,
     viewModel: IPackagesViewModel
 ) {
-    selectedLocation = remember { mutableStateOf(lastLocations[0]) }
+    selectedLocation = if (lastLocations.isNotEmpty()) {
+        remember { mutableStateOf(lastLocations[0]) }
+    } else {
+        remember { mutableStateOf(Location()) }
+    }
 
     Dialog(
         onDismissRequest = { dialogState.value = false },

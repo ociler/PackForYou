@@ -7,7 +7,8 @@ data class DeliveryMan (
     var mail: String? = "rick@packforyou.es",
     var password: String? = "password",
     var currentLocation: Location? = null,
-    var endLocation: Location? = null
+    var lastLocation: Location? = null,
+    var lastLocationList: List<Location> = listOf()
     ): Person(id, name, phone){
         var packages: List<Package> = listOf()
         var route: Route? = null

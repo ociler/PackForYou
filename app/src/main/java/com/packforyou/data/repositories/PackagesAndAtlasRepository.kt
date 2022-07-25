@@ -136,7 +136,7 @@ class PackagesAndAtlasRepositoryImpl(
         globalCallback = callback
 
         val oAddress = getFormattedAddress(route.deliveryMan?.currentLocation)
-        val dAddress = getFormattedAddress(route.deliveryMan?.endLocation)
+        val dAddress = getFormattedAddress(route.deliveryMan?.lastLocation)
         val routeLocations = getLocationsFromPackages(route.packages)
         var waypoints = getFormattedWaypointsByAddress(routeLocations)
         waypoints =
@@ -181,7 +181,7 @@ class PackagesAndAtlasRepositoryImpl(
         globalResponseCallback = callback
 
         val oAddress = getFormattedAddress(route.deliveryMan?.currentLocation)
-        val dAddress = getFormattedAddress(route.deliveryMan?.endLocation)
+        val dAddress = getFormattedAddress(route.deliveryMan?.lastLocation)
         val routeLocations = getLocationsFromPackages(route.packages)
         val waypoints = getFormattedWaypointsByAddress(routeLocations)
 

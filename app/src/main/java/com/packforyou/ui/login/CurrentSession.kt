@@ -6,9 +6,9 @@ import com.packforyou.data.models.Location
 import com.packforyou.data.models.Package
 
 object CurrentSession {
+    var userUID = ""
     var deliveryMan: DeliveryMan? = null
     lateinit var packagesForToday: MutableState<List<Package>>
     lateinit var packagesToDeliver: MutableState<List<Package>>
     lateinit var lastLocationsList: MutableState<List<Location>>
-    var firstAccess = true
 }

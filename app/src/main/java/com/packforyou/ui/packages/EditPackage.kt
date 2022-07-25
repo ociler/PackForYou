@@ -34,7 +34,15 @@ fun SelectPackageToEdit(
     packages: MutableState<List<Package>>,
     owner: ViewModelStoreOwner
 ) {
-    var selectedPackage by remember { mutableStateOf(packages.value[0]) }
+
+    var selectedPackage = if (packages.value.isNotEmpty()) {
+        remember { mutableStateOf(packages.value[0]) }
+    } else {
+        remember {
+            mutableStateOf(Package())
+        }
+    }
+
     editPackageState = remember { mutableStateOf(false) }
 
     Dialog(
@@ -112,14 +120,14 @@ fun SelectPackageToEdit(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    selectedPackage = pckge
+                                    selectedPackage.value = pckge
                                 }
                                 .padding(horizontal = 5.dp)
                         ) {
 
                             RadioButton(
-                                selected = selectedPackage.numPackage == pckge.numPackage,
-                                onClick = { selectedPackage = pckge }
+                                selected = selectedPackage.value.numPackage == pckge.numPackage,
+                                onClick = { selectedPackage.value = pckge }
                             )
                             SimplePackageItem(
                                 pckge = pckge,
@@ -132,7 +140,7 @@ fun SelectPackageToEdit(
                     }
                 }
                 EditPackageButton(
-                    selectedPackage = selectedPackage
+                    selectedPackage = selectedPackage.value
                 )
             }
         }
@@ -141,7 +149,7 @@ fun SelectPackageToEdit(
     if (editPackageState.value) {
         //I give dialogState bc this way, when the user closes the AddPackage Dialog
         //he will also close the SelectPackageToEdit one
-        AddPackage(dialogState = dialogState, packge = selectedPackage, owner = owner)
+        AddPackage(dialogState = dialogState, packge = selectedPackage.value, owner = owner)
     }
 }
 

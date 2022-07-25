@@ -11,6 +11,7 @@ interface IUsersRepository {
 
     suspend fun addDeliveryMan(deliveryMan: DeliveryMan)
     suspend fun addClient(client: Client)
+    suspend fun getDeliveryMan(uid: String): DeliveryMan
 
 }
 
@@ -21,14 +22,14 @@ class UsersRepositoryImpl(
     override suspend fun getAllDeliveryMen(): List<DeliveryMan> {
         var deliveryMen = listOf<DeliveryMan>()
 
-        dataSource.getAllDeliveryMen().collect { state->
+        dataSource.getAllDeliveryMen().collect { state ->
             when (state) {
                 is CallbackState.Loading -> {
                     println("Wait! It's loading")
                 }
 
                 is CallbackState.Success -> {
-                   deliveryMen = state.data
+                    deliveryMen = state.data
                 }
 
                 is CallbackState.Failed -> println("Failed! ${state.message}")
@@ -69,6 +70,26 @@ class UsersRepositoryImpl(
                 }
             }
         }
+    }
+
+    override suspend fun getDeliveryMan(uid: String): DeliveryMan {
+        var deliveryMan = DeliveryMan()
+
+        dataSource.getDeliveryMan(uid).collect { state ->
+            when (state) {
+                is CallbackState.Loading -> {
+                    println("Wait! It's loading")
+                }
+
+                is CallbackState.Success -> {
+                    deliveryMan = state.data
+                }
+
+                is CallbackState.Failed -> println("Failed! ${state.message}")
+            }
+        }
+
+        return deliveryMan
     }
 }
 
