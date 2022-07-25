@@ -19,12 +19,13 @@ fun SetupNavGraph(
 ){
     NavHost(
         navController =  navController,
-        startDestination = Screen.Home.route
+        startDestination = Screen.Login.route
     ) {
+
         composable(
             route = Screen.Login.route
         ) {
-            LoginScreen()
+            LoginScreen(navController = navController, owner = owner)
         }
 
         composable(

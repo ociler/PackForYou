@@ -76,7 +76,7 @@ fun AddPackage(
     ) {
         Card(
             modifier = Modifier
-                .fillMaxHeight(.96f)
+                .fillMaxHeight(.9f)
                 .fillMaxWidth(1f),
             shape = RoundedCornerShape(40.dp),
             colors = CardDefaults.cardColors(White)
@@ -127,7 +127,7 @@ fun AddPackage(
                     //MAP
                     Card(
                         modifier = Modifier
-                            .fillMaxHeight(.48f)
+                            .fillMaxHeight(.4f)
                             .fillMaxWidth()
                             .padding(top = 10.dp, start = 20.dp, end = 20.dp),
                         shape = RoundedCornerShape(40.dp)
@@ -236,7 +236,7 @@ fun AddPackage(
                                                 longitude = parsedLatLng!!.longitude
                                             ),
                                             deliveryMan = CurrentSession.deliveryMan,
-                                            state = PackageState.CONFIRMED
+                                            state = PackageState.NOT_CONFIRMED
                                         )
 
                                         packagesViewModel.addPackage(newPackage)

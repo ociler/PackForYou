@@ -84,14 +84,14 @@ fun PackagesScreen(
 
                     Box {
                         //Pointed line
+                        val modifier = if (index != packages.value.lastIndex) {
+                            Modifier.height(with(LocalDensity.current) { columnHeightInPx.value.toDp() })
+                        } else {
+                            Modifier
+                        }
+
                         Canvas(
-                            modifier = if (index != packages.value.lastIndex) {
-                                Modifier
-                                    .height(with(LocalDensity.current) { columnHeightInPx.value.toDp() })
-                            } else {
-                                Modifier
-                                    .fillMaxHeight() //TODO fix not painted line
-                            }
+                            modifier = modifier
                         ) {
 
                             val height = size.height

@@ -46,7 +46,7 @@ fun SelectPackageToEdit(
     ) {
         Card(
             modifier = Modifier
-                .fillMaxHeight(.96f)
+                .fillMaxHeight(.9f)
                 .fillMaxWidth(1f),
             shape = RoundedCornerShape(40.dp),
             colors = CardDefaults.cardColors(White)

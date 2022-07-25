@@ -154,19 +154,21 @@ fun PackageCard(pckge: Package, isStartRoute: Boolean = false) {
                             text = pckge.location.address,
                             style = PackForYouTypography.bodyMedium
                         )
-                        Spacer(Modifier.height(5.dp))
-                        Text(
-                            text = pckge.client.name,
-                            style = PackForYouTypography.bodyMedium
-                        )
                     }
-
                     Spacer(modifier = Modifier.width(15.dp))
 
                     UrgencyIcon(
                         urgency = pckge.urgency
                     )
                 }
+
+
+                Spacer(Modifier.height(5.dp))
+                Text(
+                    text = pckge.client.name,
+                    style = PackForYouTypography.bodyMedium
+                )
+
                 if (!pckge.note.isNullOrBlank()) { //TODO correct the little card under the card.
                     // idk why because of this block of code this little card appears always.
                     Spacer(modifier = Modifier.height(20.dp))
@@ -276,7 +278,7 @@ fun SimplePackageItem(pckge: Package, modifier: Modifier = Modifier) {
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(start = 5.dp)
         )
-        Spacer(Modifier.width(10.dp))
+        Spacer(Modifier.height(10.dp))
         Surface(
             shadowElevation = 10.dp,
             color = White, shape = RoundedCornerShape(25.dp)

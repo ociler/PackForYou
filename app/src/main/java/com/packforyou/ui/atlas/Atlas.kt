@@ -330,14 +330,15 @@ fun CustomMarkerInfoWindow(pckg: Package) {
                     fontWeight = FontWeight.SemiBold
                 )
 
-                Spacer(modifier = Modifier.width(15.dp))
+                Spacer(modifier = Modifier.weight(1f))
 
                 Text(
                     text = urgencyText,
                     style = PackForYouTypography.bodyMedium,
                     fontSize = 16.sp,
                     color = getStateColor(pckg.state),
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(end = 15.dp)
                 )
             }
 

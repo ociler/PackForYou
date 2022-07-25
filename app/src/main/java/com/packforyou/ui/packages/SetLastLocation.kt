@@ -56,7 +56,7 @@ fun SetLastLocation(
     ) {
         Card(
             modifier = Modifier
-                .fillMaxHeight(.96f)
+                .fillMaxHeight(.9f)
                 .fillMaxWidth(1f),
             shape = RoundedCornerShape(40.dp),
             colors = CardDefaults.cardColors(White)
@@ -280,7 +280,7 @@ private fun addNewLocation(newLocation: Location, context: Context, viewModel: I
         Toast.makeText(
             context,
             "This address is not valid. Please write a valid address.",
-            Toast.LENGTH_SHORT
+            Toast.LENGTH_LONG
         ).show()
     }
 }
