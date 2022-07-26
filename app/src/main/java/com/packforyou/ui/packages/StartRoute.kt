@@ -135,7 +135,6 @@ fun StartRouteScreen(
                     }
                 }
             }
-            //TODO pensar la millor manera de solucionar quan hi ha molt de text en la targeta
 
             Column {
                 Row(Modifier.padding(horizontal = 10.dp)) {
@@ -149,7 +148,7 @@ fun StartRouteScreen(
                                 currentPackage.location.longitude
                             )
                             cameraPositionState.position =
-                                CameraPosition.fromLatLngZoom(markerPosition, 18f)
+                                CameraPosition.fromLatLngZoom(markerPosition, 17f)
                         }) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 previousPackage = packagesList.value[currentPosition - 1]
@@ -179,7 +178,7 @@ fun StartRouteScreen(
                                 currentPackage.location.longitude
                             )
                             cameraPositionState.position =
-                                CameraPosition.fromLatLngZoom(markerPosition, 18f)
+                                CameraPosition.fromLatLngZoom(markerPosition, 17f)
                         }) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 nextPackage = packagesList.value[currentPosition + 1]

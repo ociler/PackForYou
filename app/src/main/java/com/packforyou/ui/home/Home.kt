@@ -15,9 +15,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseAuth
 import com.packforyou.R
 import com.packforyou.data.models.Package
 import com.packforyou.data.models.Route
@@ -39,25 +41,61 @@ private lateinit var selectPackageToEditState: MutableState<Boolean>
 private lateinit var defineEndLocationState: MutableState<Boolean>
 
 
+var isFirstScreen = true
+
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: Route) {
+fun HomeScreen(
+    navController: NavController,
+    viewModelOwner: ViewModelStoreOwner,
+    lifecycleOwner: LifecycleOwner,
+    route: Route
+) {
 
     val sheetState = rememberBottomSheetScaffoldState()
     val scope = rememberCoroutineScope()
 
     val packagesViewModel =
-        ViewModelProvider(owner)[PackagesViewModelImpl::class.java]
+        ViewModelProvider(viewModelOwner)[PackagesViewModelImpl::class.java]
 
     val atlasViewModel =
-        ViewModelProvider(owner)[AtlasViewModelImpl::class.java]
+        ViewModelProvider(viewModelOwner)[AtlasViewModelImpl::class.java]
 
     val loginViewModel =
-        ViewModelProvider(owner)[LoginViewModelImpl::class.java]
+        ViewModelProvider(viewModelOwner)[LoginViewModelImpl::class.java]
+
+    if (isFirstScreen) { //to not to login everytime
+        isFirstScreen = false
+        val deliveryMan = loginViewModel.getExampleDeliveryMan()
+
+        CurrentSession.route = remember {
+            mutableStateOf(deliveryMan.route!!)
+        }
+
+        CurrentSession.packagesForToday = if (deliveryMan.route != null) {
+            remember {
+                mutableStateOf(deliveryMan.route!!.packages)
+            }
+        } else {
+            remember {
+                mutableStateOf(listOf())
+            }
+        }
+
+        CurrentSession.packagesToDeliver = remember {
+            mutableStateOf(CurrentSession.packagesForToday.value)
+        }
+
+        CurrentSession.lastLocationsList =
+            remember {
+                mutableStateOf(deliveryMan.lastLocationList)
+            }
+
+        CurrentSession.deliveryMan = deliveryMan
+    }
 
     val packages = CurrentSession.packagesToDeliver
-
-    CurrentSession.packagesToDeliver
 
     addPackageState = remember {
         mutableStateOf(false)
@@ -135,7 +173,8 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
             PackagesScreen(
                 navController = navController,
                 packagesViewModel = packagesViewModel,
-                packages = packages
+                packages = packages,
+                lifecycleOwner = lifecycleOwner
             )
         },
         sheetShape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
@@ -156,6 +195,7 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
                     atlasViewModel = atlasViewModel,
                     route = route
                 )
+
                 Column {
                     Spacer(modifier = Modifier.weight(1f))
 
@@ -174,14 +214,14 @@ fun HomeScreen(navController: NavController, owner: ViewModelStoreOwner, route: 
 
 
     if (addPackageState.value) {
-        AddPackage(dialogState = addPackageState, owner = owner)
+        AddPackage(dialogState = addPackageState, owner = viewModelOwner)
     }
 
     if (selectPackageToEditState.value) {
         SelectPackageToEdit(
             dialogState = selectPackageToEditState,
             packages = packages,
-            owner = owner
+            owner = viewModelOwner
         )
     }
 

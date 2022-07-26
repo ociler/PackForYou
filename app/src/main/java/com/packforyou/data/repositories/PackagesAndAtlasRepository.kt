@@ -129,9 +129,6 @@ class PackagesAndAtlasRepositoryImpl(
         route: Route,
         callback: ICallbackAPICalls
     ) {
-        if (route.packages == null) {
-            return
-        }
 
         globalCallback = callback
 
@@ -150,15 +147,15 @@ class PackagesAndAtlasRepositoryImpl(
         val sortedList = arrayListOf<Package>()
         val sortedOrder = optimizedRouteResponse.routes.last().waypoint_order
 
-        optimizedRouteResponse.routes.forEach { route -> //usually it will be just one element tho
-            route.legs.forEach { leg ->
+        optimizedRouteResponse.routes.forEach { optimizedRoute -> //usually it will be just one element tho
+            optimizedRoute.legs.forEach { leg ->
                 totalTravelTime += leg.duration.value
                 totalDistance += leg.distance.value
             }
         }
 
-        for (i in route.packages!!.indices) {
-            sortedList.add(route.packages!![sortedOrder[i]])
+        for (i in route.packages.indices) {
+            sortedList.add(route.packages[sortedOrder[i]])
         }
 
         globalCallback.onSuccessOptimizedDirectionsAPI(
@@ -174,9 +171,6 @@ class PackagesAndAtlasRepositoryImpl(
         route: Route,
         callback: ICallbackDirectionsResponse
     ) {
-        if (route.packages == null) {
-            return
-        }
 
         globalResponseCallback = callback
 

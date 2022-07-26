@@ -78,7 +78,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             PackForYouTheme {
                 val navController = rememberNavController()
-                SetupNavGraph(navController = navController, owner = this, route = notOptimizedRoute)
+                SetupNavGraph(
+                    navController = navController,
+                    viewModelOwner = this,
+                    lifecycleOwner = this,
+                    route = notOptimizedRoute
+                )
             }
         }
 

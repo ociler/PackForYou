@@ -42,6 +42,7 @@ interface IPackagesViewModel {
     fun computeOptimizedRouteDirectionsAPI(route: Route)
     fun computeDirectionsResponse(route: Route)
 
+
     fun getOptimizedRouteBruteForceTravelTime(
         route: Route,
         travelTimeArray: Array<IntArray>,
@@ -301,7 +302,7 @@ class PackagesViewModelImpl @Inject constructor(
 
         //So much compute. With the emulator up to 9 packages. Otherwise, OutOfMemory
         //Physical device up to 10 packages. Same problem
-        if (route.packages!!.size > 10) {
+        if (route.packages.size > 10) {
             println("With this number of packages, the Brute Force algorithm won't finish")
             return route.copy(id = -1)
         }
@@ -363,7 +364,7 @@ class PackagesViewModelImpl @Inject constructor(
 
         //So much compute. With the emulator up to 9 packages. Otherwise, OutOfMemory
         //With physical device up to 10. Same problem.
-        if (route.packages!!.size > 10) {
+        if (route.packages.size > 10) {
             println("With this number of packages, the Brute Force algorithm won't finish")
             return route.copy(id = -1)
         }

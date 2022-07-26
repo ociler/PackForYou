@@ -1,6 +1,7 @@
 package com.packforyou.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -14,31 +15,32 @@ import com.packforyou.ui.packages.StartRouteScreen
 @Composable
 fun SetupNavGraph(
     navController: NavHostController,
-    owner: ViewModelStoreOwner,
+    viewModelOwner: ViewModelStoreOwner,
+    lifecycleOwner: LifecycleOwner,
     route: Route
 ){
     NavHost(
         navController =  navController,
-        startDestination = Screen.Login.route
+        startDestination = Screen.Home.route
     ) {
 
         composable(
             route = Screen.Login.route
         ) {
-            LoginScreen(navController = navController, owner = owner)
+            LoginScreen(navController = navController, owner = viewModelOwner)
         }
 
         composable(
             route = Screen.Home.route
         ) {
-            HomeScreen(navController = navController, owner = owner, route = route)
+            HomeScreen(navController = navController, viewModelOwner = viewModelOwner, route = route, lifecycleOwner = lifecycleOwner)
         }
 
         composable(
             route = Screen.StartRoute.route
         ) {
             val packages = CurrentSession.packagesToDeliver
-            StartRouteScreen(packagesList = packages, navController = navController, owner = owner)
+            StartRouteScreen(packagesList = packages, navController = navController, owner = viewModelOwner)
         }
     }
 }

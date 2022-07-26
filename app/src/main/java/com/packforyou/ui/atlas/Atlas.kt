@@ -27,6 +27,7 @@ import com.google.maps.android.compose.*
 import kotlinx.coroutines.launch
 import com.packforyou.R
 import com.packforyou.data.models.*
+import com.packforyou.ui.login.CurrentSession
 import com.packforyou.ui.packages.StateIcon
 import com.packforyou.ui.theme.*
 
@@ -34,8 +35,7 @@ lateinit var cameraPositionState: CameraPositionState
 
 @Composable
 fun AtlasScreen(atlasViewModel: IAtlasViewModel, route: Route) {
-    AtlasWithGivenRoute(route, atlasViewModel)
-    //CasetaAtlas()
+    AtlasWithMutableRoute(atlasViewModel)
 }
 
 @Composable
@@ -198,7 +198,6 @@ fun bitmapDescriptorFromVector(
 }
 
 
-@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun AtlasWithGivenRoute(route: Route, viewModel: IAtlasViewModel) {
     if (route.deliveryMan == null) return
@@ -253,7 +252,7 @@ fun AtlasWithGivenRoute(route: Route, viewModel: IAtlasViewModel) {
         }
 
         //We place all the markers
-        route.packages!!.forEachIndexed { index, pckg ->
+        route.packages.forEachIndexed { index, pckg ->
             val location = pckg.location
             latLong = LatLng(location.latitude, location.longitude)
 
@@ -287,6 +286,96 @@ fun AtlasWithGivenRoute(route: Route, viewModel: IAtlasViewModel) {
 
     }
 }
+
+@Composable
+fun AtlasWithMutableRoute(viewModel: IAtlasViewModel) {
+    val route = CurrentSession.route
+
+    var latLong: LatLng
+
+
+    //we use this to set the camera
+    val firstLocation = if (route.value.deliveryMan!!.currentLocation != null)
+        route.value.deliveryMan!!.currentLocation!!
+    else route.value.packages[0].location
+
+    latLong = LatLng(firstLocation.latitude, firstLocation.longitude)
+
+    cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(latLong, 16.5f)
+    }
+
+    //we add the endLocation in case it exists
+    val endLocation = route.value.deliveryMan!!.lastLocation
+
+    //We observe this pointsList, that is a mutable data that will change when we get the response of DirectionsAPI
+    val pointsList by viewModel.observePointsList().observeAsState(emptyList())
+
+    val scope = rememberCoroutineScope()
+
+    var markerIcon: Int
+
+    //this way we get the Polyline to draw the path
+    scope.launch {
+        viewModel.computeDirectionsAPIResponse(route.value)
+    }
+
+    GoogleMap(
+        modifier = Modifier.fillMaxSize(),
+        cameraPositionState = cameraPositionState,
+        properties = MapProperties(
+            mapStyleOptions = MapStyleOptions(viewModel.getMapStyleString())
+        )
+    ) {
+
+        //We set startLocation in case it exists
+        if (route.value.deliveryMan!!.currentLocation != null) {
+            val currentLocation = route.value.deliveryMan!!.currentLocation
+            latLong = LatLng(currentLocation!!.latitude, currentLocation.longitude)
+            MarkerInfoWindow(
+                state = MarkerState(position = latLong),
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_start_location)
+            ) {
+                CustomStartMarkerWindow(startLocation = currentLocation)
+            }
+        }
+
+        //We place all the markers
+        route.value.packages.forEachIndexed { index, pckg ->
+            val location = pckg.location
+            latLong = LatLng(location.latitude, location.longitude)
+
+            markerIcon = getProperMarker(pckg.state)
+            MarkerInfoWindow(
+                state = MarkerState(position = latLong),
+                title = location.address,
+                snippet = "Stop number: $index",
+                icon = BitmapDescriptorFactory.fromResource(markerIcon)
+            ) {
+                CustomMarkerInfoWindow(pckg)
+            }
+        }
+
+
+        //We set end location in case it exists
+        if (endLocation != null) {
+            latLong = LatLng(endLocation.latitude, endLocation.longitude)
+            MarkerInfoWindow( //TODO change finish icon
+                state = MarkerState(position = latLong),
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.finish)
+            ) {
+                CustomEndMarkerWindow(endLocation = endLocation)
+            }
+        }
+
+        Polyline(
+            points = pointsList,
+            color = Color.Black
+        )
+
+    }
+}
+
 
 private fun getProperMarker(state: PackageState): Int {
     return when (state) {

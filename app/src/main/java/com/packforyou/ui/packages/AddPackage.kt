@@ -36,7 +36,7 @@ import com.packforyou.ui.theme.White
 import java.util.*
 import kotlin.random.Random
 
-var selectedOption = Urgency.NOT_URGENT
+private var selectedOption = Urgency.NOT_URGENT
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

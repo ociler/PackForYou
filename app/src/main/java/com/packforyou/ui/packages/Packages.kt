@@ -1,16 +1,13 @@
 package com.packforyou.ui.packages;
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.DismissValue
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,23 +18,28 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import com.packforyou.R
-import com.packforyou.data.models.Package
-import com.packforyou.navigation.ArgumentsHolder
+import com.packforyou.data.models.*
 import com.packforyou.navigation.Screen
+import com.packforyou.ui.login.CurrentSession
 import com.packforyou.ui.theme.Black
 import com.packforyou.ui.theme.PackForYouTypography
 import com.packforyou.ui.theme.White
+
+lateinit var expanded: MutableState<Boolean>
 
 @Composable
 fun PackagesScreen(
     navController: NavController,
     packagesViewModel: IPackagesViewModel,
-    packages: MutableState<List<Package>>
+    packages: MutableState<List<Package>>,
+    lifecycleOwner: LifecycleOwner
 ) {
 
     Column(Modifier.fillMaxHeight(.9f)) {
@@ -65,7 +67,7 @@ fun PackagesScreen(
             ) {
 
                 item {
-                    FilterButton()
+                    FilterButton(packagesViewModel, lifecycleOwner)
                 }
 
                 //we need the key value because if we don't use it, the column will recognize each
@@ -145,36 +147,74 @@ fun PackagesScreen(
             }
         }
 
-        StartRouteRectangularButton(navController, packages.value)
+        StartRouteRectangularButton(navController)
     }
 }
 
 @Composable
-fun FilterButton() {
+fun FilterButton(viewModel: IPackagesViewModel, lifecycleOwner: LifecycleOwner) {
+
+    expanded = remember { mutableStateOf(false) }
+    var selectedAlgorithm by remember { mutableStateOf(Algorithm.NOT_ALGORITHM) }
+
+    var context = LocalContext.current
+
+    val algorithmOptions = listOf(
+        "Directions API",
+        "Brute Force",
+        "Closest Neighbour"
+    )
+
     Row(Modifier.padding(end = 5.dp, bottom = 25.dp)) {
         Spacer(Modifier.weight(1f))
         Box(
             modifier = Modifier
-                .clickable {
-                    println("Sorting packages")
-                }
                 .clip(RoundedCornerShape(10.dp))
                 .background(Black)
                 .padding(5.dp)
                 .shadow(5.dp)
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_sort),
-                contentDescription = "Sorts packages",
-                tint = White,
+            IconButton(
+                onClick = {
+                    expanded.value = true
+                },
                 modifier = Modifier.size(32.dp)
-            )
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_sort),
+                    contentDescription = "Sorts packages",
+                    tint = White,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
+            DropdownMenu(
+                expanded = expanded.value,
+                onDismissRequest = { expanded.value = false }
+            ) {
+                algorithmOptions.forEach {
+                    DropdownMenuItem(
+                        onClick = {
+                            selectedAlgorithm = getAlgorithmGivenString(it)
+                            computeProperAlgorithmAndUpdateRoute(
+                                selectedAlgorithm,
+                                viewModel,
+                                lifecycleOwner,
+                                context
+                            )
+                            expanded.value = false
+
+                        }, text = {
+                            Text(text = it)
+                        })
+                }
+            }
         }
     }
 }
 
 @Composable
-fun StartRouteRectangularButton(navController: NavController, packagesToStartRoute: List<Package>) {
+fun StartRouteRectangularButton(navController: NavController) {
     Button(
         onClick = {
             navController.navigate(route = Screen.StartRoute.route)
@@ -205,3 +245,55 @@ fun StartRouteRectangularButton(navController: NavController, packagesToStartRou
     }
 }
 
+private fun getAlgorithmGivenString(algorithmString: String): Algorithm {
+    return when (algorithmString) {
+        "Directions API" -> {
+            Algorithm.DIRECTIONS_API
+        }
+
+        "Brute Force" -> {
+            Algorithm.DIRECTIONS_API
+        }
+
+        "Closest Neighbour" -> {
+            Algorithm.CLOSEST_NEIGHBOUR
+        }
+
+        else -> {
+            Algorithm.NOT_ALGORITHM
+        }
+    }
+}
+
+private fun computeProperAlgorithmAndUpdateRoute(
+    algorithm: Algorithm,
+    viewModel: IPackagesViewModel,
+    owner: LifecycleOwner,
+    context: Context
+) {
+    when (algorithm) {
+        Algorithm.DIRECTIONS_API -> {
+            viewModel.computeOptimizedRouteDirectionsAPI(CurrentSession.route.value)
+            viewModel.observeOptimizedDirectionsAPIRoute().observe(owner) { route ->
+                CurrentSession.route.value = route
+                CurrentSession.packagesToDeliver.value = route.packages
+            }
+        }
+
+        Algorithm.BRUTE_FORCE -> {
+            if (CurrentSession.route.value.packages.size <= 10) {
+                viewModel
+            } else {
+                Toast.makeText(
+                    context,
+                    "Sorry, we can't compute Brute Force Algorithm with more than 10 packages",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
+        Algorithm.CLOSEST_NEIGHBOUR -> {
+
+        }
+    }
+}
