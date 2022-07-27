@@ -114,7 +114,7 @@ class PackagesUnitTest {
         )
 
         val packageOrder = arrayListOf<Int>()
-        optimizedRoute.packages!!.forEach {
+        optimizedRoute.packages.forEach {
             packageOrder.add(it.numPackage)
         }
 
@@ -160,7 +160,7 @@ class PackagesUnitTest {
         )
 
         val packageOrder = arrayListOf<Int>()
-        optimizedRoute.packages!!.forEach {
+        optimizedRoute.packages.forEach {
             packageOrder.add(it.numPackage)
         }
 
@@ -183,7 +183,7 @@ class PackagesUnitTest {
         )
 
         val packageOrder = arrayListOf<Int>()
-        optimizedRoute.packages!!.forEach {
+        optimizedRoute.packages.forEach {
             packageOrder.add(it.numPackage)
         }
 

@@ -16,8 +16,7 @@ import com.packforyou.ui.packages.StartRouteScreen
 fun SetupNavGraph(
     navController: NavHostController,
     viewModelOwner: ViewModelStoreOwner,
-    lifecycleOwner: LifecycleOwner,
-    route: Route
+    lifecycleOwner: LifecycleOwner
 ){
     NavHost(
         navController =  navController,
@@ -33,7 +32,7 @@ fun SetupNavGraph(
         composable(
             route = Screen.Home.route
         ) {
-            HomeScreen(navController = navController, viewModelOwner = viewModelOwner, route = route, lifecycleOwner = lifecycleOwner)
+            HomeScreen(navController = navController, viewModelOwner = viewModelOwner, lifecycleOwner = lifecycleOwner)
         }
 
         composable(

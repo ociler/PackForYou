@@ -132,8 +132,8 @@ class PackagesAndAtlasRepositoryImpl(
 
         globalCallback = callback
 
-        val oAddress = getFormattedAddress(route.deliveryMan?.currentLocation)
-        val dAddress = getFormattedAddress(route.deliveryMan?.lastLocation)
+        val oAddress = getFormattedAddress(route.startLocation)
+        val dAddress = getFormattedAddress(route.endLocation)
         val routeLocations = getLocationsFromPackages(route.packages)
         var waypoints = getFormattedWaypointsByAddress(routeLocations)
         waypoints =
@@ -174,8 +174,8 @@ class PackagesAndAtlasRepositoryImpl(
 
         globalResponseCallback = callback
 
-        val oAddress = getFormattedAddress(route.deliveryMan?.currentLocation)
-        val dAddress = getFormattedAddress(route.deliveryMan?.lastLocation)
+        val oAddress = getFormattedAddress(route.startLocation)
+        val dAddress = getFormattedAddress(route.endLocation)
         val routeLocations = getLocationsFromPackages(route.packages)
         val waypoints = getFormattedWaypointsByAddress(routeLocations)
 
@@ -194,10 +194,10 @@ class PackagesAndAtlasRepositoryImpl(
 
                 is CallbackState.Success -> {
                     //here we already have the data
-                    travelTimeArray[originPackage.numPackage][destinationPackage.numPackage] =
+                    travelTimeArray[originPackage.position][destinationPackage.position] =
                         state.data.duration!!
 
-                    distanceArray[originPackage.numPackage][destinationPackage.numPackage] =
+                    distanceArray[originPackage.position][destinationPackage.position] =
                         state.data.distance!!
 
                     synchronized(this/*we want to block the thread. Doesn't mind the variable we put here*/) {
@@ -226,8 +226,8 @@ class PackagesAndAtlasRepositoryImpl(
 
                 is CallbackState.Success -> {
                     //we already have our data
-                    startTravelTimeArray[destinationPackage.numPackage] = state.data.duration!!
-                    startDistanceArray[destinationPackage.numPackage] = state.data.distance!!
+                    startTravelTimeArray[destinationPackage.position] = state.data.duration!!
+                    startDistanceArray[destinationPackage.position] = state.data.distance!!
 
                     synchronized(this/*we want to block the thread. Doesn't mind the variable we put here*/) {
                         finishedCalls++
@@ -260,8 +260,8 @@ class PackagesAndAtlasRepositoryImpl(
 
                 is CallbackState.Success -> {
                     //we already have our data
-                    endTravelTimeArray[originPackage.numPackage] = state.data.duration!!
-                    endDistanceArray[originPackage.numPackage] = state.data.distance!!
+                    endTravelTimeArray[originPackage.position] = state.data.duration!!
+                    endDistanceArray[originPackage.position] = state.data.distance!!
 
                     synchronized(this/*we want to block the thread. Doesn't mind the variable we put here*/) {
                         finishedCalls++
@@ -317,9 +317,7 @@ class PackagesAndAtlasRepositoryImpl(
 
         for (origin in packages) {
             for (destination in packages) {
-                if (origin.numPackage != destination.numPackage &&
-                    origin.location != null && destination.location != null
-                ) {
+                if (origin.numPackage != destination.numPackage) {
                     enqueuePackagesLeg(origin, destination)
                 } else {
                     synchronized(this) {

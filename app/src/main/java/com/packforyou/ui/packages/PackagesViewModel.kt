@@ -25,7 +25,7 @@ import kotlin.collections.ArrayList
 interface IPackagesViewModel {
     fun addPackage(packge: Package)
     fun getAddressFromLocation(geoPoint: GeoPoint, context: Context): String
-    fun getLocationFromAddress(address: String?, context: Context) : LatLng?
+    fun getLocationFromAddress(address: String?, context: Context): LatLng?
 
     fun getExamplePackages(): List<Package>
 
@@ -86,6 +86,7 @@ interface IPackagesViewModel {
     ): Int
 
     fun computePermutations(size: Int)
+    fun computePermutationsOfArray(array: Array<Byte>)
 
     fun observeTravelTimeArray(): MutableLiveData<Array<IntArray>>
     fun getStartTravelTimeArray(): IntArray
@@ -177,8 +178,16 @@ class PackagesViewModelImpl @Inject constructor(
 
 
     override fun addPackage(packge: Package) {
+        val newPackages = CurrentSession.packagesToDeliver.value.plus(packge)
+        computeProperAlgorithm(CurrentSession.algorithm, newPackages)
+
         CurrentSession.packagesForToday.value = CurrentSession.packagesForToday.value.plus(packge)
         CurrentSession.packagesToDeliver.value = CurrentSession.packagesToDeliver.value.plus(packge)
+
+        val newRoute =
+            CurrentSession.route.value.copy(packages = CurrentSession.packagesToDeliver.value)
+
+        CurrentSession.route.value = newRoute
         viewModelScope.launch {
             repository.addPackage(packge)
         }
@@ -186,16 +195,60 @@ class PackagesViewModelImpl @Inject constructor(
 
     }
 
-    override fun getLocationFromAddress(strAddress: String?, context: Context): LatLng? {
+    private fun computeProperAlgorithm(
+        algorithm: Algorithm,
+        packages: List<Package>
+    ) {
+
+        when (algorithm) {
+            Algorithm.DIRECTIONS_API -> {
+                val newRoute = CurrentSession.route.value.copy(packages = packages)
+                computeOptimizedRouteDirectionsAPI(newRoute)
+
+                observeOptimizedDirectionsAPIRoute().observeForever { route ->
+                    CurrentSession.route.value = route
+                    CurrentSession.packagesToDeliver.value = route.packages
+                }
+            }
+
+            Algorithm.BRUTE_FORCE -> {
+                val route = CurrentSession.route.value
+
+                if (globalTravelTimeArray.value == null) {
+                    computeDistanceBetweenStartLocationAndPackages(
+                        startLocation = route.startLocation,
+                        endLocation = route.endLocation,
+                        packages = packages
+                    )
+                }
+
+                getOptimizedRouteBruteForceTravelTime(
+                    route = route,
+                    travelTimeArray = globalTravelTimeArray.value!!,
+                    startTravelTimeArray = globalStartTravelTimeArray,
+                    endTravelTimeArray = globalEndTravelTimeArray
+                )
+
+
+            }
+
+            Algorithm.CLOSEST_NEIGHBOUR -> {
+                CurrentSession.algorithm = Algorithm.CLOSEST_NEIGHBOUR
+            }
+            else -> {}
+        }
+    }
+
+    override fun getLocationFromAddress(address: String?, context: Context): LatLng? {
         val coder = Geocoder(context)
-        val address: List<Address>?
+        val addressList: List<Address>?
         val p1: LatLng
         try {
-            address = coder.getFromLocationName(strAddress, 5)
+            addressList = coder.getFromLocationName(address, 5)
             if (address == null) {
                 return null
             }
-            val location: Address = address[0]
+            val location: Address = addressList[0]
             p1 = LatLng(
                 location.latitude,
                 location.longitude
@@ -293,9 +346,9 @@ class PackagesViewModelImpl @Inject constructor(
     ): Route {
         if (route.packages.isNullOrEmpty()) return route.copy(id = -1)
 
-        if (startTravelTimeArray.size != route.packages!!.size ||
-            endTravelTimeArray.size != route.packages!!.size ||
-            travelTimeArray.size != route.packages!!.size
+        if (startTravelTimeArray.size != route.packages.size ||
+            endTravelTimeArray.size != route.packages.size ||
+            travelTimeArray.size != route.packages.size
         ) {
             return route.copy(id = -2)
         }
@@ -321,8 +374,9 @@ class PackagesViewModelImpl @Inject constructor(
             totalTravelTime = startTravelTimeArray[permutation[0].toInt()]
 
             for (permPosition in 0 until permutation.size - 1) { //we have the position we want to check in our route
-                origin = route.packages!![permutation[permPosition].toInt()].numPackage
-                destination = route.packages!![permutation[permPosition + 1].toInt()].numPackage
+
+                origin = permutation[permPosition].toInt()
+                destination = permutation[permPosition + 1].toInt()
 
                 legTravelTime = travelTimeArray[origin][destination]
                 totalTravelTime += legTravelTime
@@ -338,8 +392,14 @@ class PackagesViewModelImpl @Inject constructor(
         }
 
         val optimizedPackages = arrayListOf<Package>()
+
+        var properPackage = Package()
+
+        //we are taking into account the order of the package
+        //maybe I should refactor this
         for (i in bestPermutation) {
-            optimizedPackages.add(route.packages!![i.toInt()])
+            properPackage = getPackageWithPosition(i.toInt(), packages = route.packages)
+            optimizedPackages.add(properPackage)
         }
 
         return route.copy(packages = optimizedPackages, totalTime = minimumTotalTravelTime)
@@ -355,9 +415,9 @@ class PackagesViewModelImpl @Inject constructor(
 
         if (route.packages.isNullOrEmpty()) return route.copy(id = -1)
 
-        if (startDistanceArray.size != route.packages!!.size ||
-            endDistanceArray.size != route.packages!!.size ||
-            distanceArray.size != route.packages!!.size
+        if (startDistanceArray.size != route.packages.size ||
+            endDistanceArray.size != route.packages.size ||
+            distanceArray.size != route.packages.size
         ) {
             return route.copy(id = -2)
         }
@@ -383,8 +443,8 @@ class PackagesViewModelImpl @Inject constructor(
             totalDistance = startDistanceArray[permutation[0].toInt()]
 
             for (permPosition in 0 until permutation.size - 1) { //we have the position we want to check in our route
-                origin = route.packages!![permutation[permPosition].toInt()].numPackage
-                destination = route.packages!![permutation[permPosition + 1].toInt()].numPackage
+                origin = route.packages[permutation[permPosition].toInt()].position
+                destination = route.packages[permutation[permPosition + 1].toInt()].position
 
                 legDistance = distanceArray[origin][destination]
                 totalDistance += legDistance
@@ -425,9 +485,25 @@ class PackagesViewModelImpl @Inject constructor(
         return permutations
     }
 
+    private fun getPermutationsIterativelyOfArray(array: Array<Byte>): ArrayList<ArrayList<Byte>> {
+        val permutations = arrayListOf<ArrayList<Byte>>()
+        val perm = PermutationsIteratively(array)
+
+        permutations.add(perm.GetFirst())
+        while (perm.HasNext()) {
+            permutations.add(perm.GetNext())
+        }
+
+        return permutations
+    }
+
 
     override fun computePermutations(size: Int) {
         permutationsListIt = getPermutationsIteratively(size)
+    }
+
+    override fun computePermutationsOfArray(array: Array<Byte>) {
+        permutationsListIt = getPermutationsIterativelyOfArray(array)
     }
 
 
@@ -442,32 +518,32 @@ class PackagesViewModelImpl @Inject constructor(
     ): Route {
         if (route.packages.isNullOrEmpty()) return route.copy(id = -1)
 
-        if (startTravelTimeArray.size != route.packages!!.size ||
-            endTravelTimeArray.size != route.packages!!.size ||
-            travelTimeArray.size != route.packages!!.size
+        if (startTravelTimeArray.size != route.packages.size ||
+            endTravelTimeArray.size != route.packages.size ||
+            travelTimeArray.size != route.packages.size
         ) {
             return route.copy(id = -2)
         }
 
-        val packages = route.packages!!
-        var closestNeighbour = packages[0]
+        val packages = route.packages
+        var closestNeighbour = getPackageWithPosition(0, packages)
         var minimumTime = startTravelTimeArray[0]
         val optimizedList = ArrayList<Package>()
         var totalTravelTime = 0
 
-        val visitedArray = BooleanArray(route.packages!!.size)
+        val visitedArray = BooleanArray(route.packages.size)
 
         for (i in 1 until startTravelTimeArray.size) {
             if (startTravelTimeArray[i] < minimumTime) {
                 minimumTime = startTravelTimeArray[i]
-                closestNeighbour = packages[i]
+                closestNeighbour = getPackageWithPosition(i, packages)
             }
         }
 
         //We have the first package we have to go from the route
         optimizedList.add(closestNeighbour)
         totalTravelTime += minimumTime
-        visitedArray[closestNeighbour.numPackage] = true
+        visitedArray[closestNeighbour.position] = true
 
         var minIndex = 0
 
@@ -475,24 +551,32 @@ class PackagesViewModelImpl @Inject constructor(
         //Now we add all the middle packages
         while (!areAllTrue(visitedArray)) {
             minimumTime = Int.MAX_VALUE
-            travelTimeArray[closestNeighbour.numPackage].forEachIndexed { index, currentTravelTime ->
+            travelTimeArray[closestNeighbour.position].forEachIndexed { index, currentTravelTime ->
                 if (!visitedArray[index] && currentTravelTime < minimumTime) {
                     minimumTime = currentTravelTime
                     minIndex = index
                 }
             }
 
-            closestNeighbour = packages[minIndex]
+            closestNeighbour = getPackageWithPosition(minIndex, packages)
+
             optimizedList.add(closestNeighbour)
             totalTravelTime += minimumTime
             visitedArray[minIndex] = true
         }
 
         //And finally we add the travel time of going from this last package to the endLocation
-        totalTravelTime += endTravelTimeArray[closestNeighbour.numPackage]
+        totalTravelTime += endTravelTimeArray[closestNeighbour.position]
 
         return route.copy(packages = optimizedList, totalTime = totalTravelTime)
 
+    }
+
+    private fun getPackageWithPosition(position: Int, packages: List<Package>): Package {
+        for (pckg in packages) {
+            if (pckg.position == position) return pckg
+        }
+        return Package(numPackage = -1)
     }
 
     override fun getOptimizedRouteClosestNeighbourDistance(
@@ -503,9 +587,9 @@ class PackagesViewModelImpl @Inject constructor(
     ): Route {
         if (route.packages.isNullOrEmpty()) return route.copy(id = -1)
 
-        if (startDistanceArray.size != route.packages!!.size ||
-            endDistanceArray.size != route.packages!!.size ||
-            distanceArray.size != route.packages!!.size
+        if (startDistanceArray.size != route.packages.size ||
+            endDistanceArray.size != route.packages.size ||
+            distanceArray.size != route.packages.size
         ) {
             return route.copy(id = -2)
         }
@@ -528,7 +612,7 @@ class PackagesViewModelImpl @Inject constructor(
         //We have the first package we have to go from the route
         optimizedList.add(closestNeighbour)
         totalDistance += minimumDistance
-        visitedArray[closestNeighbour.numPackage] = true
+        visitedArray[closestNeighbour.position] = true
 
         var minIndex = 0
 
@@ -536,7 +620,7 @@ class PackagesViewModelImpl @Inject constructor(
         //Now we add all the middle packages
         while (!areAllTrue(visitedArray)) {
             minimumDistance = Int.MAX_VALUE
-            distanceArray[closestNeighbour.numPackage].forEachIndexed { index, currentTravelTime ->
+            distanceArray[closestNeighbour.position].forEachIndexed { index, currentTravelTime ->
                 if (!visitedArray[index] && currentTravelTime < minimumDistance) {
                     minimumDistance = currentTravelTime
                     minIndex = index
@@ -550,7 +634,7 @@ class PackagesViewModelImpl @Inject constructor(
         }
 
         //And finally we add the travel time of going from this last package to the endLocation
-        totalDistance += endDistanceArray[closestNeighbour.numPackage]
+        totalDistance += endDistanceArray[closestNeighbour.position]
 
         return route.copy(packages = optimizedList, totalDistance = totalDistance)
 
@@ -605,15 +689,15 @@ class PackagesViewModelImpl @Inject constructor(
         var travelTime = 0
 
         //from startLocation to first package
-        travelTime += startTravelTimeArray[packages[0].numPackage]
+        travelTime += startTravelTimeArray[packages[0].position]
 
         //from every package to the next one
         for (i in 0 until packages.size - 1) {
-            travelTime += travelTimeArray[packages[i].numPackage][packages[i + 1].numPackage]
+            travelTime += travelTimeArray[packages[i].position][packages[i + 1].position]
         }
 
         //from last package to endLocation
-        travelTime += endTravelTimeArray[packages.last().numPackage]
+        travelTime += endTravelTimeArray[packages.last().position]
 
         return travelTime
     }
@@ -628,15 +712,15 @@ class PackagesViewModelImpl @Inject constructor(
         var distance = 0
 
         //from startLocation to first package
-        distance += startDistanceArray[packages[0].numPackage]
+        distance += startDistanceArray[packages[0].position]
 
         //from every package to the next one
         for (i in 0 until packages.size - 1) {
-            distance += distanceArray[packages[i].numPackage][packages[i + 1].numPackage]
+            distance += distanceArray[packages[i].position][packages[i + 1].position]
         }
 
         //from last package to endLocation
-        distance += globalEndTravelTimeArray[packages.last().numPackage]
+        distance += globalEndTravelTimeArray[packages.last().position]
 
         return distance
     }
@@ -712,6 +796,12 @@ class PackagesViewModelImpl @Inject constructor(
             CurrentSession.packagesToDeliver.value.filter {
                 it.numPackage != pckge.numPackage
             }
+
+        val newRoute =
+            CurrentSession.route.value.copy(packages = CurrentSession.packagesToDeliver.value)
+
+        CurrentSession.route.value = newRoute
+
     }
 
     override fun removeLastLocation(location: Location) {
@@ -720,12 +810,13 @@ class PackagesViewModelImpl @Inject constructor(
     }
 
     override fun addLastLocation(location: Location) {
-        CurrentSession.lastLocationsList.value = CurrentSession.lastLocationsList.value.plus(location)
+        CurrentSession.lastLocationsList.value =
+            CurrentSession.lastLocationsList.value.plus(location)
         //TODO add to the database
     }
 
     override fun setLastLocation(location: Location) {
-        if(CurrentSession.deliveryMan != null) {
+        if (CurrentSession.deliveryMan != null) {
             CurrentSession.deliveryMan!!.lastLocation = location
         }
         //TODO tell this to the database

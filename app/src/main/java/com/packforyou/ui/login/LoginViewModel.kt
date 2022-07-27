@@ -107,9 +107,6 @@ class LoginViewModelImpl @Inject constructor(
             }
     }
 
-    //TODO fix loop thing with route and deliveryman (one needs the otherone).
-    //it shouldn't be that difficult. It's just a refactor, as everytime we need route.deliveryman
-    //is just to know the current or last location
     override fun getExampleDeliveryMan(): DeliveryMan {
 
         val deliveryMan = DeliveryMan(
@@ -227,10 +224,10 @@ class LoginViewModelImpl @Inject constructor(
             Package(
                 isDelivered = false,
                 location = Location(
-                    address = "Benimaclet,46020 Valencia,Spain",
+                    address = "Carrer de la Rambla, 32, 46020 València",
                     city = "",
-                    latitude = 39.485007,
-                    longitude = -0.36286,
+                    latitude = 39.487419,
+                    longitude = -0.357920,
                     zipCode = 46020
                 ),
                 note = "Thank you for your job :D",
@@ -330,10 +327,8 @@ class LoginViewModelImpl @Inject constructor(
 
         deliveryMan.route = Route(
             id = 0,
-            deliveryMan = DeliveryMan(
-                currentLocation = deliveryMan.currentLocation,
-                lastLocation = deliveryMan.lastLocation
-            ),
+            startLocation = deliveryMan.currentLocation,
+            endLocation = deliveryMan.lastLocation,
             packages = listOf(
                 Package(
                     isDelivered = false,
@@ -411,10 +406,10 @@ class LoginViewModelImpl @Inject constructor(
                 Package(
                     isDelivered = false,
                     location = Location(
-                        address = "Benimaclet,46020 Valencia,Spain",
+                        address = "Carrer de la Rambla, 32, 46020 València",
                         city = "",
-                        latitude = 39.485007,
-                        longitude = -0.36286,
+                        latitude = 39.487419,
+                        longitude = -0.357920,
                         zipCode = 46020
                     ),
                     note = "Thank you for your job :D",

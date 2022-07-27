@@ -65,7 +65,6 @@ class ExampleObjects(
         urgency = Urgency.NOT_URGENT,
         client = client1,
         location = location1,
-        deliveryMan = deliveryMan1,
         message = message
     )
 
@@ -73,7 +72,8 @@ class ExampleObjects(
     val route1 = Route(
         id = 1,
         packages = listOf(package1, package1),
-        deliveryMan = deliveryMan1
+        startLocation = deliveryMan1.currentLocation!!,
+        endLocation = deliveryMan1.lastLocation!!
     )
 
     fun addExampleDeliveryMan(){

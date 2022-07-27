@@ -1,5 +1,6 @@
 package com.packforyou.ui.home
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -21,6 +23,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.packforyou.R
+import com.packforyou.data.models.Algorithm
 import com.packforyou.data.models.Package
 import com.packforyou.data.models.Route
 import com.packforyou.navigation.Screen
@@ -49,12 +52,12 @@ var isFirstScreen = true
 fun HomeScreen(
     navController: NavController,
     viewModelOwner: ViewModelStoreOwner,
-    lifecycleOwner: LifecycleOwner,
-    route: Route
+    lifecycleOwner: LifecycleOwner
 ) {
 
     val sheetState = rememberBottomSheetScaffoldState()
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     val packagesViewModel =
         ViewModelProvider(viewModelOwner)[PackagesViewModelImpl::class.java]
@@ -192,8 +195,7 @@ fun HomeScreen(
         ) {
             Box(Modifier.fillMaxSize()) {
                 AtlasScreen(
-                    atlasViewModel = atlasViewModel,
-                    route = route
+                    atlasViewModel = atlasViewModel
                 )
 
                 Column {
@@ -201,7 +203,6 @@ fun HomeScreen(
 
                     StartRouteRoundedButton(
                         navController = navController,
-                        packagesToStartRoute = packages.value,
                         modifier = Modifier.padding(
                             start = 15.dp,
                             bottom = 10.dp
@@ -214,7 +215,16 @@ fun HomeScreen(
 
 
     if (addPackageState.value) {
-        AddPackage(dialogState = addPackageState, owner = viewModelOwner)
+        if (CurrentSession.packagesToDeliver.value.size >= 10 && CurrentSession.algorithm == Algorithm.BRUTE_FORCE) {
+            Toast.makeText(
+                context,
+                "Sorry, the maximum number of packages using the Brute Force Algorithm is 10." +
+                        " Please, change the sorting algorithm before adding one more package.",
+                Toast.LENGTH_LONG
+            ).show()
+        } else {
+            AddPackage(dialogState = addPackageState, owner = viewModelOwner)
+        }
     }
 
     if (selectPackageToEditState.value) {
@@ -237,7 +247,6 @@ fun HomeScreen(
 @Composable
 fun StartRouteRoundedButton(
     navController: NavController,
-    packagesToStartRoute: List<Package>,
     modifier: Modifier = Modifier
 ) {
     Surface(

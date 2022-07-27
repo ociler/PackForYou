@@ -145,7 +145,7 @@ fun AddPackage(
                                     icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_black_marker)
                                 )
                                 cameraPositionState.position =
-                                    CameraPosition.fromLatLngZoom(parsedLatLng!!, 18f)
+                                    CameraPosition.fromLatLngZoom(parsedLatLng!!, 17f)
                             }
                         }
                     }
@@ -185,7 +185,7 @@ fun AddPackage(
                                     if (!it.isFocused) {
                                         parsedLatLng = packagesViewModel.getLocationFromAddress(
                                             context = context,
-                                            strAddress = addressText
+                                            address = addressText
                                         )
                                     }
                                 }
@@ -235,7 +235,6 @@ fun AddPackage(
                                                 latitude = parsedLatLng!!.latitude,
                                                 longitude = parsedLatLng!!.longitude
                                             ),
-                                            deliveryMan = CurrentSession.deliveryMan,
                                             state = PackageState.NOT_CONFIRMED
                                         )
 

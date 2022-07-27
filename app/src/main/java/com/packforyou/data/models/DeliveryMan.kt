@@ -6,8 +6,8 @@ data class DeliveryMan (
     override var phone: Int? = 666666666,
     var mail: String? = "rick@packforyou.es",
     var password: String? = "password",
-    var currentLocation: Location? = null,
-    var lastLocation: Location? = null,
+    var currentLocation: Location = Location(),
+    var lastLocation: Location = Location(),
     var lastLocationList: List<Location> = listOf()
     ): Person(id, name, phone){
         var packages: List<Package> = listOf()

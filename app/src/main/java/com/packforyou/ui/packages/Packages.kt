@@ -157,12 +157,13 @@ fun FilterButton(viewModel: IPackagesViewModel, lifecycleOwner: LifecycleOwner) 
     expanded = remember { mutableStateOf(false) }
     var selectedAlgorithm by remember { mutableStateOf(Algorithm.NOT_ALGORITHM) }
 
-    var context = LocalContext.current
+    val context = LocalContext.current
 
     val algorithmOptions = listOf(
         "Directions API",
         "Brute Force",
-        "Closest Neighbour"
+        "Closest Neighbour",
+        "Custom Sort"
     )
 
     Row(Modifier.padding(end = 5.dp, bottom = 25.dp)) {
@@ -196,12 +197,20 @@ fun FilterButton(viewModel: IPackagesViewModel, lifecycleOwner: LifecycleOwner) 
                     DropdownMenuItem(
                         onClick = {
                             selectedAlgorithm = getAlgorithmGivenString(it)
-                            computeProperAlgorithmAndUpdateRoute(
-                                selectedAlgorithm,
-                                viewModel,
-                                lifecycleOwner,
-                                context
-                            )
+                            if (selectedAlgorithm != CurrentSession.algorithm) {
+                                computeProperAlgorithmAndUpdateRoute(
+                                    selectedAlgorithm,
+                                    viewModel,
+                                    lifecycleOwner,
+                                    context
+                                )
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "You are already sorting the packages by $it",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                             expanded.value = false
 
                         }, text = {
@@ -252,7 +261,7 @@ private fun getAlgorithmGivenString(algorithmString: String): Algorithm {
         }
 
         "Brute Force" -> {
-            Algorithm.DIRECTIONS_API
+            Algorithm.BRUTE_FORCE
         }
 
         "Closest Neighbour" -> {
@@ -271,18 +280,89 @@ private fun computeProperAlgorithmAndUpdateRoute(
     owner: LifecycleOwner,
     context: Context
 ) {
+    val route = CurrentSession.route.value
+
     when (algorithm) {
         Algorithm.DIRECTIONS_API -> {
-            viewModel.computeOptimizedRouteDirectionsAPI(CurrentSession.route.value)
-            viewModel.observeOptimizedDirectionsAPIRoute().observe(owner) { route ->
-                CurrentSession.route.value = route
+            CurrentSession.algorithm = Algorithm.DIRECTIONS_API
+            viewModel.computeOptimizedRouteDirectionsAPI(route)
+            viewModel.observeOptimizedDirectionsAPIRoute().observe(owner) { optimizedRoute ->
+                CurrentSession.route.value = optimizedRoute
                 CurrentSession.packagesToDeliver.value = route.packages
+
+                Toast.makeText(context, "Packages sorted by Directions API.", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
 
         Algorithm.BRUTE_FORCE -> {
             if (CurrentSession.route.value.packages.size <= 10) {
-                viewModel
+                CurrentSession.algorithm = Algorithm.BRUTE_FORCE
+
+                //I reset this attribute bc we are creating new arrays
+                if (viewModel.observeTravelTimeArray().value == null) {
+
+                    CurrentSession.route.value.packages.forEachIndexed { index, it ->
+                        it.position = index
+                    }
+
+                    //I compute the permutations.
+                    // This is like this bc this was the same for both brute force algorithms
+                    val listWithPositions = mutableListOf<Byte>()
+                    route.packages.forEach{
+                        listWithPositions.add(it.position.toByte())
+                    }
+                    //TODO use this when I remove/mark as delivered something
+                    val arrayToPermute = listWithPositions.toTypedArray()
+
+                    viewModel.computePermutationsOfArray(arrayToPermute)
+
+                    //I get the arrays
+                    viewModel.computeDistanceBetweenStartLocationAndPackages(
+                        startLocation = route.startLocation,
+                        endLocation = route.endLocation,
+                        packages = route.packages
+                    )
+
+
+                    //once they are ready, we compute de brute force algorithm
+                    viewModel.observeTravelTimeArray().observe(owner) { travelTimeArray ->
+                        val optimizedRoute = viewModel.getOptimizedRouteBruteForceTravelTime(
+                            route = route,
+                            travelTimeArray = travelTimeArray,
+                            startTravelTimeArray = viewModel.getStartTravelTimeArray(),
+                            endTravelTimeArray = viewModel.getEndTravelTimeArray()
+                        )
+
+                        //and we update the route
+                        CurrentSession.route.value = optimizedRoute
+                        CurrentSession.packagesToDeliver.value = optimizedRoute.packages
+
+                        Toast.makeText(
+                            context,
+                            "Packages sorted by Brute Force",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }
+
+                } else { //we already have the arrays
+                    val optimizedRoute = viewModel.getOptimizedRouteBruteForceTravelTime(
+                        route = route,
+                        travelTimeArray = viewModel.observeTravelTimeArray().value!!,
+                        startTravelTimeArray = viewModel.getStartTravelTimeArray(),
+                        endTravelTimeArray = viewModel.getEndTravelTimeArray()
+                    )
+
+                    //and we update the route
+                    CurrentSession.route.value = optimizedRoute
+                    CurrentSession.packagesToDeliver.value = optimizedRoute.packages
+
+                    Toast.makeText(context, "Packages sorted by Brute Force", Toast.LENGTH_SHORT)
+                        .show()
+                }
+
+
             } else {
                 Toast.makeText(
                     context,
@@ -293,7 +373,66 @@ private fun computeProperAlgorithmAndUpdateRoute(
         }
 
         Algorithm.CLOSEST_NEIGHBOUR -> {
+            CurrentSession.algorithm = Algorithm.CLOSEST_NEIGHBOUR
+
+            if (viewModel.observeTravelTimeArray().value == null) {
+
+                //I reset this attribute bc we are creating new arrays
+                CurrentSession.route.value.packages.forEachIndexed { index, it ->
+                    it.position = index
+                }
+
+                //I compute the permutations. This is like this bc this will be the same for
+                //closest neighbour and for brute force
+                viewModel.computePermutations(route.packages.size)
+
+                //I get the arrays
+                viewModel.computeDistanceBetweenStartLocationAndPackages(
+                    startLocation = route.startLocation,
+                    endLocation = route.endLocation,
+                    packages = route.packages
+                )
+
+
+                viewModel.observeTravelTimeArray().observe(owner) { travelTimeArray ->
+                    val optimizedRoute = viewModel.getOptimizedRouteClosestNeighbourTravelTime(
+                        route = route,
+                        travelTimeArray = travelTimeArray,
+                        startTravelTimeArray = viewModel.getStartTravelTimeArray(),
+                        endTravelTimeArray = viewModel.getEndTravelTimeArray()
+                    )
+
+                    //and we update the route
+                    CurrentSession.route.value = optimizedRoute
+                    CurrentSession.packagesToDeliver.value = optimizedRoute.packages
+
+                    Toast.makeText(
+                        context,
+                        "Packages sorted by Closest Neighbour",
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+                }
+
+            } else {//we already have the arrays
+                val optimizedRoute = viewModel.getOptimizedRouteClosestNeighbourTravelTime(
+                    route = route,
+                    travelTimeArray = viewModel.observeTravelTimeArray().value!!,
+                    startTravelTimeArray = viewModel.getStartTravelTimeArray(),
+                    endTravelTimeArray = viewModel.getEndTravelTimeArray()
+                )
+
+                //and we update the route
+                CurrentSession.route.value = optimizedRoute
+                CurrentSession.packagesToDeliver.value = optimizedRoute.packages
+
+                Toast.makeText(context, "Packages sorted by Closest Neighbour", Toast.LENGTH_SHORT)
+                    .show()
+            }
+
 
         }
+
+        else -> {}
     }
 }

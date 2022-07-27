@@ -1,14 +1,12 @@
 package com.packforyou.ui.login
 
 import androidx.compose.runtime.MutableState
-import com.packforyou.data.models.DeliveryMan
-import com.packforyou.data.models.Location
-import com.packforyou.data.models.Package
-import com.packforyou.data.models.Route
+import com.packforyou.data.models.*
 
 object CurrentSession {
     var userUID = ""
     var deliveryMan: DeliveryMan? = null
+    var algorithm = Algorithm.NOT_ALGORITHM
     lateinit var route: MutableState<Route>
     lateinit var packagesForToday: MutableState<List<Package>>
     lateinit var packagesToDeliver: MutableState<List<Package>>

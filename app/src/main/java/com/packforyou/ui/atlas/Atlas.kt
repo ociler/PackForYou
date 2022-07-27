@@ -1,6 +1,5 @@
 package com.packforyou.ui.atlas
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import androidx.annotation.DrawableRes
@@ -34,7 +33,7 @@ import com.packforyou.ui.theme.*
 lateinit var cameraPositionState: CameraPositionState
 
 @Composable
-fun AtlasScreen(atlasViewModel: IAtlasViewModel, route: Route) {
+fun AtlasScreen(atlasViewModel: IAtlasViewModel) {
     AtlasWithMutableRoute(atlasViewModel)
 }
 
@@ -200,14 +199,13 @@ fun bitmapDescriptorFromVector(
 
 @Composable
 fun AtlasWithGivenRoute(route: Route, viewModel: IAtlasViewModel) {
-    if (route.deliveryMan == null) return
 
     var latLong: LatLng
 
 
     //we use this to set the camera
-    val firstLocation = if (route.deliveryMan!!.currentLocation != null)
-        route.deliveryMan!!.currentLocation!!
+    val firstLocation = if (route.startLocation != null)
+        route.startLocation
     else route.packages[0].location
 
     latLong = LatLng(firstLocation.latitude, firstLocation.longitude)
@@ -216,8 +214,8 @@ fun AtlasWithGivenRoute(route: Route, viewModel: IAtlasViewModel) {
         position = CameraPosition.fromLatLngZoom(latLong, 16.5f)
     }
 
-    //we add the endLocation in case it exists
-    val endLocation = route.deliveryMan!!.lastLocation
+
+    val endLocation = route.endLocation
 
     //We observe this pointsList, that is a mutable data that will change when we get the response of DirectionsAPI
     val pointsList by viewModel.observePointsList().observeAsState(emptyList())
@@ -239,53 +237,48 @@ fun AtlasWithGivenRoute(route: Route, viewModel: IAtlasViewModel) {
         )
     ) {
 
-        //We set startLocation in case it exists
-        if (route.deliveryMan!!.currentLocation != null) {
-            val currentLocation = route.deliveryMan!!.currentLocation
-            latLong = LatLng(currentLocation!!.latitude, currentLocation.longitude)
-            MarkerInfoWindow(
-                state = MarkerState(position = latLong),
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_start_location)
-            ) {
-                CustomStartMarkerWindow(startLocation = currentLocation)
-            }
+        val currentLocation = route.startLocation
+        latLong = LatLng(currentLocation.latitude, currentLocation.longitude)
+        MarkerInfoWindow(
+            state = MarkerState(position = latLong),
+            icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_start_location)
+        ) {
+            CustomStartMarkerWindow(startLocation = currentLocation)
         }
-
-        //We place all the markers
-        route.packages.forEachIndexed { index, pckg ->
-            val location = pckg.location
-            latLong = LatLng(location.latitude, location.longitude)
-
-            markerIcon = getProperMarker(pckg.state)
-            MarkerInfoWindow(
-                state = MarkerState(position = latLong),
-                title = location.address,
-                snippet = "Stop number: $index",
-                icon = BitmapDescriptorFactory.fromResource(markerIcon)
-            ) {
-                CustomMarkerInfoWindow(pckg)
-            }
-        }
-
-
-        //We set end location in case it exists
-        if (endLocation != null) {
-            latLong = LatLng(endLocation.latitude, endLocation.longitude)
-            MarkerInfoWindow( //TODO change finish icon
-                state = MarkerState(position = latLong),
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.finish)
-            ) {
-                CustomEndMarkerWindow(endLocation = endLocation)
-            }
-        }
-
-        Polyline(
-            points = pointsList,
-            color = Color.Black
-        )
-
     }
+
+    //We place all the markers
+    route.packages.forEachIndexed { index, pckg ->
+        val location = pckg.location
+        latLong = LatLng(location.latitude, location.longitude)
+
+        markerIcon = getProperMarker(pckg.state)
+        MarkerInfoWindow(
+            state = MarkerState(position = latLong),
+            title = location.address,
+            snippet = "Stop number: $index",
+            icon = BitmapDescriptorFactory.fromResource(markerIcon)
+        ) {
+            CustomMarkerInfoWindow(pckg)
+        }
+    }
+
+    latLong = LatLng(endLocation.latitude, endLocation.longitude)
+    MarkerInfoWindow( //TODO change finish icon
+        state = MarkerState(position = latLong),
+        icon = BitmapDescriptorFactory.fromResource(R.drawable.finish)
+    ) {
+        CustomEndMarkerWindow(endLocation = endLocation)
+    }
+
+
+    Polyline(
+        points = pointsList,
+        color = Color.Black
+    )
+
 }
+
 
 @Composable
 fun AtlasWithMutableRoute(viewModel: IAtlasViewModel) {
@@ -294,19 +287,14 @@ fun AtlasWithMutableRoute(viewModel: IAtlasViewModel) {
     var latLong: LatLng
 
 
-    //we use this to set the camera
-    val firstLocation = if (route.value.deliveryMan!!.currentLocation != null)
-        route.value.deliveryMan!!.currentLocation!!
-    else route.value.packages[0].location
-
-    latLong = LatLng(firstLocation.latitude, firstLocation.longitude)
+    latLong = LatLng(route.value.startLocation.latitude, route.value.startLocation.longitude)
 
     cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(latLong, 16.5f)
     }
 
     //we add the endLocation in case it exists
-    val endLocation = route.value.deliveryMan!!.lastLocation
+    val endLocation = route.value.endLocation
 
     //We observe this pointsList, that is a mutable data that will change when we get the response of DirectionsAPI
     val pointsList by viewModel.observePointsList().observeAsState(emptyList())
@@ -327,18 +315,16 @@ fun AtlasWithMutableRoute(viewModel: IAtlasViewModel) {
             mapStyleOptions = MapStyleOptions(viewModel.getMapStyleString())
         )
     ) {
+        val startLocation = route.value.startLocation
 
-        //We set startLocation in case it exists
-        if (route.value.deliveryMan!!.currentLocation != null) {
-            val currentLocation = route.value.deliveryMan!!.currentLocation
-            latLong = LatLng(currentLocation!!.latitude, currentLocation.longitude)
-            MarkerInfoWindow(
-                state = MarkerState(position = latLong),
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_start_location)
-            ) {
-                CustomStartMarkerWindow(startLocation = currentLocation)
-            }
+        latLong = LatLng(startLocation.latitude, startLocation.longitude)
+        MarkerInfoWindow(
+            state = MarkerState(position = latLong),
+            icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_start_location)
+        ) {
+            CustomStartMarkerWindow(startLocation = startLocation)
         }
+
 
         //We place all the markers
         route.value.packages.forEachIndexed { index, pckg ->
