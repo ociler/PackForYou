@@ -398,11 +398,12 @@ class PackagesAndAtlasRepositoryImpl(
 
     private fun getFormattedWaypointsByAddress(locations: List<Location?>): String {
         var result = ""
+        if(locations.isNotEmpty()) {
+            result = getFormattedAddress(locations[0])
 
-        result = getFormattedAddress(locations[0])
-
-        for (location in locations.subList(1, locations.size)) {
-            result += "|${getFormattedAddress(location)}"
+            for (location in locations.subList(1, locations.size)) {
+                result += "|${getFormattedAddress(location)}"
+            }
         }
         return result
     }

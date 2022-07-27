@@ -178,6 +178,10 @@ class PackagesViewModelImpl @Inject constructor(
 
 
     override fun addPackage(packge: Package) {
+        //TODO in the future this will get the previous-selected algorithm
+        //it is prepared to do so
+        CurrentSession.algorithm = Algorithm.DIRECTIONS_API
+
         val newPackages = CurrentSession.packagesToDeliver.value.plus(packge)
         computeProperAlgorithm(CurrentSession.algorithm, newPackages)
 
@@ -233,7 +237,7 @@ class PackagesViewModelImpl @Inject constructor(
             }
 
             Algorithm.CLOSEST_NEIGHBOUR -> {
-                CurrentSession.algorithm = Algorithm.CLOSEST_NEIGHBOUR
+
             }
             else -> {}
         }

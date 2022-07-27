@@ -305,7 +305,7 @@ fun AtlasWithMutableRoute(viewModel: IAtlasViewModel) {
 
     //this way we get the Polyline to draw the path
     scope.launch {
-        viewModel.computeDirectionsAPIResponse(route.value)
+            viewModel.computeDirectionsAPIResponse(route.value)
     }
 
     GoogleMap(

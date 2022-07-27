@@ -33,6 +33,7 @@ import com.packforyou.ui.theme.PackForYouTypography
 import com.packforyou.ui.theme.White
 
 lateinit var expanded: MutableState<Boolean>
+lateinit var isLoading: MutableState<Boolean>
 
 @Composable
 fun PackagesScreen(
@@ -41,6 +42,7 @@ fun PackagesScreen(
     packages: MutableState<List<Package>>,
     lifecycleOwner: LifecycleOwner
 ) {
+    isLoading = remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxHeight(.9f)) {
 
@@ -167,6 +169,11 @@ fun FilterButton(viewModel: IPackagesViewModel, lifecycleOwner: LifecycleOwner) 
     )
 
     Row(Modifier.padding(end = 5.dp, bottom = 25.dp)) {
+
+        if(isLoading.value) {
+            CircularProgressIndicator()
+        }
+
         Spacer(Modifier.weight(1f))
         Box(
             modifier = Modifier
@@ -302,6 +309,8 @@ private fun computeProperAlgorithmAndUpdateRoute(
                 //I reset this attribute bc we are creating new arrays
                 if (viewModel.observeTravelTimeArray().value == null) {
 
+                    isLoading.value = true
+
                     CurrentSession.route.value.packages.forEachIndexed { index, it ->
                         it.position = index
                     }
@@ -334,6 +343,7 @@ private fun computeProperAlgorithmAndUpdateRoute(
                             endTravelTimeArray = viewModel.getEndTravelTimeArray()
                         )
 
+                        isLoading.value = false
                         //and we update the route
                         CurrentSession.route.value = optimizedRoute
                         CurrentSession.packagesToDeliver.value = optimizedRoute.packages
@@ -376,6 +386,7 @@ private fun computeProperAlgorithmAndUpdateRoute(
             CurrentSession.algorithm = Algorithm.CLOSEST_NEIGHBOUR
 
             if (viewModel.observeTravelTimeArray().value == null) {
+                isLoading.value = true
 
                 //I reset this attribute bc we are creating new arrays
                 CurrentSession.route.value.packages.forEachIndexed { index, it ->
