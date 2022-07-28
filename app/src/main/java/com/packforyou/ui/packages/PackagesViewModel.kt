@@ -23,6 +23,7 @@ import kotlin.collections.ArrayList
 
 
 interface IPackagesViewModel {
+
     fun addPackage(packge: Package)
     fun getAddressFromLocation(geoPoint: GeoPoint, context: Context): String
     fun getLocationFromAddress(address: String?, context: Context): LatLng?
@@ -119,6 +120,7 @@ interface IPackagesViewModel {
 
     fun getNotUrgentRoute(): Route
     fun getUrgentRoute(): Route
+    fun observeOptimizedVeryUrgentRoute(): MutableLiveData<Route>
 }
 
 @HiltViewModel
@@ -141,7 +143,8 @@ class PackagesViewModelImpl @Inject constructor(
     lateinit var directionsResponse: MutableLiveData<DirectionsResponse>
 
     var optimizedDirectionsAPIRoute = MutableLiveData<Route>()
-    lateinit var globalVeryUrgentRoute: Route
+
+    var globalVeryUrgentRoute = MutableLiveData<Route>()
     lateinit var globalUrgentRoute: Route
     lateinit var globalNotUrgentRoute: Route
 
@@ -187,10 +190,14 @@ class PackagesViewModelImpl @Inject constructor(
             globalUrgentRoute = optimizedUrgentRoute
 
             //VeryUrgentRoute will finish where UrgentRoute starts
-            globalVeryUrgentRoute.endLocation = optimizedUrgentRoute.startLocation
+            globalVeryUrgentRoute.value!!.endLocation = optimizedUrgentRoute.startLocation
             viewModelScope.launch {
-                repository.computeOptimizedRouteDirectionsAPI(globalVeryUrgentRoute, callbackObject, Urgency.VERY_URGENT)
+                repository.computeOptimizedRouteDirectionsAPI(globalVeryUrgentRoute.value!!, callbackObject, Urgency.VERY_URGENT)
             }
+        }
+
+        override fun onSuccessVeryUrgentPackages(optimizedVeryUrgentRoute: Route) {
+            globalVeryUrgentRoute.postValue(optimizedVeryUrgentRoute)
         }
 
         override fun onSuccessBetweenPackages(
@@ -373,7 +380,7 @@ class PackagesViewModelImpl @Inject constructor(
         urgentRoute: Route,
         notUrgentRoute: Route
     ) {
-        globalVeryUrgentRoute = veryUrgentRoute
+        globalVeryUrgentRoute.value = veryUrgentRoute
         globalUrgentRoute = urgentRoute
         globalNotUrgentRoute = notUrgentRoute
 
@@ -882,6 +889,10 @@ class PackagesViewModelImpl @Inject constructor(
 
     override fun getUrgentRoute(): Route {
         return globalUrgentRoute
+    }
+
+    override fun observeOptimizedVeryUrgentRoute(): MutableLiveData<Route> {
+        return globalVeryUrgentRoute
     }
 
     override fun getExamplePackages(): List<Package> {

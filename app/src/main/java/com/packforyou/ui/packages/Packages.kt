@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import com.packforyou.R
 import com.packforyou.data.models.*
@@ -297,13 +298,16 @@ private fun computeProperAlgorithmAndUpdateRoute(
     when (algorithm) {
         Algorithm.DIRECTIONS_API -> {
             CurrentSession.algorithm = Algorithm.DIRECTIONS_API
+
             viewModel.computeOptimizedRouteDirectionsAPI(route)
             viewModel.observeOptimizedDirectionsAPIRoute().observe(owner) { optimizedRoute ->
                 CurrentSession.route.value = optimizedRoute
-                CurrentSession.packagesToDeliver.value = route.packages
+                CurrentSession.packagesToDeliver.value = optimizedRoute.packages
 
                 Toast.makeText(context, "Packages sorted by Directions API.", Toast.LENGTH_SHORT)
                     .show()
+
+                viewModel.observeOptimizedDirectionsAPIRoute().removeObservers(owner)
             }
         }
 
@@ -451,6 +455,8 @@ private fun computeProperAlgorithmAndUpdateRoute(
         }
 
         Algorithm.URGENCY -> {
+            CurrentSession.algorithm = Algorithm.URGENCY
+
             val veryUrgentPackages = mutableListOf<Package>()
             val urgentPackages = mutableListOf<Package>()
             val notUrgentPackages = mutableListOf<Package>()
@@ -483,18 +489,20 @@ private fun computeProperAlgorithmAndUpdateRoute(
                 notUrgentRoute = notUrgentRoute
             )
 
-            viewModel.observeOptimizedDirectionsAPIRoute().observe(owner) { optimizedVeryUrgentRoute ->
-                optimizedPackages.addAll(optimizedVeryUrgentRoute.packages)
-                optimizedPackages.addAll(viewModel.getUrgentRoute().packages)
-                optimizedPackages.addAll(viewModel.getNotUrgentRoute().packages)
+            viewModel.observeOptimizedVeryUrgentRoute()
+                .observe(owner) { optimizedVeryUrgentRoute ->
+                    optimizedPackages.addAll(optimizedVeryUrgentRoute.packages)
+                    optimizedPackages.addAll(viewModel.getUrgentRoute().packages)
+                    optimizedPackages.addAll(viewModel.getNotUrgentRoute().packages)
 
-                CurrentSession.route.value = route.copy(packages = optimizedPackages)
-                CurrentSession.packagesToDeliver.value = optimizedPackages
+                    CurrentSession.route.value = route.copy(packages = optimizedPackages)
+                    CurrentSession.packagesToDeliver.value = optimizedPackages
 
-                Toast.makeText(context, "Packages sorted by Urgency", Toast.LENGTH_SHORT)
-                    .show()
-            }
+                    Toast.makeText(context, "Packages sorted by Urgency", Toast.LENGTH_SHORT)
+                        .show()
 
+                    viewModel.observeOptimizedDirectionsAPIRoute().removeObservers(owner)
+                }
         }
 
         else -> {}

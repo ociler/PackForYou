@@ -164,8 +164,18 @@ class PackagesAndAtlasRepositoryImpl(
         }
 
         when (urgency) {
-            null, Urgency.VERY_URGENT -> {
+            null-> {
                 globalCallback.onSuccessOptimizedDirectionsAPI(
+                    route.copy(
+                        packages = sortedList,
+                        totalTime = totalTravelTime,
+                        totalDistance = totalDistance
+                    )
+                )
+            }
+
+            Urgency.VERY_URGENT -> {
+                globalCallback.onSuccessVeryUrgentPackages(
                     route.copy(
                         packages = sortedList,
                         totalTime = totalTravelTime,

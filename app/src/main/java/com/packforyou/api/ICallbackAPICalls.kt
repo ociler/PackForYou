@@ -11,4 +11,5 @@ interface ICallbackAPICalls {
     fun onSuccessOptimizedDirectionsAPI(route: Route)
     fun onSuccessNotUrgentPackages(optimizedNotUrgentRoute:Route, callbackObject: ICallbackAPICalls)
     fun onSuccessUrgentPackages(optimizedUrgentRoute:Route, callbackObject: ICallbackAPICalls)
+    fun onSuccessVeryUrgentPackages(optimizedVeryUrgentRoute:Route)
 }
