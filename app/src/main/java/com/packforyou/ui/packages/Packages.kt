@@ -165,12 +165,13 @@ fun FilterButton(viewModel: IPackagesViewModel, lifecycleOwner: LifecycleOwner) 
         "Directions API",
         "Brute Force",
         "Closest Neighbour",
+        "Urgency",
         "Custom Sort"
     )
 
     Row(Modifier.padding(end = 5.dp, bottom = 25.dp)) {
 
-        if(isLoading.value) {
+        if (isLoading.value) {
             CircularProgressIndicator()
         }
 
@@ -275,6 +276,10 @@ private fun getAlgorithmGivenString(algorithmString: String): Algorithm {
             Algorithm.CLOSEST_NEIGHBOUR
         }
 
+        "Urgency" -> {
+            Algorithm.URGENCY
+        }
+
         else -> {
             Algorithm.NOT_ALGORITHM
         }
@@ -318,7 +323,7 @@ private fun computeProperAlgorithmAndUpdateRoute(
                     //I compute the permutations.
                     // This is like this bc this was the same for both brute force algorithms
                     val listWithPositions = mutableListOf<Byte>()
-                    route.packages.forEach{
+                    route.packages.forEach {
                         listWithPositions.add(it.position.toByte())
                     }
                     //TODO use this when I remove/mark as delivered something
@@ -413,6 +418,8 @@ private fun computeProperAlgorithmAndUpdateRoute(
                         endTravelTimeArray = viewModel.getEndTravelTimeArray()
                     )
 
+                    isLoading.value = false
+
                     //and we update the route
                     CurrentSession.route.value = optimizedRoute
                     CurrentSession.packagesToDeliver.value = optimizedRoute.packages
@@ -421,8 +428,7 @@ private fun computeProperAlgorithmAndUpdateRoute(
                         context,
                         "Packages sorted by Closest Neighbour",
                         Toast.LENGTH_SHORT
-                    )
-                        .show()
+                    ).show()
                 }
 
             } else {//we already have the arrays
@@ -441,6 +447,53 @@ private fun computeProperAlgorithmAndUpdateRoute(
                     .show()
             }
 
+
+        }
+
+        Algorithm.URGENCY -> {
+            val veryUrgentPackages = mutableListOf<Package>()
+            val urgentPackages = mutableListOf<Package>()
+            val notUrgentPackages = mutableListOf<Package>()
+            val optimizedPackages = mutableListOf<Package>()
+
+            CurrentSession.route.value.packages.forEach {
+                when (it.urgency) {
+                    Urgency.VERY_URGENT -> {
+                        veryUrgentPackages.add(it)
+                    }
+                    Urgency.URGENT -> {
+                        urgentPackages.add(it)
+                    }
+                    else -> {
+                        notUrgentPackages.add(it)
+                    }
+                }
+            }
+
+            val veryUrgentRoute = route.copy(packages = veryUrgentPackages)
+            val urgentRoute = route.copy(packages = urgentPackages)
+            val notUrgentRoute = route.copy(packages = notUrgentPackages)
+
+
+            //this will throw callbacks and, at the end, when the optimizedNotUrgentRoute is ready,
+            //we will be able to get the others, as they will be also ready
+            viewModel.computeOptimizedRouteDirectionsAPIWithUrgency(
+                veryUrgentRoute = veryUrgentRoute,
+                urgentRoute = urgentRoute,
+                notUrgentRoute = notUrgentRoute
+            )
+
+            viewModel.observeOptimizedDirectionsAPIRoute().observe(owner) { optimizedVeryUrgentRoute ->
+                optimizedPackages.addAll(optimizedVeryUrgentRoute.packages)
+                optimizedPackages.addAll(viewModel.getUrgentRoute().packages)
+                optimizedPackages.addAll(viewModel.getNotUrgentRoute().packages)
+
+                CurrentSession.route.value = route.copy(packages = optimizedPackages)
+                CurrentSession.packagesToDeliver.value = optimizedPackages
+
+                Toast.makeText(context, "Packages sorted by Urgency", Toast.LENGTH_SHORT)
+                    .show()
+            }
 
         }
 

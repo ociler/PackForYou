@@ -40,6 +40,12 @@ interface IPackagesViewModel {
     fun computeDistanceBetweenEndLocationAndPackages(endLocation: Location, packages: List<Package>)
 
     fun computeOptimizedRouteDirectionsAPI(route: Route)
+    fun computeOptimizedRouteDirectionsAPIWithUrgency(
+        veryUrgentRoute: Route,
+        urgentRoute: Route,
+        notUrgentRoute: Route
+    )
+
     fun computeDirectionsResponse(route: Route)
 
 
@@ -110,6 +116,9 @@ interface IPackagesViewModel {
     fun removeLastLocation(location: Location)
     fun addLastLocation(location: Location)
     fun setLastLocation(location: Location)
+
+    fun getNotUrgentRoute(): Route
+    fun getUrgentRoute(): Route
 }
 
 @HiltViewModel
@@ -132,6 +141,9 @@ class PackagesViewModelImpl @Inject constructor(
     lateinit var directionsResponse: MutableLiveData<DirectionsResponse>
 
     var optimizedDirectionsAPIRoute = MutableLiveData<Route>()
+    lateinit var globalVeryUrgentRoute: Route
+    lateinit var globalUrgentRoute: Route
+    lateinit var globalNotUrgentRoute: Route
 
 
     private val callbackObject = object : ICallbackAPICalls {
@@ -159,6 +171,26 @@ class PackagesViewModelImpl @Inject constructor(
 
         override fun onSuccessOptimizedDirectionsAPI(route: Route) {
             optimizedDirectionsAPIRoute.postValue(route)
+        }
+
+        override fun onSuccessNotUrgentPackages(optimizedNotUrgentRoute: Route, callbackObject: ICallbackAPICalls) {
+            globalNotUrgentRoute = optimizedNotUrgentRoute
+
+            //UrgentRoute will finish where NotUrgentRoute starts
+            globalUrgentRoute.endLocation = optimizedNotUrgentRoute.startLocation
+            viewModelScope.launch {
+                repository.computeOptimizedRouteDirectionsAPI(globalUrgentRoute, callbackObject, Urgency.URGENT)
+            }
+        }
+
+        override fun onSuccessUrgentPackages(optimizedUrgentRoute: Route, callbackObject: ICallbackAPICalls) {
+            globalUrgentRoute = optimizedUrgentRoute
+
+            //VeryUrgentRoute will finish where UrgentRoute starts
+            globalVeryUrgentRoute.endLocation = optimizedUrgentRoute.startLocation
+            viewModelScope.launch {
+                repository.computeOptimizedRouteDirectionsAPI(globalVeryUrgentRoute, callbackObject, Urgency.VERY_URGENT)
+            }
         }
 
         override fun onSuccessBetweenPackages(
@@ -333,6 +365,24 @@ class PackagesViewModelImpl @Inject constructor(
     override fun computeOptimizedRouteDirectionsAPI(route: Route) {
         viewModelScope.launch {
             repository.computeOptimizedRouteDirectionsAPI(route, callbackObject)
+        }
+    }
+
+    override fun computeOptimizedRouteDirectionsAPIWithUrgency(
+        veryUrgentRoute: Route,
+        urgentRoute: Route,
+        notUrgentRoute: Route
+    ) {
+        globalVeryUrgentRoute = veryUrgentRoute
+        globalUrgentRoute = urgentRoute
+        globalNotUrgentRoute = notUrgentRoute
+
+        viewModelScope.launch {
+            repository.computeOptimizedRouteDirectionsAPI(
+                notUrgentRoute,
+                callbackObject,
+                urgency = Urgency.NOT_URGENT
+            )
         }
     }
 
@@ -824,6 +874,14 @@ class PackagesViewModelImpl @Inject constructor(
             CurrentSession.deliveryMan!!.lastLocation = location
         }
         //TODO tell this to the database
+    }
+
+    override fun getNotUrgentRoute(): Route {
+        return globalNotUrgentRoute
+    }
+
+    override fun getUrgentRoute(): Route {
+        return globalUrgentRoute
     }
 
     override fun getExamplePackages(): List<Package> {

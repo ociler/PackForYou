@@ -18,7 +18,11 @@ interface IPackagesAndAtlasRepository {
     suspend fun getDeliveryManPackages(deliveryManId: String): List<Package>?
     suspend fun addPackage(packge: Package)
 
-    suspend fun computeOptimizedRouteDirectionsAPI(route: Route, callback: ICallbackAPICalls)
+    suspend fun computeOptimizedRouteDirectionsAPI(
+        route: Route,
+        callback: ICallbackAPICalls,
+        urgency: Urgency? = null
+    )
 
     suspend fun computeDistanceBetweenAllPackages(
         packages: List<Package>,
@@ -127,7 +131,8 @@ class PackagesAndAtlasRepositoryImpl(
 
     override suspend fun computeOptimizedRouteDirectionsAPI(
         route: Route,
-        callback: ICallbackAPICalls
+        callback: ICallbackAPICalls,
+        urgency: Urgency?
     ) {
 
         globalCallback = callback
@@ -158,13 +163,41 @@ class PackagesAndAtlasRepositoryImpl(
             sortedList.add(route.packages[sortedOrder[i]])
         }
 
-        globalCallback.onSuccessOptimizedDirectionsAPI(
-            route.copy(
-                packages = sortedList,
-                totalTime = totalTravelTime,
-                totalDistance = totalDistance
-            )
-        )
+        when (urgency) {
+            null, Urgency.VERY_URGENT -> {
+                globalCallback.onSuccessOptimizedDirectionsAPI(
+                    route.copy(
+                        packages = sortedList,
+                        totalTime = totalTravelTime,
+                        totalDistance = totalDistance
+                    )
+                )
+            }
+
+            Urgency.NOT_URGENT -> {
+                globalCallback.onSuccessNotUrgentPackages(
+                    route.copy(
+                        packages = sortedList,
+                        totalTime = totalTravelTime,
+                        totalDistance = totalDistance
+                    ),
+                    callback
+                )
+            }
+
+            Urgency.URGENT -> {
+                globalCallback.onSuccessUrgentPackages(
+                    route.copy(
+                        packages = sortedList,
+                        totalTime = totalTravelTime,
+                        totalDistance = totalDistance
+                    ),
+                    callback
+                )
+            }
+
+        }
+
     }
 
     override suspend fun computeDirectionsAPIResponse(
@@ -398,7 +431,7 @@ class PackagesAndAtlasRepositoryImpl(
 
     private fun getFormattedWaypointsByAddress(locations: List<Location?>): String {
         var result = ""
-        if(locations.isNotEmpty()) {
+        if (locations.isNotEmpty()) {
             result = getFormattedAddress(locations[0])
 
             for (location in locations.subList(1, locations.size)) {
