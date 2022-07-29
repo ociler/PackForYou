@@ -223,9 +223,10 @@ fun AddPackage(
                                     if (packge == null) {
                                         val newPackage = Package(
                                             numPackage = Random.nextInt(
-                                                0,
+                                                10,
                                                 1000
                                             ), //TODO create hash function
+                                            position = CurrentSession.packagesToDeliver.value.size,
                                             deliveryDate = Date(System.currentTimeMillis()),
                                             isDelivered = false,
                                             urgency = selectedOption,
@@ -344,7 +345,7 @@ fun UrgencySpinner() {
 
 private fun getUrgencyGivenText(text: String): Urgency {
     return when (text) {
-        "Very urgent" -> Urgency.VERY_URGENT
+        "Very Urgent" -> Urgency.VERY_URGENT
         "Urgent" -> Urgency.URGENT
         else -> Urgency.NOT_URGENT
     }

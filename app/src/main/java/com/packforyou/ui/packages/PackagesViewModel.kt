@@ -176,23 +176,37 @@ class PackagesViewModelImpl @Inject constructor(
             optimizedDirectionsAPIRoute.postValue(route)
         }
 
-        override fun onSuccessNotUrgentPackages(optimizedNotUrgentRoute: Route, callbackObject: ICallbackAPICalls) {
+        override fun onSuccessNotUrgentPackages(
+            optimizedNotUrgentRoute: Route,
+            callbackObject: ICallbackAPICalls
+        ) {
             globalNotUrgentRoute = optimizedNotUrgentRoute
 
             //UrgentRoute will finish where NotUrgentRoute starts
             globalUrgentRoute.endLocation = optimizedNotUrgentRoute.startLocation
             viewModelScope.launch {
-                repository.computeOptimizedRouteDirectionsAPI(globalUrgentRoute, callbackObject, Urgency.URGENT)
+                repository.computeOptimizedRouteDirectionsAPI(
+                    globalUrgentRoute,
+                    callbackObject,
+                    Urgency.URGENT
+                )
             }
         }
 
-        override fun onSuccessUrgentPackages(optimizedUrgentRoute: Route, callbackObject: ICallbackAPICalls) {
+        override fun onSuccessUrgentPackages(
+            optimizedUrgentRoute: Route,
+            callbackObject: ICallbackAPICalls
+        ) {
             globalUrgentRoute = optimizedUrgentRoute
 
             //VeryUrgentRoute will finish where UrgentRoute starts
             globalVeryUrgentRoute.value!!.endLocation = optimizedUrgentRoute.startLocation
             viewModelScope.launch {
-                repository.computeOptimizedRouteDirectionsAPI(globalVeryUrgentRoute.value!!, callbackObject, Urgency.VERY_URGENT)
+                repository.computeOptimizedRouteDirectionsAPI(
+                    globalVeryUrgentRoute.value!!,
+                    callbackObject,
+                    Urgency.VERY_URGENT
+                )
             }
         }
 
@@ -219,39 +233,31 @@ class PackagesViewModelImpl @Inject constructor(
     override fun addPackage(packge: Package) {
         //TODO in the future this will get the previous-selected algorithm
         //it is prepared to do so
-        CurrentSession.algorithm = Algorithm.DIRECTIONS_API
+        CurrentSession.algorithm = Algorithm.NOT_ALGORITHM
 
         val newPackages = CurrentSession.packagesToDeliver.value.plus(packge)
-        computeProperAlgorithm(CurrentSession.algorithm, newPackages)
+        computeProperAlgorithmAndUpdateCurrentSession(CurrentSession.algorithm, newPackages)
 
-        CurrentSession.packagesForToday.value = CurrentSession.packagesForToday.value.plus(packge)
-        CurrentSession.packagesToDeliver.value = CurrentSession.packagesToDeliver.value.plus(packge)
-
-        val newRoute =
-            CurrentSession.route.value.copy(packages = CurrentSession.packagesToDeliver.value)
-
-        CurrentSession.route.value = newRoute
         viewModelScope.launch {
             repository.addPackage(packge)
         }
-        println()
 
     }
 
-    private fun computeProperAlgorithm(
+    private fun computeProperAlgorithmAndUpdateCurrentSession(
         algorithm: Algorithm,
         packages: List<Package>
     ) {
 
         when (algorithm) {
-            Algorithm.DIRECTIONS_API -> {
+            Algorithm.NOT_ALGORITHM -> {
                 val newRoute = CurrentSession.route.value.copy(packages = packages)
-                computeOptimizedRouteDirectionsAPI(newRoute)
 
-                observeOptimizedDirectionsAPIRoute().observeForever { route ->
-                    CurrentSession.route.value = route
-                    CurrentSession.packagesToDeliver.value = route.packages
-                }
+                CurrentSession.route.value = newRoute
+                CurrentSession.packagesToDeliver.value = newRoute.packages
+                CurrentSession.packagesForToday.value =
+                    CurrentSession.packagesForToday.value.plus(packages.last())
+
             }
 
             Algorithm.BRUTE_FORCE -> {

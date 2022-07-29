@@ -38,8 +38,7 @@ fun SetupNavGraph(
         composable(
             route = Screen.StartRoute.route
         ) {
-            val packages = CurrentSession.packagesToDeliver
-            StartRouteScreen(packagesList = packages, navController = navController, owner = viewModelOwner)
+            StartRouteScreen(navController = navController, owner = viewModelOwner)
         }
     }
 }

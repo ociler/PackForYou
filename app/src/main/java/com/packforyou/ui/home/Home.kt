@@ -206,7 +206,8 @@ fun HomeScreen(
                         modifier = Modifier.padding(
                             start = 15.dp,
                             bottom = 10.dp
-                        )
+                        ),
+                        packages.value.isEmpty()
                     )
                 }
             }
@@ -247,8 +248,11 @@ fun HomeScreen(
 @Composable
 fun StartRouteRoundedButton(
     navController: NavController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isEmpty: Boolean
 ) {
+    val context = LocalContext.current
+
     Surface(
         shape = RoundedCornerShape(10.dp),
         color = Black,
@@ -258,7 +262,15 @@ fun StartRouteRoundedButton(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .clickable {
-                    navController.navigate(route = Screen.StartRoute.route)
+                    if(isEmpty){
+                        Toast.makeText(
+                            context,
+                            "You have no packages to deliver, so you can't Start a Route.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        navController.navigate(route = Screen.StartRoute.route)
+                    }
                 }
                 .padding(vertical = 5.dp, horizontal = 10.dp)
         ) {

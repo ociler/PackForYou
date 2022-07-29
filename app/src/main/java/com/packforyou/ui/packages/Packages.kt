@@ -150,7 +150,7 @@ fun PackagesScreen(
             }
         }
 
-        StartRouteRectangularButton(navController)
+        StartRouteRectangularButton(navController, packages.value.isEmpty())
     }
 }
 
@@ -232,10 +232,21 @@ fun FilterButton(viewModel: IPackagesViewModel, lifecycleOwner: LifecycleOwner) 
 }
 
 @Composable
-fun StartRouteRectangularButton(navController: NavController) {
+fun StartRouteRectangularButton(navController: NavController, isEmpty: Boolean) {
+    val context = LocalContext.current
+
     Button(
         onClick = {
-            navController.navigate(route = Screen.StartRoute.route)
+            if (isEmpty) {
+                Toast.makeText(
+                    context,
+                    "You have no packages to deliver, so you can't Start a Route.",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+            } else {
+                navController.navigate(route = Screen.StartRoute.route)
+            }
         },
         colors = ButtonDefaults.buttonColors(containerColor = Black),
         modifier = Modifier
@@ -460,9 +471,10 @@ private fun computeProperAlgorithmAndUpdateRoute(
             val veryUrgentPackages = mutableListOf<Package>()
             val urgentPackages = mutableListOf<Package>()
             val notUrgentPackages = mutableListOf<Package>()
-            val optimizedPackages = mutableListOf<Package>()
 
-            CurrentSession.route.value.packages.forEach {
+            val currentPackages = CurrentSession.route.value.packages
+
+            currentPackages.forEach {
                 when (it.urgency) {
                     Urgency.VERY_URGENT -> {
                         veryUrgentPackages.add(it)
@@ -491,17 +503,25 @@ private fun computeProperAlgorithmAndUpdateRoute(
 
             viewModel.observeOptimizedVeryUrgentRoute()
                 .observe(owner) { optimizedVeryUrgentRoute ->
+                    viewModel.observeOptimizedDirectionsAPIRoute().removeObservers(owner)
+
+                    //TODO SOLVE THIS LIVEDATA THING. The observe is triggered twice: One at the beginning
+                    //bc optimizedVeryUrgentRoute already has a value and anotherone
+                    //when it should be triggered (when this object.value changes).
+                    //This means that these lines of code are computed twice
+                    val optimizedPackages = mutableListOf<Package>()
+
                     optimizedPackages.addAll(optimizedVeryUrgentRoute.packages)
                     optimizedPackages.addAll(viewModel.getUrgentRoute().packages)
                     optimizedPackages.addAll(viewModel.getNotUrgentRoute().packages)
 
                     CurrentSession.route.value = route.copy(packages = optimizedPackages)
+                    println(optimizedPackages.size)
                     CurrentSession.packagesToDeliver.value = optimizedPackages
 
                     Toast.makeText(context, "Packages sorted by Urgency", Toast.LENGTH_SHORT)
                         .show()
 
-                    viewModel.observeOptimizedDirectionsAPIRoute().removeObservers(owner)
                 }
         }
 

@@ -34,8 +34,8 @@ fun PackageItem(pckge: Package, viewModel: IPackagesViewModel) {
                 viewModel.removePackageFromToDeliverList(pckge)
 
             } else if (it == DismissValue.DismissedToEnd) {
-                viewModel.removePackageFromToDeliverList(pckge)
                 pckge.isDelivered = true
+                viewModel.removePackageFromToDeliverList(pckge)
             }
             true
         }
