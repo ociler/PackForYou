@@ -55,7 +55,7 @@ fun DrawerHeader(scaffoldState: BottomSheetScaffoldState) {
         )
 
         Text(
-            text = "PackForYou",
+            text = stringResource(R.string.app_name),
             textAlign = TextAlign.Right,
             style = PackForYouTypography.headlineMedium,
             modifier = Modifier
@@ -102,7 +102,7 @@ fun DrawerFooter(navController: NavController, loginViewModel: ILoginViewModel, 
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-               //TODO log out function
+                //TODO log out function
                 loginViewModel.logOut()
                 navController.navigate(route = Screen.Login.route) {
                     popUpTo(0)
