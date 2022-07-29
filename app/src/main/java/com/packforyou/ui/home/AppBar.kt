@@ -22,8 +22,7 @@ import com.packforyou.ui.theme.White
 @Composable
 fun AppBar(
     navigationIcon: ImageVector,
-    onNavigationIconClick: () -> Unit,
-    packagesViewModel: IPackagesViewModel
+    onNavigationIconClick: () -> Unit
 ) {
 
     val deliveredPackagesState = remember {

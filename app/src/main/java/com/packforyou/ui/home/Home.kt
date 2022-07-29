@@ -121,8 +121,7 @@ fun HomeScreen(
                     scope.launch {
                         sheetState.drawerState.open()
                     }
-                },
-                packagesViewModel = packagesViewModel
+                }
             )
         },
         drawerGesturesEnabled = sheetState.drawerState.isOpen,

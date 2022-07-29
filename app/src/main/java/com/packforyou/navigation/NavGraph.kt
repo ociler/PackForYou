@@ -6,11 +6,11 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.packforyou.data.models.Route
 import com.packforyou.ui.home.HomeScreen
-import com.packforyou.ui.login.CurrentSession
 import com.packforyou.ui.login.LoginScreen
 import com.packforyou.ui.packages.StartRouteScreen
+
+const val startWithLogin = false
 
 @Composable
 fun SetupNavGraph(
@@ -18,9 +18,17 @@ fun SetupNavGraph(
     viewModelOwner: ViewModelStoreOwner,
     lifecycleOwner: LifecycleOwner
 ){
+
+
+    val startDestination = if(startWithLogin) {
+        Screen.Login.route
+    } else {
+        Screen.Home.route
+    }
+
     NavHost(
         navController =  navController,
-        startDestination = Screen.Home.route
+        startDestination = startDestination
     ) {
 
         composable(

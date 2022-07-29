@@ -164,7 +164,7 @@ class PackagesAndAtlasRepositoryImpl(
         }
 
         when (urgency) {
-            null-> {
+            null -> {
                 globalCallback.onSuccessOptimizedDirectionsAPI(
                     route.copy(
                         packages = sortedList,
@@ -429,9 +429,7 @@ class PackagesAndAtlasRepositoryImpl(
     }
 
     private fun getFormattedWaypointsByLocation(locations: List<Location?>): String {
-        var result = ""
-
-        result = getStringLatLongFromLocation(locations[0])
+        var result = getStringLatLongFromLocation(locations[0])
 
         for (location in locations.subList(1, locations.size)) {
             result += "|${getStringLatLongFromLocation(location)}"

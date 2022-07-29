@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">PackForYou</string>
+    <string name="app_name">Pack4You</string>
     <string name="title_activity_login">Login</string>
     <string name="log_out">Log Out</string>
 

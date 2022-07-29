@@ -71,8 +71,7 @@ fun StartRouteScreen(
                     navigationIcon = Icons.Filled.ArrowBack,
                     onNavigationIconClick = {
                         navController.popBackStack()
-                    },
-                    packagesViewModel = packagesViewModel
+                    }
                 )
             }
         ) { paddingValues ->
@@ -212,6 +211,7 @@ fun MarkAsDeliveredButton(pckg: Package, viewModel: IPackagesViewModel) {
         onClick = {
             pckg.isDelivered = true
             viewModel.removePackageFromToDeliverList(pckg)
+
             //TODO fix the mark as delivered and outbounds issue
         },
         colors = ButtonDefaults.buttonColors(containerColor = Black),
