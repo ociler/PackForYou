@@ -69,7 +69,8 @@ class LoginViewModelImpl @Inject constructor(
     }
 
     override fun logIn(mail: String, password: String, callbackObject: ILoginCallback) {
-        val auth = FirebaseAuth.getInstance()
+
+        val auth = repository.getFirebaseAuthConnection()
 
         auth.signInWithEmailAndPassword(mail, password)
             .addOnCompleteListener { task ->
@@ -79,7 +80,6 @@ class LoginViewModelImpl @Inject constructor(
                     viewModelScope.launch {
                         mutableDeliveryMan.postValue(repository.getDeliveryMan(firebaseUser!!.uid))
                     }
-
 
                     //observeForever bc you don't need an owner
                     mutableDeliveryMan.observeForever { deliveryMan ->

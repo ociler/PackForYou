@@ -1,5 +1,6 @@
 package com.packforyou.data.repositories
 
+import com.google.firebase.auth.FirebaseAuth
 import com.packforyou.data.models.DeliveryMan
 import com.packforyou.data.dataSources.IFirebaseRemoteDatabase
 import com.packforyou.data.models.Client
@@ -12,6 +13,7 @@ interface IUsersRepository {
     suspend fun addDeliveryMan(deliveryMan: DeliveryMan)
     suspend fun addClient(client: Client)
     suspend fun getDeliveryMan(uid: String): DeliveryMan
+    fun getFirebaseAuthConnection(): FirebaseAuth
 
 }
 
@@ -91,5 +93,10 @@ class UsersRepositoryImpl(
 
         return deliveryMan
     }
+
+    override fun getFirebaseAuthConnection(): FirebaseAuth {
+        return dataSource.getFirebaseAuthConnection()
+    }
 }
+
 

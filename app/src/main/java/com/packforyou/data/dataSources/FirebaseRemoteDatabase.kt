@@ -1,6 +1,7 @@
 package com.packforyou.data.dataSources
 
 import android.annotation.SuppressLint
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
@@ -20,6 +21,7 @@ interface IFirebaseRemoteDatabase {
     fun addPackage(packge: Package): Flow<CallbackState<DocumentReference>>
     fun addLocation(location: Location): Flow<CallbackState<DocumentReference>>
     fun addClient(client: Client): Flow<CallbackState<DocumentReference>>
+    fun getFirebaseAuthConnection(): FirebaseAuth
 }
 
 const val DELIVERYMEN_REF = "deliveryMen"
@@ -128,6 +130,10 @@ class FirebaseRemoteDatabaseImpl(
         }.catch {
             emit(CallbackState.failed(it.message.toString()))
         }.flowOn(Dispatchers.IO)
+    }
+
+    override fun getFirebaseAuthConnection(): FirebaseAuth {
+        return FirebaseAuth.getInstance()
     }
 
     override fun getDeliveryMan(uid: String): Flow<CallbackState<DeliveryMan>> {
