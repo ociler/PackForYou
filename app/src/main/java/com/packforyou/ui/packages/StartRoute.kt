@@ -1,5 +1,6 @@
 package com.packforyou.ui.packages
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,10 +9,11 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
@@ -27,6 +29,21 @@ import com.packforyou.ui.theme.Black
 import com.packforyou.ui.theme.PackForYouTypography
 import com.packforyou.ui.theme.White
 
+
+val packagesList = CurrentSession.packagesToDeliver
+
+lateinit var currentPosition: MutableState<Int>
+
+lateinit var currentPackage: MutableState<Package>
+lateinit var previousPackage: MutableState<Package>
+lateinit var nextPackage: MutableState<Package>
+
+lateinit var markerPosition: MutableState<LatLng>
+
+lateinit var pointsList: State<List<LatLng>>
+lateinit var cameraPositionState: CameraPositionState
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StartRouteScreen(
@@ -34,72 +51,80 @@ fun StartRouteScreen(
     owner: ViewModelStoreOwner
 ) {
 
-    val packagesList = CurrentSession.packagesToDeliver
-
     val packagesViewModel =
         ViewModelProvider(owner)[PackagesViewModelImpl::class.java]
 
-        val atlasViewModel =
-            ViewModelProvider(owner)[AtlasViewModelImpl::class.java]
+    val atlasViewModel =
+        ViewModelProvider(owner)[AtlasViewModelImpl::class.java]
 
-        var currentPosition by remember {
-            mutableStateOf(0)
+    currentPosition = remember {
+        mutableStateOf(0)
+    }
+
+    currentPackage = remember {
+        mutableStateOf(packagesList.value[0])
+    }
+
+    previousPackage = remember {
+        mutableStateOf(packagesList.value[0])
+    }
+
+    nextPackage = remember {
+        mutableStateOf(packagesList.value[0])
+    }
+
+    markerPosition = remember {
+        mutableStateOf(
+            LatLng(
+                currentPackage.value.location.latitude,
+                currentPackage.value.location.longitude
+            )
+        )
+    }
+
+    pointsList = atlasViewModel.observePointsList().observeAsState(emptyList())
+
+    cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(markerPosition.value, 20f)
+    }
+
+    Scaffold(
+        topBar = {
+            AppBar(
+                navigationIcon = Icons.Filled.ArrowBack,
+                onNavigationIconClick = {
+                    navController.popBackStack()
+                }
+            )
         }
+    ) { paddingValues ->
+        Column(modifier = Modifier.padding(paddingValues)) {
 
-        var currentPackage by remember {
-            mutableStateOf(packagesList.value[0])
-        }
+            GoogleMap(
+                modifier = Modifier.fillMaxHeight(.35f),
+                cameraPositionState = cameraPositionState,
+                properties = MapProperties(
+                    mapStyleOptions = MapStyleOptions(atlasViewModel.getMapStyleString())
+                )
+            ) {
 
-        var previousPackage by remember {
-            mutableStateOf(packagesList.value[0])
-        }
+                markerPosition.value = LatLng(
+                    currentPackage.value.location.latitude,
+                    currentPackage.value.location.longitude
+                )
+                Marker(
+                    state = MarkerState(position = markerPosition.value),
+                    icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_black_marker)
+                )
 
-        var nextPackage by remember {
-            mutableStateOf(packagesList.value[0])
-        }
-
-        var markerPosition =
-            LatLng(currentPackage.location.latitude, currentPackage.location.longitude)
-
-        val cameraPositionState = rememberCameraPositionState {
-            position = CameraPosition.fromLatLngZoom(markerPosition, 20f)
-        }
-
-        Scaffold(
-            topBar = {
-                AppBar(
-                    navigationIcon = Icons.Filled.ArrowBack,
-                    onNavigationIconClick = {
-                        navController.popBackStack()
-                    }
+                Polyline(
+                    points = pointsList.value,
+                    startCap = RoundCap(),
+                    endCap = SquareCap()
                 )
             }
-        ) { paddingValues ->
-            Column(modifier = Modifier.padding(paddingValues)) {
 
-                GoogleMap(
-                    modifier = Modifier.fillMaxHeight(.35f),
-                    cameraPositionState = cameraPositionState,
-                    properties = MapProperties(
-                        mapStyleOptions = MapStyleOptions(atlasViewModel.getMapStyleString())
-                    )
-                ) {
-                    packagesList.value.forEach {
-                        markerPosition = LatLng(it.location.latitude, it.location.longitude)
-                        Marker(
-                            state = MarkerState(position = markerPosition),
-                            title = it.numPackage.toString(),
-                            snippet = it.location.address,
-                            icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_black_marker)
-                        )
-                    }
-
-                    Polyline(
-                        points = atlasViewModel.observePointsList().value!!, //we will already have some route to show
-                        startCap = RoundCap(),
-                        endCap = SquareCap()
-                    )
-                }
+            if (packagesList.value.isNotEmpty()) {
 
                 Text(
                     text = "Next Package:",
@@ -115,7 +140,7 @@ fun StartRouteScreen(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = "REF ${currentPackage.numPackage}",
+                        text = "REF ${currentPackage.value.numPackage}",
                         style = PackForYouTypography.headlineMedium,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -126,12 +151,12 @@ fun StartRouteScreen(
                         item {
                             Column(modifier = Modifier.padding(horizontal = 15.dp)) {
                                 Box(modifier = Modifier.padding(top = 5.dp)) {
-                                    PackageCard(pckge = currentPackage, isStartRoute = true)
+                                    PackageCard(pckge = currentPackage.value, isStartRoute = true)
                                 }
                                 Spacer(modifier = Modifier.height(12.dp))
 
                                 StateIcon(
-                                    state = currentPackage.state,
+                                    state = currentPackage.value.state,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
                                 )
                             }
@@ -142,26 +167,20 @@ fun StartRouteScreen(
                 Column {
                     Row(Modifier.padding(horizontal = 10.dp)) {
                         //BACK ARROW
-                        if (currentPosition != 0) {
+                        if (currentPosition.value != 0) {
                             Surface(onClick = {
-                                currentPackage = packagesList.value[currentPosition - 1]
-                                currentPosition--
-                                markerPosition = LatLng(
-                                    currentPackage.location.latitude,
-                                    currentPackage.location.longitude
-                                )
-                                cameraPositionState.position =
-                                    CameraPosition.fromLatLngZoom(markerPosition, 17f)
+                                onBackArrowClick()
                             }) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    previousPackage = packagesList.value[currentPosition - 1]
+                                    previousPackage.value =
+                                        packagesList.value[currentPosition.value - 1]
                                     Icon(
                                         imageVector = Icons.Default.ArrowBack,
                                         contentDescription = "Go to previous package"
                                     )
                                     Spacer(modifier = Modifier.width(5.dp))
                                     Text(
-                                        text = "REF ${previousPackage.numPackage}",
+                                        text = "REF ${previousPackage.value.numPackage}",
                                         style = PackForYouTypography.bodySmall,
                                         fontWeight = FontWeight.SemiBold
                                     )
@@ -172,21 +191,15 @@ fun StartRouteScreen(
                         Spacer(modifier = Modifier.weight(1f))
 
                         //FORWARD ARROW
-                        if (currentPosition != packagesList.value.lastIndex) {
+                        if (currentPosition.value != packagesList.value.lastIndex) {
                             Surface(onClick = {
-                                currentPackage = packagesList.value[currentPosition + 1]
-                                currentPosition++
-                                markerPosition = LatLng(
-                                    currentPackage.location.latitude,
-                                    currentPackage.location.longitude
-                                )
-                                cameraPositionState.position =
-                                    CameraPosition.fromLatLngZoom(markerPosition, 17f)
+                                onForwardArrowClick()
                             }) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    nextPackage = packagesList.value[currentPosition + 1]
+                                    nextPackage.value =
+                                        packagesList.value[currentPosition.value + 1]
                                     Text(
-                                        text = "REF ${nextPackage.numPackage}",
+                                        text = "REF ${nextPackage.value.numPackage}",
                                         style = PackForYouTypography.bodySmall,
                                         fontWeight = FontWeight.SemiBold
                                     )
@@ -199,20 +212,58 @@ fun StartRouteScreen(
                             }
                         }
                     }
-                    MarkAsDeliveredButton(currentPackage, packagesViewModel)
+
+                    MarkAsDeliveredButton(packagesViewModel, navController)
                 }
+            } else {
+                //TODO design some better screen for when there are no more packages to deliver
+                Text(text = "There are no more packages to deliver. Time to go home :D!")
             }
         }
+    }
+}
+
+private fun onBackArrowClick() {
+    currentPackage.value = packagesList.value[currentPosition.value - 1]
+    currentPosition.value--
+    markerPosition.value = LatLng(
+        currentPackage.value.location.latitude,
+        currentPackage.value.location.longitude
+    )
+    cameraPositionState.position =
+        CameraPosition.fromLatLngZoom(markerPosition.value, 17f)
+}
+
+private fun onForwardArrowClick() {
+    currentPackage.value = packagesList.value[currentPosition.value + 1]
+    currentPosition.value++
+    markerPosition.value = LatLng(
+        currentPackage.value.location.latitude,
+        currentPackage.value.location.longitude
+    )
+    cameraPositionState.position =
+        CameraPosition.fromLatLngZoom(markerPosition.value, 17f)
 }
 
 @Composable
-fun MarkAsDeliveredButton(pckg: Package, viewModel: IPackagesViewModel) {
+fun MarkAsDeliveredButton(viewModel: IPackagesViewModel, navController: NavController) {
+    val context = LocalContext.current
     Button(
         onClick = {
-            pckg.isDelivered = true
-            viewModel.removePackageFromToDeliverList(pckg)
+            val pckgPos = currentPosition.value
+            val pckgListLastIndex = packagesList.value.lastIndex
 
-            //TODO fix the mark as delivered and outbounds issue
+            currentPackage.value.isDelivered = true
+            viewModel.removePackageFromToDeliverList(currentPackage.value)
+
+
+            if (pckgPos != pckgListLastIndex) {
+                onMarkAsDeliveredClick()
+            } else if (packagesList.value.size > 1) { //situated on last package but this is not the only one
+                //we go to the beginning of the route
+                currentPosition.value = 0
+                onMarkAsDeliveredClick()
+            }
         },
         colors = ButtonDefaults.buttonColors(containerColor = Black),
         modifier = Modifier
@@ -230,4 +281,15 @@ fun MarkAsDeliveredButton(pckg: Package, viewModel: IPackagesViewModel) {
             )
         }
     }
+}
+
+private fun onMarkAsDeliveredClick() {
+    //as the packagesList has changed, now on the currentPosition it is what previously was "next package"
+    currentPackage.value = packagesList.value[currentPosition.value]
+    markerPosition.value = LatLng(
+        currentPackage.value.location.latitude,
+        currentPackage.value.location.longitude
+    )
+    cameraPositionState.position =
+        CameraPosition.fromLatLngZoom(markerPosition.value, 17f)
 }

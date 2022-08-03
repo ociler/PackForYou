@@ -347,6 +347,7 @@ fun AtlasWithMutableRoute(viewModel: IAtlasViewModel) {
                 CustomMarkerInfoWindow(pckg)
             }
         }
+
         latLong = LatLng(endLocation.latitude, endLocation.longitude)
         MarkerInfoWindow( //TODO change finish icon
             state = MarkerState(position = latLong),
