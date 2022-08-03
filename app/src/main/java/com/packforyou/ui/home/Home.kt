@@ -32,6 +32,7 @@ import com.packforyou.ui.login.LoginViewModelImpl
 import com.packforyou.ui.packages.*
 import com.packforyou.ui.theme.Black
 import com.packforyou.ui.theme.PackForYouTypography
+import com.packforyou.ui.theme.TravelTimeButtonColor
 import com.packforyou.ui.theme.White
 import kotlinx.coroutines.launch
 
@@ -40,7 +41,6 @@ import kotlinx.coroutines.launch
 private lateinit var addPackageState: MutableState<Boolean>
 private lateinit var selectPackageToEditState: MutableState<Boolean>
 private lateinit var defineEndLocationState: MutableState<Boolean>
-
 
 var isFirstScreen = true
 
@@ -65,6 +65,7 @@ fun HomeScreen(
 
     val loginViewModel =
         ViewModelProvider(viewModelOwner)[LoginViewModelImpl::class.java]
+
 
     if (isFirstScreen) { //to not to login everytime
         isFirstScreen = false
@@ -98,6 +99,10 @@ fun HomeScreen(
             }
 
         CurrentSession.deliveryMan = deliveryMan
+
+        CurrentSession.travelTime = remember {
+            mutableStateOf(deliveryMan.route!!.totalTime!!)
+        }
     }
 
     val packages = CurrentSession.packagesToDeliver
@@ -113,6 +118,7 @@ fun HomeScreen(
     defineEndLocationState = remember {
         mutableStateOf(false)
     }
+
 
     BottomSheetScaffold(
         scaffoldState = sheetState,
@@ -202,14 +208,27 @@ fun HomeScreen(
                 Column {
                     Spacer(modifier = Modifier.weight(1f))
 
-                    StartRouteRoundedButton(
-                        navController = navController,
-                        modifier = Modifier.padding(
-                            start = 15.dp,
-                            bottom = 10.dp
-                        ),
-                        packages.value.isEmpty()
-                    )
+                    Row {
+                        Spacer(modifier = Modifier.weight(1f))
+                        TravelTimeButton(
+                            modifier = Modifier.padding(
+                                end = 15.dp,
+                                bottom = 10.dp
+                            )
+                        )
+                    }
+
+                    Row {
+                        Spacer(modifier = Modifier.weight(1f))
+                        StartRouteRoundedButton(
+                            navController = navController,
+                            modifier = Modifier.padding(
+                                end = 15.dp,
+                                bottom = 10.dp
+                            ),
+                            packages.value.isEmpty()
+                        )
+                    }
                 }
             }
         }
@@ -255,7 +274,7 @@ fun StartRouteRoundedButton(
     val context = LocalContext.current
 
     Surface(
-        shape = RoundedCornerShape(10.dp),
+        shape = RoundedCornerShape(20.dp),
         color = Black,
         modifier = modifier
     ) {
@@ -263,12 +282,14 @@ fun StartRouteRoundedButton(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .clickable {
-                    if(isEmpty){
-                        Toast.makeText(
-                            context,
-                            "You have no packages to deliver, so you can't Start a Route.",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                    if (isEmpty) {
+                        Toast
+                            .makeText(
+                                context,
+                                "You have no packages to deliver, so you can't Start a Route.",
+                                Toast.LENGTH_SHORT
+                            )
+                            .show()
                     } else {
                         navController.navigate(route = Screen.StartRoute.route)
                     }
@@ -282,7 +303,7 @@ fun StartRouteRoundedButton(
                     text = "Start Route",
                     color = White,
                     style = PackForYouTypography.bodyMedium,
-                    fontSize = 20.sp
+                    fontSize = 18.sp
                 )
             }
 
@@ -292,8 +313,34 @@ fun StartRouteRoundedButton(
                 painter = painterResource(id = R.drawable.ic_navigation),
                 contentDescription = "Starts the navigation",
                 tint = White,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(24.dp)
             )
+        }
+    }
+}
+
+@Composable
+fun TravelTimeButton(modifier: Modifier = Modifier) {
+
+    val travelTime = CurrentSession.travelTime
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = TravelTimeButtonColor,
+        modifier = modifier
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .padding(vertical = 5.dp, horizontal = 15.dp)
+        ) {
+            Text(
+                text = "${travelTime.value / 60} min",
+                color = Black,
+                style = PackForYouTypography.bodyMedium,
+                fontSize = 16.sp
+            )
+
         }
     }
 }

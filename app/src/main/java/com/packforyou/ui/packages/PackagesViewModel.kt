@@ -425,13 +425,20 @@ class PackagesViewModelImpl @Inject constructor(
                         //when it should be triggered (when this object.value changes).
                         //This means that these lines of code are computed twice
                         val optimizedPackages = mutableListOf<Package>()
+                        var totalTime = 0
 
                         optimizedPackages.addAll(optimizedVeryUrgentRoute.packages)
                         optimizedPackages.addAll(getUrgentRoute().packages)
                         optimizedPackages.addAll(getNotUrgentRoute().packages)
 
-                        CurrentSession.route.value = route.copy(packages = optimizedPackages)
+
+                        totalTime += optimizedVeryUrgentRoute.totalTime!!
+                        totalTime += getUrgentRoute().totalTime!!
+                        totalTime += getNotUrgentRoute().totalTime!!
+
+                        CurrentSession.route.value = route.copy(packages = optimizedPackages, totalTime = totalTime)
                         CurrentSession.packagesToDeliver.value = optimizedPackages
+                        CurrentSession.travelTime.value = totalTime
 
                         IsLoading.state.value = false
                     }

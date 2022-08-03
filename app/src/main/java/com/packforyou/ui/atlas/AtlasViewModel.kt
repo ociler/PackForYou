@@ -7,6 +7,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.PolyUtil
 import com.packforyou.api.ICallbackDirectionsResponse
 import com.packforyou.data.directionsDataClases.DirectionsResponse
+import com.packforyou.data.models.Algorithm
 import com.packforyou.data.models.Location
 import com.packforyou.data.models.Route
 import com.packforyou.data.repositories.IPackagesAndAtlasRepository
@@ -32,7 +33,16 @@ class AtlasViewModelImpl @Inject constructor(
     private val callbackObject = object : ICallbackDirectionsResponse {
         override fun onSuccessResponseDirectionsAPI(response: DirectionsResponse) {
             val encodedPoints = response.routes[0].overview_polyline.points
+            var travelTime = 0
+
             pointsList.postValue(PolyUtil.decode(encodedPoints).toList())
+            response.routes[0].legs.forEach {
+                travelTime += it.duration.value
+            }
+
+            if(CurrentSession.algorithm != Algorithm.URGENCY) {
+                CurrentSession.travelTime.value = travelTime
+            }
         }
     }
 

@@ -11,4 +11,5 @@ object CurrentSession {
     lateinit var packagesForToday: MutableState<List<Package>>
     lateinit var packagesToDeliver: MutableState<List<Package>>
     lateinit var lastLocationsList: MutableState<List<Location>>
+    lateinit var travelTime: MutableState<Int>
 }

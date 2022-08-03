@@ -313,11 +313,15 @@ fun AtlasWithMutableRoute(viewModel: IAtlasViewModel) {
     scope.launch {
         viewModel.computeDirectionsAPIResponse(route.value)
     }
+
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
         properties = MapProperties(
             mapStyleOptions = MapStyleOptions(viewModel.getMapStyleString())
+        ),
+        uiSettings = MapUiSettings(
+            zoomControlsEnabled = false
         )
     ) {
 

@@ -41,3 +41,5 @@ val NewLocation = Color(0xffe6eb00)
 val Confirmed = Color(0xff00eb3c)
 
 val PostponedCard = Color(0xFFFFE4E4)
+
+val TravelTimeButtonColor = Color(0xFFD9D9D9)

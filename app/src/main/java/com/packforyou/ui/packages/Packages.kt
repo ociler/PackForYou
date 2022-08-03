@@ -307,6 +307,7 @@ private fun computeProperAlgorithmAndUpdateRoute(
 
     when (algorithm) {
         Algorithm.DIRECTIONS_API -> {
+            viewModel.observeOptimizedDirectionsAPIRoute().removeObservers(owner)
             CurrentSession.algorithm = Algorithm.DIRECTIONS_API
 
             viewModel.computeOptimizedRouteDirectionsAPI(route)
@@ -314,12 +315,11 @@ private fun computeProperAlgorithmAndUpdateRoute(
                 CurrentSession.route.value = optimizedRoute
                 CurrentSession.packagesToDeliver.value = optimizedRoute.packages
 
-                Toast.makeText(context, "Packages sorted by Directions API.", Toast.LENGTH_SHORT)
-                    .show()
+
 
                 IsLoading.state.value = false
-
-                viewModel.observeOptimizedDirectionsAPIRoute().removeObservers(owner)
+                Toast.makeText(context, "Packages sorted by Directions API.", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
 
@@ -535,10 +535,15 @@ private fun computeProperAlgorithmAndUpdateRoute(
                     //when it should be triggered (when this object.value changes).
                     //This means that these lines of code are computed twice
                     val optimizedPackages = mutableListOf<Package>()
+                    var totalTime = 0
 
                     optimizedPackages.addAll(optimizedVeryUrgentRoute.packages)
                     optimizedPackages.addAll(viewModel.getUrgentRoute().packages)
                     optimizedPackages.addAll(viewModel.getNotUrgentRoute().packages)
+
+                    totalTime += optimizedVeryUrgentRoute.totalTime!!
+                    totalTime += viewModel.getUrgentRoute().totalTime!!
+                    totalTime += viewModel.getNotUrgentRoute().totalTime!!
 
                     //bc the issue with twice-triggered code. I should fix this in a better way
                     if (isFirstExec) {
@@ -546,8 +551,9 @@ private fun computeProperAlgorithmAndUpdateRoute(
                     } else {
                         viewModel.observeOptimizedVeryUrgentRoute().removeObservers(owner)
 
-                        CurrentSession.route.value = route.copy(packages = optimizedPackages)
+                        CurrentSession.route.value = route.copy(packages = optimizedPackages, totalTime = totalTime)
                         CurrentSession.packagesToDeliver.value = optimizedPackages
+                        CurrentSession.travelTime.value = totalTime
 
                         IsLoading.state.value = false
                         Toast.makeText(context, "Packages sorted by Urgency", Toast.LENGTH_SHORT)
