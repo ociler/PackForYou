@@ -251,6 +251,8 @@ class PackagesViewModelImpl @Inject constructor(
         comesFromAddPackage: Boolean = false
     ) {
 
+        val isLoading = IsLoading.state
+
         val route = CurrentSession.route.value.copy(packages = packages)
 
         when (algorithm) {
@@ -261,7 +263,8 @@ class PackagesViewModelImpl @Inject constructor(
                 observeOptimizedDirectionsAPIRoute().observeForever { optimizedRoute ->
                     CurrentSession.route.value = optimizedRoute
                     CurrentSession.packagesToDeliver.value = optimizedRoute.packages
-                    println(optimizedRoute)
+
+                    IsLoading.state.value = false
                 }
             }
 
@@ -308,6 +311,8 @@ class PackagesViewModelImpl @Inject constructor(
                         //and we update the route
                         CurrentSession.route.value = optimizedRoute
                         CurrentSession.packagesToDeliver.value = optimizedRoute.packages
+
+                        IsLoading.state.value = false
                     }
 
 
@@ -323,6 +328,8 @@ class PackagesViewModelImpl @Inject constructor(
                     //and we update the route
                     CurrentSession.route.value = optimizedRoute
                     CurrentSession.packagesToDeliver.value = optimizedRoute.packages
+
+                    IsLoading.state.value = false
                 }
             }
 
@@ -363,6 +370,8 @@ class PackagesViewModelImpl @Inject constructor(
 
                     CurrentSession.route.value = optimizedRoute
                     CurrentSession.packagesToDeliver.value = optimizedRoute.packages
+
+                    IsLoading.state.value = false
                 }
 
             }
@@ -404,7 +413,6 @@ class PackagesViewModelImpl @Inject constructor(
 
                 observeOptimizedVeryUrgentRoute()
                     .observeForever { optimizedVeryUrgentRoute ->
-
                         //TODO SOLVE THIS LIVEDATA THING. The observe is triggered twice: One at the beginning
                         //bc optimizedVeryUrgentRoute already has a value and anotherone
                         //when it should be triggered (when this object.value changes).
@@ -416,10 +424,12 @@ class PackagesViewModelImpl @Inject constructor(
                         optimizedPackages.addAll(getNotUrgentRoute().packages)
 
                         CurrentSession.route.value = route.copy(packages = optimizedPackages)
-                        println(optimizedPackages.size)
                         CurrentSession.packagesToDeliver.value = optimizedPackages
+
+                        IsLoading.state.value = false
                     }
             }
+
 
             else -> {
                 val newRoute = CurrentSession.route.value.copy(packages = packages)
@@ -434,9 +444,10 @@ class PackagesViewModelImpl @Inject constructor(
                     CurrentSession.route.value = newRoute
                     CurrentSession.packagesToDeliver.value = packages
                 }
+
+                IsLoading.state.value = false
             }
         }
-        CurrentSession.packagesToDeliver.value = CurrentSession.packagesToDeliver.value
     }
 
 
@@ -1008,6 +1019,7 @@ class PackagesViewModelImpl @Inject constructor(
             it.numPackage != pckge.numPackage
         }
 
+        IsLoading.state.value = true
         computeProperAlgorithmAndUpdateCurrentSession(CurrentSession.algorithm, newPackages)
     }
 

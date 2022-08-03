@@ -23,7 +23,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import com.packforyou.R
 import com.packforyou.data.models.*
@@ -34,7 +33,6 @@ import com.packforyou.ui.theme.PackForYouTypography
 import com.packforyou.ui.theme.White
 
 lateinit var expanded: MutableState<Boolean>
-lateinit var isLoading: MutableState<Boolean>
 
 @Composable
 fun PackagesScreen(
@@ -43,7 +41,8 @@ fun PackagesScreen(
     packages: MutableState<List<Package>>,
     lifecycleOwner: LifecycleOwner
 ) {
-    isLoading = remember { mutableStateOf(false) }
+
+    IsLoading.state = remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxHeight(.9f)) {
 
@@ -171,11 +170,6 @@ fun FilterButton(viewModel: IPackagesViewModel, lifecycleOwner: LifecycleOwner) 
     )
 
     Row(Modifier.padding(end = 5.dp, bottom = 25.dp)) {
-
-        if (isLoading.value) {
-            CircularProgressIndicator()
-        }
-
         Spacer(Modifier.weight(1f))
         Box(
             modifier = Modifier
@@ -207,6 +201,8 @@ fun FilterButton(viewModel: IPackagesViewModel, lifecycleOwner: LifecycleOwner) 
                         onClick = {
                             selectedAlgorithm = getAlgorithmGivenString(it)
                             if (selectedAlgorithm != CurrentSession.algorithm) {
+                                IsLoading.state.value = true
+
                                 computeProperAlgorithmAndUpdateRoute(
                                     selectedAlgorithm,
                                     viewModel,
@@ -305,7 +301,9 @@ private fun computeProperAlgorithmAndUpdateRoute(
     owner: LifecycleOwner,
     context: Context
 ) {
+    var isFirstExec = true
     val route = CurrentSession.route.value
+    val isLoading = IsLoading.state
 
     when (algorithm) {
         Algorithm.DIRECTIONS_API -> {
@@ -319,6 +317,8 @@ private fun computeProperAlgorithmAndUpdateRoute(
                 Toast.makeText(context, "Packages sorted by Directions API.", Toast.LENGTH_SHORT)
                     .show()
 
+                IsLoading.state.value = false
+
                 viewModel.observeOptimizedDirectionsAPIRoute().removeObservers(owner)
             }
         }
@@ -328,8 +328,7 @@ private fun computeProperAlgorithmAndUpdateRoute(
             if (CurrentSession.route.value.packages.size <= 10) {
                 CurrentSession.algorithm = Algorithm.BRUTE_FORCE
 
-                if(viewModel.observeTravelTimeArray().value == null) {
-                    isLoading.value = true
+                if (viewModel.observeTravelTimeArray().value == null) {
 
                     //I reset the position
                     route.packages.forEachIndexed { index, pckg ->
@@ -398,12 +397,16 @@ private fun computeProperAlgorithmAndUpdateRoute(
                     CurrentSession.route.value = optimizedRoute
                     CurrentSession.packagesToDeliver.value = optimizedRoute.packages
 
+                    IsLoading.state.value = false
+
                     Toast.makeText(context, "Packages sorted by Brute Force", Toast.LENGTH_SHORT)
                         .show()
                 }
 
 
             } else {
+                IsLoading.state.value = false
+
                 Toast.makeText(
                     context,
                     "Sorry, we can't compute Brute Force Algorithm with more than 10 packages",
@@ -416,7 +419,7 @@ private fun computeProperAlgorithmAndUpdateRoute(
         Algorithm.CLOSEST_NEIGHBOUR -> {
             CurrentSession.algorithm = Algorithm.CLOSEST_NEIGHBOUR
 
-            if(viewModel.observeTravelTimeArray().value == null) {
+            if (viewModel.observeTravelTimeArray().value == null) {
                 isLoading.value = true
 
                 //I reset the position
@@ -481,6 +484,8 @@ private fun computeProperAlgorithmAndUpdateRoute(
                 CurrentSession.route.value = optimizedRoute
                 CurrentSession.packagesToDeliver.value = optimizedRoute.packages
 
+                IsLoading.state.value = false
+
                 Toast.makeText(context, "Packages sorted by Closest Neighbour", Toast.LENGTH_SHORT)
                     .show()
             }
@@ -524,7 +529,6 @@ private fun computeProperAlgorithmAndUpdateRoute(
 
             viewModel.observeOptimizedVeryUrgentRoute()
                 .observe(owner) { optimizedVeryUrgentRoute ->
-                    viewModel.observeOptimizedDirectionsAPIRoute().removeObservers(owner)
 
                     //TODO SOLVE THIS LIVEDATA THING. The observe is triggered twice: One at the beginning
                     //bc optimizedVeryUrgentRoute already has a value and anotherone
@@ -536,18 +540,27 @@ private fun computeProperAlgorithmAndUpdateRoute(
                     optimizedPackages.addAll(viewModel.getUrgentRoute().packages)
                     optimizedPackages.addAll(viewModel.getNotUrgentRoute().packages)
 
-                    CurrentSession.route.value = route.copy(packages = optimizedPackages)
-                    println(optimizedPackages.size)
-                    CurrentSession.packagesToDeliver.value = optimizedPackages
+                    //bc the issue with twice-triggered code. I should fix this in a better way
+                    if (isFirstExec) {
+                        isFirstExec = false
+                    } else {
+                        viewModel.observeOptimizedVeryUrgentRoute().removeObservers(owner)
 
-                    Toast.makeText(context, "Packages sorted by Urgency", Toast.LENGTH_SHORT)
-                        .show()
+                        CurrentSession.route.value = route.copy(packages = optimizedPackages)
+                        CurrentSession.packagesToDeliver.value = optimizedPackages
+
+                        IsLoading.state.value = false
+                        Toast.makeText(context, "Packages sorted by Urgency", Toast.LENGTH_SHORT)
+                            .show()
+                    }
 
                 }
         }
 
         else -> {
             CurrentSession.algorithm = Algorithm.NOT_ALGORITHM
+
+            IsLoading.state.value = false
         }
     }
 }

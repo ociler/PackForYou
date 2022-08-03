@@ -7,13 +7,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,6 +26,7 @@ import kotlinx.coroutines.launch
 import com.packforyou.R
 import com.packforyou.data.models.*
 import com.packforyou.ui.login.CurrentSession
+import com.packforyou.ui.packages.IsLoading
 import com.packforyou.ui.packages.StateIcon
 import com.packforyou.ui.theme.*
 
@@ -34,7 +34,15 @@ lateinit var cameraPositionState: CameraPositionState
 
 @Composable
 fun AtlasScreen(atlasViewModel: IAtlasViewModel) {
-    AtlasWithMutableRoute(atlasViewModel)
+    Box {
+        AtlasWithMutableRoute(atlasViewModel)
+
+        IsLoading.state = remember { mutableStateOf(false) }
+
+        if (IsLoading.state.value) {
+            CircularProgressIndicator()
+        }
+    }
 }
 
 @Composable
@@ -303,9 +311,8 @@ fun AtlasWithMutableRoute(viewModel: IAtlasViewModel) {
 
     //this way we get the Polyline to draw the path
     scope.launch {
-            viewModel.computeDirectionsAPIResponse(route.value)
+        viewModel.computeDirectionsAPIResponse(route.value)
     }
-
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
@@ -313,6 +320,7 @@ fun AtlasWithMutableRoute(viewModel: IAtlasViewModel) {
             mapStyleOptions = MapStyleOptions(viewModel.getMapStyleString())
         )
     ) {
+
         val startLocation = route.value.startLocation
 
         latLong = LatLng(startLocation.latitude, startLocation.longitude)
@@ -339,24 +347,19 @@ fun AtlasWithMutableRoute(viewModel: IAtlasViewModel) {
                 CustomMarkerInfoWindow(pckg)
             }
         }
-
-
-        //We set end location in case it exists
-        if (endLocation != null) {
-            latLong = LatLng(endLocation.latitude, endLocation.longitude)
-            MarkerInfoWindow( //TODO change finish icon
-                state = MarkerState(position = latLong),
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.finish)
-            ) {
-                CustomEndMarkerWindow(endLocation = endLocation)
-            }
+        latLong = LatLng(endLocation.latitude, endLocation.longitude)
+        MarkerInfoWindow( //TODO change finish icon
+            state = MarkerState(position = latLong),
+            icon = BitmapDescriptorFactory.fromResource(R.drawable.finish)
+        ) {
+            CustomEndMarkerWindow(endLocation = endLocation)
         }
+
 
         Polyline(
             points = pointsList,
             color = Color.Black
         )
-
     }
 }
 

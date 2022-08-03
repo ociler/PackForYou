@@ -1,6 +1,7 @@
 package com.packforyou.ui.home
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -185,7 +186,7 @@ fun HomeScreen(
         },
         sheetShape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
         sheetElevation = 10.dp,
-        sheetPeekHeight = 70.dp,
+        sheetPeekHeight = 100.dp,
         backgroundColor = Color.Transparent,
         modifier = Modifier
             .fillMaxHeight()
