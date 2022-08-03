@@ -49,8 +49,7 @@ fun SetLastLocation(
 
     selectedLocation = if (lastLocations.isNotEmpty()) {
         remember {
-            mutableStateOf(lastLocations[lastLocations
-                .indexOf(CurrentSession.deliveryMan!!.lastLocation)])
+            mutableStateOf(lastLocations[lastLocations.indexOf(CurrentSession.deliveryMan!!.lastLocation)])
         }
     } else {
         remember { mutableStateOf(Location()) }
