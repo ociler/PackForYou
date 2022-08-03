@@ -221,7 +221,7 @@ private fun tryLogin(
     viewModel.logIn(mailText, passwordText, loginCallback)
 }
 
-/* 
+/*
 //This logic should be done on the viewModel/repository/datasource
 
 private fun addDeliveryMan(viewModel: ILoginViewModel, deliveryMan: DeliveryMan) {

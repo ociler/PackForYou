@@ -42,7 +42,7 @@ private lateinit var addPackageState: MutableState<Boolean>
 private lateinit var selectPackageToEditState: MutableState<Boolean>
 private lateinit var defineEndLocationState: MutableState<Boolean>
 
-var isFirstScreen = false
+var isFirstScreen = true
 
 
 @OptIn(ExperimentalMaterialApi::class)

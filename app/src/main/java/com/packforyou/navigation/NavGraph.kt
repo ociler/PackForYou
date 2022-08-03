@@ -10,7 +10,7 @@ import com.packforyou.ui.home.HomeScreen
 import com.packforyou.ui.login.LoginScreen
 import com.packforyou.ui.packages.StartRouteScreen
 
-const val startWithLogin = true
+const val startWithLogin = false
 
 @Composable
 fun SetupNavGraph(

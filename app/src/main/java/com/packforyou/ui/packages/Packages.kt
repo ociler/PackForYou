@@ -21,16 +21,20 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import com.packforyou.R
 import com.packforyou.data.models.*
 import com.packforyou.navigation.Screen
 import com.packforyou.ui.login.CurrentSession
-import com.packforyou.ui.theme.Black
-import com.packforyou.ui.theme.PackForYouTypography
-import com.packforyou.ui.theme.White
+import com.packforyou.ui.theme.*
 
 lateinit var expanded: MutableState<Boolean>
 
@@ -143,12 +147,41 @@ fun PackagesScreen(
                                 Spacer(modifier = Modifier.height(35.dp))
                             }
                         }
-
                     }
                 }
             }
         }
 
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .background(color = Color(alpha = .05f, red = 0f, green = 0f, blue = 0f))
+        ) {
+            Text(
+                text = buildAnnotatedString {
+                    withStyle(
+                        style = SpanStyle(
+                            fontFamily = Inter,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Normal
+                        )
+                    ) {
+                        append("Estimated time: ")
+                    }
+                    withStyle(
+                        style = SpanStyle(
+                            fontFamily = Inter,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    ) {
+                        append("${CurrentSession.travelTime.value / 60} min")
+                    }
+                },
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp)
+            )
+        }
         StartRouteRectangularButton(navController, packages.value.isEmpty())
     }
 }
@@ -551,7 +584,8 @@ private fun computeProperAlgorithmAndUpdateRoute(
                     } else {
                         viewModel.observeOptimizedVeryUrgentRoute().removeObservers(owner)
 
-                        CurrentSession.route.value = route.copy(packages = optimizedPackages, totalTime = totalTime)
+                        CurrentSession.route.value =
+                            route.copy(packages = optimizedPackages, totalTime = totalTime)
                         CurrentSession.packagesToDeliver.value = optimizedPackages
                         CurrentSession.travelTime.value = totalTime
 
