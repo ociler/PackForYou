@@ -1,5 +1,6 @@
 package com.packforyou.ui.home
 
+import android.graphics.fonts.FontStyle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
@@ -9,12 +10,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.sp
 import com.packforyou.R
 import com.packforyou.ui.login.CurrentSession
 import com.packforyou.ui.packages.DeliveredPackages
 import com.packforyou.ui.packages.IPackagesViewModel
 import com.packforyou.ui.theme.Black
+import com.packforyou.ui.theme.Inter
 import com.packforyou.ui.theme.PackForYouTypography
 import com.packforyou.ui.theme.White
 
@@ -32,11 +40,37 @@ fun AppBar(
     CenterAlignedTopAppBar(
         title = {
             Text(
-                text = stringResource(
-                    id = R.string.app_name
-                ),
-                textAlign = TextAlign.Center,
-                style = PackForYouTypography.headlineMedium
+                text =
+                buildAnnotatedString {
+                    withStyle(
+                        style = SpanStyle(
+                            fontFamily = Inter,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 18.sp
+                        )
+                    ) {
+                        append("Pack")
+                    }
+                    withStyle(
+                        style = SpanStyle(
+                            fontFamily = Inter,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 30.sp
+                        )
+                    ) {
+                        append("4")
+                    }
+                    withStyle(
+                        style = SpanStyle(
+                            fontFamily = Inter,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 18.sp
+                        )
+                    ) {
+                        append("You")
+                    }
+                },
+                textAlign = TextAlign.Center
             )
         },
         actions = {

@@ -70,6 +70,11 @@ val PackForYouTypography = Typography(
         fontFamily = Inter,
         fontWeight = FontWeight.Normal,
         fontSize = 13.sp
+    ),
+    headlineLarge = TextStyle(
+        fontFamily = Inter,
+        fontWeight = FontWeight.Normal,
+        fontSize = 30.sp
     )
 
 )
