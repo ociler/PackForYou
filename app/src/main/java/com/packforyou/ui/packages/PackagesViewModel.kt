@@ -3,6 +3,7 @@ package com.packforyou.ui.packages
 import android.content.Context
 import android.location.Address
 import android.location.Geocoder
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -246,47 +247,198 @@ class PackagesViewModelImpl @Inject constructor(
 
     private fun computeProperAlgorithmAndUpdateCurrentSession(
         algorithm: Algorithm,
-        packages: List<Package>
+        packages: List<Package>,
+        comesFromAddPackage: Boolean = false
     ) {
 
+        val route = CurrentSession.route.value.copy(packages = packages)
+
         when (algorithm) {
-            Algorithm.NOT_ALGORITHM -> {
-                val newRoute = CurrentSession.route.value.copy(packages = packages)
 
-                CurrentSession.route.value = newRoute
-                CurrentSession.packagesToDeliver.value = newRoute.packages
-                CurrentSession.packagesForToday.value =
-                    CurrentSession.packagesForToday.value.plus(packages.last())
+            Algorithm.DIRECTIONS_API -> {
 
+                computeOptimizedRouteDirectionsAPI(route)
+                observeOptimizedDirectionsAPIRoute().observeForever { optimizedRoute ->
+                    CurrentSession.route.value = optimizedRoute
+                    CurrentSession.packagesToDeliver.value = optimizedRoute.packages
+                    println(optimizedRoute)
+                }
             }
 
             Algorithm.BRUTE_FORCE -> {
-                val route = CurrentSession.route.value
 
-                if (globalTravelTimeArray.value == null) {
+                if (comesFromAddPackage) {
+                    isLoading.value = true
+
+                    //I reset the position
+                    route.packages.forEachIndexed { index, pckg ->
+                        pckg.position = index
+                    }
+                }
+
+                //I compute the permutations.
+                // This is like this bc this was the same for both brute force algorithms
+                val listWithPositions = mutableListOf<Byte>()
+                route.packages.forEach {
+                    listWithPositions.add(it.position.toByte())
+                }
+
+                val arrayToPermute = listWithPositions.toTypedArray()
+
+                computePermutationsOfArray(arrayToPermute)
+
+                if (comesFromAddPackage) {
+                    //I get the arrays
+                    computeDistanceBetweenStartLocationAndPackages(
+                        startLocation = route.startLocation,
+                        endLocation = route.endLocation,
+                        packages = route.packages
+                    )
+
+                    //once they are ready, we compute de brute force algorithm
+                    observeTravelTimeArray().observeForever { travelTimeArray ->
+                        val optimizedRoute = getOptimizedRouteBruteForceTravelTime(
+                            route = route,
+                            travelTimeArray = travelTimeArray,
+                            startTravelTimeArray = getStartTravelTimeArray(),
+                            endTravelTimeArray = getEndTravelTimeArray()
+                        )
+
+                        isLoading.value = false
+                        //and we update the route
+                        CurrentSession.route.value = optimizedRoute
+                        CurrentSession.packagesToDeliver.value = optimizedRoute.packages
+                    }
+
+
+                } else { //we already have the arrays
+
+                    val optimizedRoute = getOptimizedRouteBruteForceTravelTime(
+                        route = route,
+                        travelTimeArray = observeTravelTimeArray().value!!,
+                        startTravelTimeArray = getStartTravelTimeArray(),
+                        endTravelTimeArray = getEndTravelTimeArray()
+                    )
+
+                    //and we update the route
+                    CurrentSession.route.value = optimizedRoute
+                    CurrentSession.packagesToDeliver.value = optimizedRoute.packages
+                }
+            }
+
+            Algorithm.CLOSEST_NEIGHBOUR -> {
+
+                if (comesFromAddPackage) {
+
                     computeDistanceBetweenStartLocationAndPackages(
                         startLocation = route.startLocation,
                         endLocation = route.endLocation,
                         packages = packages
                     )
+
+                    getOptimizedRouteBruteForceTravelTime(
+                        route = route,
+                        travelTimeArray = globalTravelTimeArray.value!!,
+                        startTravelTimeArray = globalStartTravelTimeArray,
+                        endTravelTimeArray = globalEndTravelTimeArray
+                    )
+                } else { //from remove or mark as delivered
+
+                    //I compute the permutations.
+                    // This is like this bc this was the same for both brute force algorithms
+                    val listWithPositions = mutableListOf<Byte>()
+                    packages.forEach {
+                        listWithPositions.add(it.position.toByte())
+                    }
+
+                    val arrayToPermute = listWithPositions.toTypedArray()
+                    computePermutationsOfArray(arrayToPermute)
+
+                    val optimizedRoute = getOptimizedRouteBruteForceTravelTime(
+                        route = CurrentSession.route.value.copy(packages = packages),
+                        travelTimeArray = globalTravelTimeArray.value!!, //will come for sure not empty
+                        startTravelTimeArray = getStartTravelTimeArray(),
+                        endTravelTimeArray = getEndTravelTimeArray()
+                    )
+
+                    CurrentSession.route.value = optimizedRoute
+                    CurrentSession.packagesToDeliver.value = optimizedRoute.packages
                 }
 
-                getOptimizedRouteBruteForceTravelTime(
-                    route = route,
-                    travelTimeArray = globalTravelTimeArray.value!!,
-                    startTravelTimeArray = globalStartTravelTimeArray,
-                    endTravelTimeArray = globalEndTravelTimeArray
+            }
+
+            Algorithm.URGENCY -> {
+
+                val veryUrgentPackages = mutableListOf<Package>()
+                val urgentPackages = mutableListOf<Package>()
+                val notUrgentPackages = mutableListOf<Package>()
+
+                val currentPackages = route.packages
+
+                currentPackages.forEach {
+                    when (it.urgency) {
+                        Urgency.VERY_URGENT -> {
+                            veryUrgentPackages.add(it)
+                        }
+                        Urgency.URGENT -> {
+                            urgentPackages.add(it)
+                        }
+                        else -> {
+                            notUrgentPackages.add(it)
+                        }
+                    }
+                }
+
+                val veryUrgentRoute = route.copy(packages = veryUrgentPackages)
+                val urgentRoute = route.copy(packages = urgentPackages)
+                val notUrgentRoute = route.copy(packages = notUrgentPackages)
+
+
+                //this will throw callbacks and, at the end, when the optimizedNotUrgentRoute is ready,
+                //we will be able to get the others, as they will be also ready
+                computeOptimizedRouteDirectionsAPIWithUrgency(
+                    veryUrgentRoute = veryUrgentRoute,
+                    urgentRoute = urgentRoute,
+                    notUrgentRoute = notUrgentRoute
                 )
 
+                observeOptimizedVeryUrgentRoute()
+                    .observeForever { optimizedVeryUrgentRoute ->
 
+                        //TODO SOLVE THIS LIVEDATA THING. The observe is triggered twice: One at the beginning
+                        //bc optimizedVeryUrgentRoute already has a value and anotherone
+                        //when it should be triggered (when this object.value changes).
+                        //This means that these lines of code are computed twice
+                        val optimizedPackages = mutableListOf<Package>()
+
+                        optimizedPackages.addAll(optimizedVeryUrgentRoute.packages)
+                        optimizedPackages.addAll(getUrgentRoute().packages)
+                        optimizedPackages.addAll(getNotUrgentRoute().packages)
+
+                        CurrentSession.route.value = route.copy(packages = optimizedPackages)
+                        println(optimizedPackages.size)
+                        CurrentSession.packagesToDeliver.value = optimizedPackages
+                    }
             }
 
-            Algorithm.CLOSEST_NEIGHBOUR -> {
+            else -> {
+                val newRoute = CurrentSession.route.value.copy(packages = packages)
 
+                if (comesFromAddPackage) {
+                    CurrentSession.route.value = newRoute
+                    CurrentSession.packagesToDeliver.value = newRoute.packages
+                    CurrentSession.packagesForToday.value =
+                        CurrentSession.packagesForToday.value.plus(packages.last())
+
+                } else {
+                    CurrentSession.route.value = newRoute
+                    CurrentSession.packagesToDeliver.value = packages
+                }
             }
-            else -> {}
         }
+        CurrentSession.packagesToDeliver.value = CurrentSession.packagesToDeliver.value
     }
+
 
     override fun getLocationFromAddress(address: String?, context: Context): LatLng? {
         val coder = Geocoder(context)
@@ -413,13 +565,6 @@ class PackagesViewModelImpl @Inject constructor(
     ): Route {
         if (route.packages.isNullOrEmpty()) return route.copy(id = -1)
 
-        if (startTravelTimeArray.size != route.packages.size ||
-            endTravelTimeArray.size != route.packages.size ||
-            travelTimeArray.size != route.packages.size
-        ) {
-            return route.copy(id = -2)
-        }
-
         //So much compute. With the emulator up to 9 packages. Otherwise, OutOfMemory
         //Physical device up to 10 packages. Same problem
         if (route.packages.size > 10) {
@@ -434,7 +579,7 @@ class PackagesViewModelImpl @Inject constructor(
         var origin: Int
         var destination: Int
 
-        var totalTravelTime = 0
+        var totalTravelTime: Int
         var legTravelTime: Int
 
         for (permutation in permutations) { //we have one permutation
@@ -536,7 +681,7 @@ class PackagesViewModelImpl @Inject constructor(
     }
 
     //With the size it creates an array from 0 to array.size - 1.
-    // As we are using Byte, only up to 127. If we used Int, OutOfMemory with size > 9
+// As we are using Byte, only up to 127. If we used Int, OutOfMemory with size > 9
     private fun getPermutationsIteratively(size: Int): ArrayList<ArrayList<Byte>> {
         val permutations = arrayListOf<ArrayList<Byte>>()
 
@@ -575,8 +720,8 @@ class PackagesViewModelImpl @Inject constructor(
 
 
     //Starts from startLocation, goes to its closest neighbour (first package) and from there,
-    //goes to its closest neighbour until the last package. When arrives to the last package,
-    //goes to endLocation
+//goes to its closest neighbour until the last package. When arrives to the last package,
+//goes to endLocation
     override fun getOptimizedRouteClosestNeighbourTravelTime(
         route: Route,
         travelTimeArray: Array<IntArray>,
@@ -859,16 +1004,11 @@ class PackagesViewModelImpl @Inject constructor(
     }
 
     override fun removePackageFromToDeliverList(pckge: Package) {
-        CurrentSession.packagesToDeliver.value =
-            CurrentSession.packagesToDeliver.value.filter {
-                it.numPackage != pckge.numPackage
-            }
+        val newPackages = CurrentSession.packagesToDeliver.value.filter {
+            it.numPackage != pckge.numPackage
+        }
 
-        val newRoute =
-            CurrentSession.route.value.copy(packages = CurrentSession.packagesToDeliver.value)
-
-        CurrentSession.route.value = newRoute
-
+        computeProperAlgorithmAndUpdateCurrentSession(CurrentSession.algorithm, newPackages)
     }
 
     override fun removeLastLocation(location: Location) {

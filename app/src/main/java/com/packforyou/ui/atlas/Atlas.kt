@@ -204,9 +204,7 @@ fun AtlasWithGivenRoute(route: Route, viewModel: IAtlasViewModel) {
 
 
     //we use this to set the camera
-    val firstLocation = if (route.startLocation != null)
-        route.startLocation
-    else route.packages[0].location
+    val firstLocation = route.startLocation
 
     latLong = LatLng(firstLocation.latitude, firstLocation.longitude)
 

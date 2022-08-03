@@ -102,7 +102,6 @@ fun DrawerFooter(navController: NavController, loginViewModel: ILoginViewModel, 
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                //TODO log out function
                 loginViewModel.logOut()
                 navController.navigate(route = Screen.Login.route) {
                     popUpTo(0)

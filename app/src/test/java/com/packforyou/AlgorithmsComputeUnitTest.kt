@@ -5,20 +5,14 @@ import com.packforyou.data.models.Location
 import com.packforyou.data.models.Package
 import com.packforyou.data.models.Route
 import com.packforyou.data.repositories.IPackagesAndAtlasRepository
-import com.packforyou.data.repositories.PackagesAndAtlasRepositoryImpl
 import com.packforyou.ui.packages.IPackagesViewModel
 import com.packforyou.ui.packages.PackagesViewModelImpl
-import io.mockk.InternalPlatformDsl.toArray
-import org.junit.Test
-
 import org.junit.Assert.*
 import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.jupiter.api.BeforeAll
+import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.junit.MockitoJUnitRunner
 import java.io.InputStreamReader
@@ -137,7 +131,7 @@ class PackagesUnitTest {
         )
 
         val packageOrder = arrayListOf<Int>()
-        optimizedRoute.packages!!.forEach {
+        optimizedRoute.packages.forEach {
             packageOrder.add(it.numPackage)
         }
 

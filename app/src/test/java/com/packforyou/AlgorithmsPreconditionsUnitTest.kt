@@ -80,21 +80,6 @@ class AlgorithmsPreconditionsUnitTest {
         assertEquals(routeId, -1)
     }
 
-
-    @Test
-    fun different_size_arrays_and_packages_brute_force_travel_time() {
-        val route = Route(packages = listOf(Package()))
-
-        val routeId = packagesViewModel.getOptimizedRouteBruteForceTravelTime(
-            route = route,
-            travelTimeArray = travelTimeArray,
-            startTravelTimeArray = startTravelTimeArray,
-            endTravelTimeArray = endTravelTimeArray
-        ).id
-
-        assertEquals(routeId, -2)
-    }
-
     @Test
     fun different_size_arrays_and_packages_brute_force_distance() {
         val route = Route(packages = listOf(Package()))

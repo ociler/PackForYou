@@ -6,6 +6,6 @@ data class Route(
     var packages: List<Package> = listOf(),
     var totalTime: Int? = null,
     var totalDistance: Int? = null,
-    var startLocation: Location, //this we be changing bc of the currentLocation of the deliveryMan
-    var endLocation: Location
+    var startLocation: Location = Location(), //this we be changing bc of the currentLocation of the deliveryMan
+    var endLocation: Location = Location()
 )

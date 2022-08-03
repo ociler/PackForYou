@@ -298,6 +298,7 @@ private fun getAlgorithmGivenString(algorithmString: String): Algorithm {
     }
 }
 
+//TODO refactor this method, as it has a lot of business logic that should be on the viewModel
 private fun computeProperAlgorithmAndUpdateRoute(
     algorithm: Algorithm,
     viewModel: IPackagesViewModel,
@@ -323,28 +324,33 @@ private fun computeProperAlgorithmAndUpdateRoute(
         }
 
         Algorithm.BRUTE_FORCE -> {
+
             if (CurrentSession.route.value.packages.size <= 10) {
                 CurrentSession.algorithm = Algorithm.BRUTE_FORCE
 
-                //I reset this attribute bc we are creating new arrays
-                if (viewModel.observeTravelTimeArray().value == null) {
-
+                if(viewModel.observeTravelTimeArray().value == null) {
                     isLoading.value = true
 
-                    CurrentSession.route.value.packages.forEachIndexed { index, it ->
-                        it.position = index
+                    //I reset the position
+                    route.packages.forEachIndexed { index, pckg ->
+                        pckg.position = index
                     }
+                }
 
-                    //I compute the permutations.
-                    // This is like this bc this was the same for both brute force algorithms
-                    val listWithPositions = mutableListOf<Byte>()
-                    route.packages.forEach {
-                        listWithPositions.add(it.position.toByte())
-                    }
-                    //TODO use this when I remove/mark as delivered something
-                    val arrayToPermute = listWithPositions.toTypedArray()
+                //I compute the permutations.
+                // This is like this bc this was the same for both brute force algorithms
+                val listWithPositions = mutableListOf<Byte>()
+                route.packages.forEach {
+                    listWithPositions.add(it.position.toByte())
+                }
 
-                    viewModel.computePermutationsOfArray(arrayToPermute)
+
+                //this way we can use this when we have removed/delivered a package
+                val arrayToPermute = listWithPositions.toTypedArray()
+
+                viewModel.computePermutationsOfArray(arrayToPermute)
+
+                if (viewModel.observeTravelTimeArray().value == null) {
 
                     //I get the arrays
                     viewModel.computeDistanceBetweenStartLocationAndPackages(
@@ -352,7 +358,6 @@ private fun computeProperAlgorithmAndUpdateRoute(
                         endLocation = route.endLocation,
                         packages = route.packages
                     )
-
 
                     //once they are ready, we compute de brute force algorithm
                     viewModel.observeTravelTimeArray().observe(owner) { travelTimeArray ->
@@ -376,7 +381,12 @@ private fun computeProperAlgorithmAndUpdateRoute(
                             .show()
                     }
 
+
+//TODO fix the double-routing thing with urgency algorithm
+
+
                 } else { //we already have the arrays
+
                     val optimizedRoute = viewModel.getOptimizedRouteBruteForceTravelTime(
                         route = route,
                         travelTimeArray = viewModel.observeTravelTimeArray().value!!,
@@ -402,20 +412,33 @@ private fun computeProperAlgorithmAndUpdateRoute(
             }
         }
 
+
         Algorithm.CLOSEST_NEIGHBOUR -> {
             CurrentSession.algorithm = Algorithm.CLOSEST_NEIGHBOUR
 
-            if (viewModel.observeTravelTimeArray().value == null) {
+            if(viewModel.observeTravelTimeArray().value == null) {
                 isLoading.value = true
 
-                //I reset this attribute bc we are creating new arrays
-                CurrentSession.route.value.packages.forEachIndexed { index, it ->
-                    it.position = index
+                //I reset the position
+                route.packages.forEachIndexed { index, pckg ->
+                    pckg.position = index
                 }
+            }
 
-                //I compute the permutations. This is like this bc this will be the same for
-                //closest neighbour and for brute force
-                viewModel.computePermutations(route.packages.size)
+
+            //I compute the permutations.
+            // This is like this bc this was the same for both brute force algorithms
+            val listWithPositions = mutableListOf<Byte>()
+            route.packages.forEach {
+                listWithPositions.add(it.position.toByte())
+            }
+
+            //this way we can use this when we have removed/delivered a package
+            val arrayToPermute = listWithPositions.toTypedArray()
+
+            viewModel.computePermutationsOfArray(arrayToPermute)
+
+            if (viewModel.observeTravelTimeArray().value == null) {
 
                 //I get the arrays
                 viewModel.computeDistanceBetweenStartLocationAndPackages(
@@ -446,7 +469,7 @@ private fun computeProperAlgorithmAndUpdateRoute(
                     ).show()
                 }
 
-            } else {//we already have the arrays
+            } else { //we already have the arrays
                 val optimizedRoute = viewModel.getOptimizedRouteClosestNeighbourTravelTime(
                     route = route,
                     travelTimeArray = viewModel.observeTravelTimeArray().value!!,
@@ -461,8 +484,6 @@ private fun computeProperAlgorithmAndUpdateRoute(
                 Toast.makeText(context, "Packages sorted by Closest Neighbour", Toast.LENGTH_SHORT)
                     .show()
             }
-
-
         }
 
         Algorithm.URGENCY -> {
@@ -472,7 +493,7 @@ private fun computeProperAlgorithmAndUpdateRoute(
             val urgentPackages = mutableListOf<Package>()
             val notUrgentPackages = mutableListOf<Package>()
 
-            val currentPackages = CurrentSession.route.value.packages
+            val currentPackages = route.packages
 
             currentPackages.forEach {
                 when (it.urgency) {
@@ -525,6 +546,8 @@ private fun computeProperAlgorithmAndUpdateRoute(
                 }
         }
 
-        else -> {}
+        else -> {
+            CurrentSession.algorithm = Algorithm.NOT_ALGORITHM
+        }
     }
 }

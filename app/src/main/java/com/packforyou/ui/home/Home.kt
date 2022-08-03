@@ -72,6 +72,10 @@ fun HomeScreen(
         isFirstScreen = false
         val deliveryMan = loginViewModel.getExampleDeliveryMan()
 
+        deliveryMan.route!!.packages.forEachIndexed { index, pckg ->
+            pckg.position = index
+        }
+
         CurrentSession.route = remember {
             mutableStateOf(deliveryMan.route!!)
         }

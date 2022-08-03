@@ -30,7 +30,6 @@ fun PackageItem(pckge: Package, viewModel: IPackagesViewModel) {
         initialValue = DismissValue.Default,
         confirmStateChange = {
             if (it == DismissValue.DismissedToStart) {
-                //TODO remove package
                 viewModel.removePackageFromToDeliverList(pckge)
 
             } else if (it == DismissValue.DismissedToEnd) {
