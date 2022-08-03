@@ -83,22 +83,43 @@ class LoginViewModelImpl @Inject constructor(
 
                     //observeForever bc you don't need an owner
                     mutableDeliveryMan.observeForever { deliveryMan ->
-                        CurrentSession.packagesForToday = if (deliveryMan.route != null) {
-                            mutableStateOf(deliveryMan.route!!.packages)
+
+                        val route = deliveryMan.route
+
+                        if (route != null) {
+                            CurrentSession.route = mutableStateOf(route)
+                            CurrentSession.packagesForToday = mutableStateOf(route.packages)
+
+                            CurrentSession.userUID = firebaseUser!!.uid
+                            CurrentSession.packagesToDeliver =
+                                mutableStateOf(CurrentSession.packagesForToday.value)
+
+                            CurrentSession.lastLocationsList =
+                                mutableStateOf(deliveryMan.lastLocationList)
+
+                            CurrentSession.deliveryMan = deliveryMan
+                            CurrentSession.travelTime = if (route.totalTime != null) {
+                                mutableStateOf(route.totalTime!!)
+                            } else {
+                                mutableStateOf(0)
+                            }
+
+                            callbackObject.onLoginSuccess()
                         } else {
-                            mutableStateOf(listOf())
+                            CurrentSession.route = mutableStateOf(Route())
+                            CurrentSession.packagesForToday = mutableStateOf(listOf())
+
+                            CurrentSession.userUID = firebaseUser!!.uid
+                            CurrentSession.packagesToDeliver =
+                                mutableStateOf(listOf())
+
+                            CurrentSession.lastLocationsList =
+                                mutableStateOf(deliveryMan.lastLocationList)
+
+                            CurrentSession.deliveryMan = deliveryMan
+                            CurrentSession.travelTime = mutableStateOf(0)
                         }
-
-                        CurrentSession.userUID = firebaseUser!!.uid
-                        CurrentSession.packagesToDeliver =
-                            mutableStateOf(CurrentSession.packagesForToday.value)
-                        CurrentSession.lastLocationsList =
-                            mutableStateOf(deliveryMan.lastLocationList)
-                        CurrentSession.deliveryMan = deliveryMan
-
-                        callbackObject.onLoginSuccess()
                     }
-
 
                 } else {
                     callbackObject.onLoginFailure()

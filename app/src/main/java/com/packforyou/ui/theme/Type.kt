@@ -24,7 +24,8 @@ val Inter = FontFamily(
 
 val Roboto = FontFamily(
     Font(R.font.roboto_black),
-    Font(R.font.roboto_bold, FontWeight.Bold)
+    Font(R.font.roboto_bold, FontWeight.Bold),
+    Font(R.font.roboto_regular, FontWeight.Normal)
 )
 
 val Matroska = FontFamily(
@@ -75,6 +76,16 @@ val PackForYouTypography = Typography(
         fontFamily = Inter,
         fontWeight = FontWeight.Normal,
         fontSize = 30.sp
+    ),
+    titleLarge = TextStyle(
+        fontFamily = Inter,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 32.sp
+    ),
+    labelMedium = TextStyle(
+        fontFamily = Inter,
+        fontWeight = FontWeight.Normal,
+        fontSize = 14.sp
     )
 
 )
