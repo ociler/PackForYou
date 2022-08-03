@@ -22,11 +22,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavController
-import com.google.firebase.auth.FirebaseAuth
 import com.packforyou.R
 import com.packforyou.data.models.Algorithm
-import com.packforyou.data.models.Package
-import com.packforyou.data.models.Route
 import com.packforyou.navigation.Screen
 import com.packforyou.ui.atlas.AtlasScreen
 import com.packforyou.ui.atlas.AtlasViewModelImpl

@@ -123,9 +123,9 @@ class LoginViewModelImpl @Inject constructor(
                 zipCode = 46020
             ),
             lastLocation = Location(
-                address = "Carrer Arquitecte Arnau 30, 46020, València",
-                latitude = 39.485826,
-                longitude = -0.35638,
+                address = "Carrer d'Almassora, 44",
+                latitude = 39.4845376,
+                longitude = -0.3710471,
                 city = "Valencia",
                 zipCode = 46020
             ),
@@ -141,6 +141,20 @@ class LoginViewModelImpl @Inject constructor(
                     address = "Carrer Emili Baró 35",
                     latitude = 39.488724,
                     longitude = -0.360403,
+                    city = "Valencia",
+                    zipCode = 46020
+                ),
+                Location(
+                    address = "Carrer d'Albocàsser, 2",
+                    latitude = 39.486375,
+                    longitude = -0.361881,
+                    city = "Valencia",
+                    zipCode = 46020
+                ),
+                Location(
+                    address = "Carrer d'Almassora, 44",
+                    latitude = 39.4845376,
+                    longitude = -0.3710471,
                     city = "Valencia",
                     zipCode = 46020
                 )

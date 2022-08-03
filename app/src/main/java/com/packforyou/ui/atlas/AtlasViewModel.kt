@@ -1,21 +1,25 @@
 package com.packforyou.ui.atlas
 
+import android.location.LocationManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.PolyUtil
 import com.packforyou.api.ICallbackDirectionsResponse
 import com.packforyou.data.directionsDataClases.DirectionsResponse
+import com.packforyou.data.models.Location
 import com.packforyou.data.models.Route
 import com.packforyou.data.repositories.IPackagesAndAtlasRepository
+import com.packforyou.ui.login.CurrentSession
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
-interface IAtlasViewModel{
+interface IAtlasViewModel {
 
     suspend fun computeDirectionsAPIResponse(route: Route)
     fun observePointsList(): MutableLiveData<List<LatLng>>
     fun getMapStyleString(): String
+    fun setCurrentLocation(location: Location)
 }
 
 @HiltViewModel
@@ -44,5 +48,16 @@ class AtlasViewModelImpl @Inject constructor(
         val filePath = "json/map_style.json"
 
         return this::class.java.classLoader?.getResource(filePath)!!.readText()
+    }
+
+    override fun setCurrentLocation(location: Location) {
+        val deliveryMan = CurrentSession.deliveryMan
+        if (deliveryMan != null) {
+            deliveryMan.currentLocation = location
+
+            val gpsLocation = android.location.Location(LocationManager.GPS_PROVIDER)
+            gpsLocation.latitude = location.latitude
+            gpsLocation.longitude = location.longitude
+        }
     }
 }

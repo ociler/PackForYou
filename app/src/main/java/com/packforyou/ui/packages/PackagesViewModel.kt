@@ -122,7 +122,14 @@ interface IPackagesViewModel {
     fun getNotUrgentRoute(): Route
     fun getUrgentRoute(): Route
     fun observeOptimizedVeryUrgentRoute(): MutableLiveData<Route>
+    fun computeProperAlgorithmAndUpdateCurrentSession(
+        algorithm: Algorithm,
+        packages: List<Package>,
+        comesFromAddPackage: Boolean = false
+    )
 }
+
+//TODO refactor of some methods that maybe should be elsewhere
 
 @HiltViewModel
 class PackagesViewModelImpl @Inject constructor(
@@ -245,10 +252,10 @@ class PackagesViewModelImpl @Inject constructor(
 
     }
 
-    private fun computeProperAlgorithmAndUpdateCurrentSession(
+    override fun computeProperAlgorithmAndUpdateCurrentSession(
         algorithm: Algorithm,
         packages: List<Package>,
-        comesFromAddPackage: Boolean = false
+        comesFromAddPackage: Boolean
     ) {
 
         val isLoading = IsLoading.state
@@ -1037,6 +1044,7 @@ class PackagesViewModelImpl @Inject constructor(
     override fun setLastLocation(location: Location) {
         if (CurrentSession.deliveryMan != null) {
             CurrentSession.deliveryMan!!.lastLocation = location
+            CurrentSession.route.value.endLocation = location
         }
         //TODO tell this to the database
     }

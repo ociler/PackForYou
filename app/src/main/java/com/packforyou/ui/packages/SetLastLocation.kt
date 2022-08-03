@@ -31,6 +31,7 @@ import com.packforyou.R
 import com.packforyou.data.models.Location
 import com.packforyou.ui.atlas.IAtlasViewModel
 import com.packforyou.ui.atlas.bitmapDescriptorFromVector
+import com.packforyou.ui.login.CurrentSession
 import com.packforyou.ui.theme.Black
 import com.packforyou.ui.theme.PackForYouTypography
 import com.packforyou.ui.theme.White
@@ -45,8 +46,12 @@ fun SetLastLocation(
     lastLocations: List<Location>,
     viewModel: IPackagesViewModel
 ) {
+
     selectedLocation = if (lastLocations.isNotEmpty()) {
-        remember { mutableStateOf(lastLocations[0]) }
+        remember {
+            mutableStateOf(lastLocations[lastLocations
+                .indexOf(CurrentSession.deliveryMan!!.lastLocation)])
+        }
     } else {
         remember { mutableStateOf(Location()) }
     }
@@ -188,6 +193,11 @@ fun SetLocationButton(
     Button(
         onClick = {
             viewModel.setLastLocation(location)
+            viewModel.computeProperAlgorithmAndUpdateCurrentSession(
+                CurrentSession.algorithm,
+                CurrentSession.packagesToDeliver.value
+            )
+
             dialogState.value = false
         },
         colors = ButtonDefaults.buttonColors(containerColor = Black),
@@ -205,7 +215,6 @@ fun SetLocationButton(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SetNewEndLocationItem(viewModel: IPackagesViewModel) {
 
