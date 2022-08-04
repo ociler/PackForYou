@@ -126,6 +126,8 @@ interface IPackagesViewModel {
         packages: List<Package>,
         comesFromAddPackage: Boolean = false
     )
+
+    fun postponePackage(pckge: Package)
 }
 
 //TODO refactor of some methods that maybe should be elsewhere
@@ -441,6 +443,11 @@ class PackagesViewModelImpl @Inject constructor(
                 IsLoading.state.value = false
             }
         }
+    }
+
+    override fun postponePackage(pckge: Package) {
+        removePackageFromToDeliverList(pckge)
+        pckge.deliveryDate = pckge.deliveryDate!!.plusDays(1)
     }
 
 

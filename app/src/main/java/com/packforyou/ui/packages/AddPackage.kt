@@ -33,6 +33,7 @@ import com.packforyou.ui.theme.Black
 import com.packforyou.ui.theme.CustomExposedDropdownMenu
 import com.packforyou.ui.theme.PackForYouTypography
 import com.packforyou.ui.theme.White
+import java.time.LocalDate
 import java.util.*
 import kotlin.random.Random
 
@@ -227,7 +228,7 @@ fun AddPackage(
                                                 1000
                                             ), //TODO create hash function
                                             position = CurrentSession.packagesToDeliver.value.size,
-                                            deliveryDate = Date(System.currentTimeMillis()),
+                                            deliveryDate = LocalDate.now(),
                                             isDelivered = false,
                                             urgency = selectedOption,
                                             client = Client(name = clientText),

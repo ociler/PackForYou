@@ -35,6 +35,7 @@ import com.packforyou.ui.theme.PackForYouTypography
 import com.packforyou.ui.theme.TravelTimeButtonColor
 import com.packforyou.ui.theme.White
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 //This will be the main screen. Exists just to be able to use the packages and the map on the same screen
 
@@ -42,7 +43,7 @@ private lateinit var addPackageState: MutableState<Boolean>
 private lateinit var selectPackageToEditState: MutableState<Boolean>
 private lateinit var defineEndLocationState: MutableState<Boolean>
 
-var isFirstScreen = true
+private var isFirstScreen = true
 
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -73,6 +74,7 @@ fun HomeScreen(
 
         deliveryMan.route!!.packages.forEachIndexed { index, pckg ->
             pckg.position = index
+            pckg.deliveryDate = LocalDate.now()
         }
 
         CurrentSession.route = remember {

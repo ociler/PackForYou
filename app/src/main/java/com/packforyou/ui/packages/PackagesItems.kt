@@ -1,37 +1,51 @@
 package com.packforyou.ui.packages
 
+import android.widget.Space
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.FractionalThreshold
 import androidx.compose.material3.*
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.packforyou.R
 import com.packforyou.data.models.*
 import com.packforyou.ui.theme.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 const val MAX_NOTE_LINES = 7
+lateinit var openRemoveDialog: MutableState<Boolean>
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PackageItem(pckge: Package, viewModel: IPackagesViewModel) {
+    openRemoveDialog = remember {
+        mutableStateOf(false)
+    }
+
     val dismissState = rememberDismissState(
         initialValue = DismissValue.Default,
         confirmStateChange = {
             if (it == DismissValue.DismissedToStart) {
-                viewModel.removePackageFromToDeliverList(pckge)
-
+                openRemoveDialog.value = true
             } else if (it == DismissValue.DismissedToEnd) {
                 pckge.isDelivered = true
                 viewModel.removePackageFromToDeliverList(pckge)
@@ -120,6 +134,10 @@ fun PackageItem(pckge: Package, viewModel: IPackagesViewModel) {
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
         )
     }
+
+    if (openRemoveDialog.value) {
+        RemoveDialog(pckge, viewModel, dismissState)
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -186,7 +204,7 @@ fun PackageCard(pckge: Package, isStartRoute: Boolean = false) {
                             text = pckge.note!!,
                             textAlign = TextAlign.Justify,
                             style = PackForYouTypography.bodyMedium,
-                            maxLines = if(isStartRoute) MAX_NOTE_LINES else Int.MAX_VALUE
+                            maxLines = if (isStartRoute) MAX_NOTE_LINES else Int.MAX_VALUE
                         )
 
                     }
@@ -317,6 +335,105 @@ fun SimplePackageItem(pckge: Package, modifier: Modifier = Modifier) {
                         }
                     }
 
+                }
+            }
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@Composable
+fun RemoveDialog(pckge: Package, viewModel: IPackagesViewModel, dismissState: DismissState) {
+    val context = LocalContext.current
+
+    //TODO take a look to this strange behaviour when swiping 
+    if (dismissState.currentValue != DismissValue.Default) {
+        LaunchedEffect(Unit) {
+            dismissState.reset()
+        }
+    }
+
+    Dialog(
+        onDismissRequest = {
+            openRemoveDialog.value = false
+        },
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true
+        )
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxHeight(.42f)
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(30.dp),
+            colors = CardDefaults.cardColors(White)
+        ) {
+
+            Column(
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(start = 30.dp, top = 20.dp, end = 30.dp)
+            ) {
+                Text(
+                    text = "Choose an option:",
+                    style = PackForYouTypography.labelMedium,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Button(
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
+                        onClick = {
+                            viewModel.removePackageFromToDeliverList(pckge)
+                            viewModel.removePackage(pckge)
+
+                            Toast.makeText(
+                                context,
+                                "Package removed successfully",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            openRemoveDialog.value = false
+                        }
+
+                    ) {
+                        Text(
+                            text = "Remove",
+                            color = White,
+                            style = PackForYouTypography.labelMedium,
+                            fontSize = 16.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(20.dp))
+
+                    Button(
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
+                        onClick = {
+                            viewModel.postponePackage(pckge)
+
+                            Toast.makeText(
+                                context,
+                                "Package postponed by next day",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            openRemoveDialog.value = false
+                        }
+
+                    ) {
+                        Text(
+                            text = "Postpone",
+                            color = White,
+                            style = PackForYouTypography.labelMedium,
+                            fontSize = 16.sp
+                        )
+                    }
                 }
             }
         }

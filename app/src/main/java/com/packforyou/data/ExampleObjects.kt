@@ -3,6 +3,7 @@ package com.packforyou.data
 import com.packforyou.data.models.*
 import com.packforyou.ui.login.ILoginViewModel
 import com.packforyou.ui.packages.IPackagesViewModel
+import java.time.LocalDate
 import java.util.*
 
 class ExampleObjects(
@@ -60,7 +61,7 @@ class ExampleObjects(
     val package1 = Package(
         numPackage = 12,
         isDelivered = false,
-        deliveryDate = Date(System.currentTimeMillis()),
+        deliveryDate = LocalDate.now(),
         note = "Garcias",
         urgency = Urgency.NOT_URGENT,
         client = client1,

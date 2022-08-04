@@ -10,6 +10,7 @@ import com.packforyou.data.models.*
 import com.packforyou.data.repositories.IUsersRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import javax.inject.Inject
 
 interface ILoginViewModel {
@@ -87,6 +88,10 @@ class LoginViewModelImpl @Inject constructor(
                         val route = deliveryMan.route
 
                         if (route != null) {
+                            route.packages.forEach {
+                                it.deliveryDate = LocalDate.now()
+                            }
+
                             CurrentSession.route = mutableStateOf(route)
                             CurrentSession.packagesForToday = mutableStateOf(route.packages)
 
