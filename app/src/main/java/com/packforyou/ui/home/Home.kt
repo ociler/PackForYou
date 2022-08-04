@@ -288,7 +288,7 @@ fun StartRouteRoundedButton(
                         Toast
                             .makeText(
                                 context,
-                                "You have no packages to deliver, so you can't Start a Route.",
+                                "You have no packages to deliver, so you can't Start a route.",
                                 Toast.LENGTH_SHORT
                             )
                             .show()

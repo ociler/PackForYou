@@ -54,7 +54,6 @@ fun PackageItem(pckge: Package, viewModel: IPackagesViewModel) {
         initialValue = DismissValue.Default,
         confirmStateChange = {
             if (it == DismissValue.DismissedToStart) {
-                CurrentSession.packagesToDeliver
                 correctPackage = pckge
                 openRemoveDialog.value = true
             } else if (it == DismissValue.DismissedToEnd) {

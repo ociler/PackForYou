@@ -26,6 +26,7 @@ import com.google.android.gms.maps.model.*
 import com.google.maps.android.compose.*
 import com.packforyou.R
 import com.packforyou.data.models.Package
+import com.packforyou.navigation.Screen
 import com.packforyou.ui.atlas.AtlasViewModelImpl
 import com.packforyou.ui.home.AppBar
 import com.packforyou.ui.login.CurrentSession
@@ -56,6 +57,7 @@ fun StartRouteScreen(
     owner: ViewModelStoreOwner,
     fusedLocationClient: FusedLocationProviderClient
 ) {
+    val context = LocalContext.current
 
     val packagesViewModel =
         ViewModelProvider(owner)[PackagesViewModelImpl::class.java]
@@ -237,11 +239,8 @@ fun StartRouteScreen(
                         }
                     }
 
-                    MarkAsDeliveredButton(packagesViewModel, currentLocation)
+                    MarkAsDeliveredButton(packagesViewModel, currentLocation, navController)
                 }
-            } else {
-                //TODO design some better screen for when there are no more packages to deliver
-                Text(text = "There are no more packages to deliver. Time to go home :D!")
             }
         }
     }
@@ -270,7 +269,12 @@ private fun onForwardArrowClick() {
 }
 
 @Composable
-fun MarkAsDeliveredButton(viewModel: IPackagesViewModel, currentLocation: MutableState<LatLng>) {
+fun MarkAsDeliveredButton(
+    viewModel: IPackagesViewModel,
+    currentLocation: MutableState<LatLng>,
+    navController: NavController
+) {
+    val context = LocalContext.current
     Button(
         onClick = {
             val pckgPos = currentPosition.value
@@ -286,6 +290,13 @@ fun MarkAsDeliveredButton(viewModel: IPackagesViewModel, currentLocation: Mutabl
                 //we go to the beginning of the route
                 currentPosition.value = 0
                 onMarkAsDeliveredClick(currentLocation)
+            } else { //last Package
+                Toast.makeText(
+                    context,
+                    "You have delivered all the packages. Time to go home :D!",
+                    Toast.LENGTH_LONG
+                ).show()
+                navController.popBackStack()
             }
         },
         colors = ButtonDefaults.buttonColors(containerColor = Black),
@@ -318,6 +329,7 @@ private fun onMarkAsDeliveredClick(currentLocation: MutableState<LatLng>) {
         currentPackage.value.location.latitude,
         currentPackage.value.location.longitude
     )
+
     cameraPositionState.position =
         CameraPosition.fromLatLngZoom(markerPosition.value, 17f)
 }
