@@ -107,8 +107,7 @@ fun PackagesScreen(
                             EnabledAlgorithmItem(
                                 algorithmName = getStringGivenAlgorithm(
                                     CurrentSession.algorithm
-                                ),
-                                isClickable = false
+                                )
                             )
 
                             Spacer(modifier = Modifier.width(5.dp))
@@ -144,11 +143,12 @@ fun PackagesScreen(
 
                 if (expanded.value) {
                     item {
-                        LazyRow { //TODO fix enabledAlgorithmItem a bit lower bug
+                        Spacer(modifier = Modifier.height(0.dp))
+                        LazyRow {
                             items(algorithmOptions) { algorithmName ->
                                 if (getAlgorithmGivenString(algorithmName) == CurrentSession.algorithm) {
                                     EnabledAlgorithmItem(
-                                        algorithmName = algorithmName
+                                       algorithmName = algorithmName
                                     )
                                 } else {
                                     DisabledAlgorithmItem(
@@ -334,30 +334,13 @@ fun SidedTriangle(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EnabledAlgorithmItem(
-    algorithmName: String,
-    isClickable: Boolean = true
+    algorithmName: String
 ) {
-    val context = LocalContext.current
-
     Surface(
         shape = RoundedCornerShape(20.dp),
-        color = Black,
-        onClick = {
-            if (isClickable) {
-                Toast
-                    .makeText(
-                        context,
-                        "You are already sorting the packages by $algorithmName",
-                        Toast.LENGTH_SHORT
-                    )
-                    .show()
-
-                expanded.value = false
-            }
-        }
+        color = Black
     )
     {
         Row(
@@ -629,10 +612,6 @@ private fun computeProperAlgorithmAndUpdateRoute(
                         )
                             .show()
                     }
-
-
-//TODO fix the double-routing thing with urgency algorithm
-
 
                 } else { //we already have the arrays
 

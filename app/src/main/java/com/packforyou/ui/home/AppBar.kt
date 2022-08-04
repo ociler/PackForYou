@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 import com.packforyou.R
+import com.packforyou.data.models.Algorithm
 import com.packforyou.ui.login.CurrentSession
 import com.packforyou.ui.packages.DeliveredPackages
 import com.packforyou.ui.packages.IPackagesViewModel
