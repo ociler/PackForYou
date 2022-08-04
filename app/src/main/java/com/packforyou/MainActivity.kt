@@ -6,6 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.gson.Gson
 import com.packforyou.data.models.Location
 import com.packforyou.data.models.Package
@@ -39,6 +41,8 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var optimizedDirectionsAPI: Route
 
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -50,6 +54,8 @@ class MainActivity : ComponentActivity() {
 
         atlasViewModel =
             ViewModelProvider(this)[AtlasViewModelImpl::class.java]
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         var t0: Long = 0
         var t1: Long
@@ -74,7 +80,8 @@ class MainActivity : ComponentActivity() {
                 SetupNavGraph(
                     navController = navController,
                     viewModelOwner = this,
-                    lifecycleOwner = this
+                    lifecycleOwner = this,
+                    fusedLocationClient = fusedLocationClient
                 )
             }
         }

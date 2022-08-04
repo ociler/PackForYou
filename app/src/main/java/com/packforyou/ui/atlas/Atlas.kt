@@ -272,7 +272,7 @@ fun AtlasWithGivenRoute(route: Route, viewModel: IAtlasViewModel) {
     latLong = LatLng(endLocation.latitude, endLocation.longitude)
     MarkerInfoWindow( //TODO change finish icon
         state = MarkerState(position = latLong),
-        icon = BitmapDescriptorFactory.fromResource(R.drawable.finish)
+        icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_finish)
     ) {
         CustomEndMarkerWindow(endLocation = endLocation)
     }
@@ -355,7 +355,7 @@ fun AtlasWithMutableRoute(viewModel: IAtlasViewModel) {
         latLong = LatLng(endLocation.latitude, endLocation.longitude)
         MarkerInfoWindow( //TODO change finish icon
             state = MarkerState(position = latLong),
-            icon = BitmapDescriptorFactory.fromResource(R.drawable.finish)
+            icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_finish)
         ) {
             CustomEndMarkerWindow(endLocation = endLocation)
         }

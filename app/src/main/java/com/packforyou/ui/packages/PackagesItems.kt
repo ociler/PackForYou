@@ -1,6 +1,5 @@
 package com.packforyou.ui.packages
 
-import android.widget.Space
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -26,13 +25,15 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.packforyou.R
 import com.packforyou.data.models.*
+import com.packforyou.ui.login.CurrentSession
 import com.packforyou.ui.theme.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 const val MAX_NOTE_LINES = 7
 lateinit var openRemoveDialog: MutableState<Boolean>
+lateinit var isPostponed: MutableState<Boolean?>
+lateinit var isCancelled: MutableState<Boolean>
+
+var correctPackage = Package()
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -41,10 +42,20 @@ fun PackageItem(pckge: Package, viewModel: IPackagesViewModel) {
         mutableStateOf(false)
     }
 
+    isPostponed = remember {
+        mutableStateOf(null)
+    }
+
+    isCancelled = remember {
+        mutableStateOf(false)
+    }
+
     val dismissState = rememberDismissState(
         initialValue = DismissValue.Default,
         confirmStateChange = {
             if (it == DismissValue.DismissedToStart) {
+                CurrentSession.packagesToDeliver
+                correctPackage = pckge
                 openRemoveDialog.value = true
             } else if (it == DismissValue.DismissedToEnd) {
                 pckge.isDelivered = true
@@ -59,7 +70,7 @@ fun PackageItem(pckge: Package, viewModel: IPackagesViewModel) {
     ) {
         SwipeToDismiss(
             state = dismissState,
-            dismissThresholds = { FractionalThreshold(0.4f) },
+            dismissThresholds = { FractionalThreshold(0.45f) },
             background = {
                 val color = when (dismissState.dismissDirection) {
                     DismissDirection.StartToEnd, DismissDirection.EndToStart -> Black
@@ -136,11 +147,29 @@ fun PackageItem(pckge: Package, viewModel: IPackagesViewModel) {
     }
 
     if (openRemoveDialog.value) {
-        RemoveDialog(pckge, viewModel, dismissState)
+        RemoveDialog()
+    }
+
+    when (isPostponed.value) {
+        true -> {
+            viewModel.postponePackage(correctPackage)
+        }
+        false -> {
+            viewModel.removePackageFromToDeliverList(correctPackage)
+            viewModel.removePackage(correctPackage)
+        }
+        else -> {
+        }
+    }
+
+    //TODO when dismiss it doesn't return to the correct position. Takes the package on the bottom of the correct one
+    if (isCancelled.value) {
+        LaunchedEffect(Unit) {
+
+        }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PackageCard(pckge: Package, isStartRoute: Boolean = false) {
 
@@ -284,8 +313,6 @@ fun StateIcon(state: PackageState, modifier: Modifier = Modifier) {
     }
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SimplePackageItem(pckge: Package, modifier: Modifier = Modifier) {
     Column(modifier = modifier) {
@@ -342,21 +369,15 @@ fun SimplePackageItem(pckge: Package, modifier: Modifier = Modifier) {
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
-fun RemoveDialog(pckge: Package, viewModel: IPackagesViewModel, dismissState: DismissState) {
+fun RemoveDialog() {
     val context = LocalContext.current
-
-    //TODO take a look to this strange behaviour when swiping 
-    if (dismissState.currentValue != DismissValue.Default) {
-        LaunchedEffect(Unit) {
-            dismissState.reset()
-        }
-    }
 
     Dialog(
         onDismissRequest = {
             openRemoveDialog.value = false
+            isCancelled.value = true
+            isPostponed.value = null
         },
         properties = DialogProperties(
             dismissOnBackPress = true,
@@ -391,8 +412,8 @@ fun RemoveDialog(pckge: Package, viewModel: IPackagesViewModel, dismissState: Di
                     Button(
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
                         onClick = {
-                            viewModel.removePackageFromToDeliverList(pckge)
-                            viewModel.removePackage(pckge)
+                            isPostponed.value = false
+                            isCancelled.value = false
 
                             Toast.makeText(
                                 context,
@@ -416,7 +437,8 @@ fun RemoveDialog(pckge: Package, viewModel: IPackagesViewModel, dismissState: Di
                     Button(
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
                         onClick = {
-                            viewModel.postponePackage(pckge)
+                            isPostponed.value = true
+                            isCancelled.value = false
 
                             Toast.makeText(
                                 context,

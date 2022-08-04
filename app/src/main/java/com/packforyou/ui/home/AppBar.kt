@@ -28,6 +28,7 @@ import com.packforyou.ui.theme.PackForYouTypography
 import com.packforyou.ui.theme.White
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppBar(
     navigationIcon: ImageVector,

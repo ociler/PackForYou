@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.packforyou.ui.home.HomeScreen
 import com.packforyou.ui.login.LoginScreen
 import com.packforyou.ui.packages.StartRouteScreen
@@ -16,7 +17,8 @@ const val startWithLogin = false
 fun SetupNavGraph(
     navController: NavHostController,
     viewModelOwner: ViewModelStoreOwner,
-    lifecycleOwner: LifecycleOwner
+    lifecycleOwner: LifecycleOwner,
+    fusedLocationClient: FusedLocationProviderClient
 ){
 
 
@@ -46,7 +48,7 @@ fun SetupNavGraph(
         composable(
             route = Screen.StartRoute.route
         ) {
-            StartRouteScreen(navController = navController, owner = viewModelOwner)
+            StartRouteScreen(navController = navController, owner = viewModelOwner, fusedLocationClient = fusedLocationClient)
         }
     }
 }

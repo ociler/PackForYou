@@ -38,8 +38,6 @@ import com.packforyou.ui.theme.White
 
 lateinit var selectedLocation: MutableState<Location>
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SetLastLocation(
     dialogState: MutableState<Boolean>,
@@ -214,6 +212,7 @@ fun SetLocationButton(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SetNewEndLocationItem(viewModel: IPackagesViewModel) {
 

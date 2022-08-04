@@ -1,6 +1,7 @@
 package com.packforyou.ui.packages
 
 import android.widget.Toast
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,12 +13,15 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color.Companion.Blue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavController
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.*
 import com.google.maps.android.compose.*
 import com.packforyou.R
@@ -32,23 +36,25 @@ import com.packforyou.ui.theme.White
 
 val packagesList = CurrentSession.packagesToDeliver
 
-lateinit var currentPosition: MutableState<Int>
+private lateinit var currentPosition: MutableState<Int>
 
-lateinit var currentPackage: MutableState<Package>
-lateinit var previousPackage: MutableState<Package>
-lateinit var nextPackage: MutableState<Package>
+private lateinit var currentPackage: MutableState<Package>
+private lateinit var previousPackage: MutableState<Package>
+private lateinit var nextPackage: MutableState<Package>
 
-lateinit var markerPosition: MutableState<LatLng>
+private lateinit var markerPosition: MutableState<LatLng>
+private lateinit var currentLocation: MutableState<LatLng>
 
-lateinit var pointsList: State<List<LatLng>>
-lateinit var cameraPositionState: CameraPositionState
+private lateinit var pointsList: State<List<LatLng>>
+private lateinit var cameraPositionState: CameraPositionState
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StartRouteScreen(
     navController: NavController,
-    owner: ViewModelStoreOwner
+    owner: ViewModelStoreOwner,
+    fusedLocationClient: FusedLocationProviderClient
 ) {
 
     val packagesViewModel =
@@ -82,6 +88,17 @@ fun StartRouteScreen(
         )
     }
 
+    val startLocation = CurrentSession.route.value.startLocation
+
+    currentLocation = remember {
+        mutableStateOf(
+            LatLng(
+                startLocation.latitude,
+                startLocation.longitude
+            )
+        )
+    }
+
     pointsList = atlasViewModel.observePointsList().observeAsState(emptyList())
 
     cameraPositionState = rememberCameraPositionState {
@@ -108,6 +125,11 @@ fun StartRouteScreen(
                 )
             ) {
 
+                Marker(
+                    state = MarkerState(position = currentLocation.value),
+                    icon = BitmapDescriptorFactory.fromResource(R.drawable.maps_dot)
+                )
+
                 markerPosition.value = LatLng(
                     currentPackage.value.location.latitude,
                     currentPackage.value.location.longitude
@@ -123,6 +145,8 @@ fun StartRouteScreen(
                     endCap = SquareCap()
                 )
             }
+
+
 
             if (packagesList.value.isNotEmpty()) {
 
@@ -213,7 +237,7 @@ fun StartRouteScreen(
                         }
                     }
 
-                    MarkAsDeliveredButton(packagesViewModel, navController)
+                    MarkAsDeliveredButton(packagesViewModel, currentLocation)
                 }
             } else {
                 //TODO design some better screen for when there are no more packages to deliver
@@ -246,8 +270,7 @@ private fun onForwardArrowClick() {
 }
 
 @Composable
-fun MarkAsDeliveredButton(viewModel: IPackagesViewModel, navController: NavController) {
-    val context = LocalContext.current
+fun MarkAsDeliveredButton(viewModel: IPackagesViewModel, currentLocation: MutableState<LatLng>) {
     Button(
         onClick = {
             val pckgPos = currentPosition.value
@@ -258,11 +281,11 @@ fun MarkAsDeliveredButton(viewModel: IPackagesViewModel, navController: NavContr
 
 
             if (pckgPos != pckgListLastIndex) {
-                onMarkAsDeliveredClick()
+                onMarkAsDeliveredClick(currentLocation)
             } else if (packagesList.value.size > 1) { //situated on last package but this is not the only one
                 //we go to the beginning of the route
                 currentPosition.value = 0
-                onMarkAsDeliveredClick()
+                onMarkAsDeliveredClick(currentLocation)
             }
         },
         colors = ButtonDefaults.buttonColors(containerColor = Black),
@@ -283,7 +306,12 @@ fun MarkAsDeliveredButton(viewModel: IPackagesViewModel, navController: NavContr
     }
 }
 
-private fun onMarkAsDeliveredClick() {
+private fun onMarkAsDeliveredClick(currentLocation: MutableState<LatLng>) {
+    //We set the previous location of the deliverMan
+    val previousLocation = currentPackage.value.location
+    currentLocation.value = LatLng(previousLocation.latitude, previousLocation.longitude)
+    CurrentSession.deliveryMan!!.currentLocation = previousLocation
+
     //as the packagesList has changed, now on the currentPosition it is what previously was "next package"
     currentPackage.value = packagesList.value[currentPosition.value]
     markerPosition.value = LatLng(
