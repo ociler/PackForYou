@@ -3,7 +3,6 @@ package com.packforyou.ui.packages
 import android.content.Context
 import android.location.Address
 import android.location.Geocoder
-import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -241,10 +240,13 @@ class PackagesViewModelImpl @Inject constructor(
     override fun addPackage(packge: Package) {
         //TODO in the future this will get the previous-selected algorithm
         //it is prepared to do so
-        CurrentSession.algorithm = Algorithm.NOT_ALGORITHM
 
         val newPackages = CurrentSession.packagesToDeliver.value.plus(packge)
-        computeProperAlgorithmAndUpdateCurrentSession(CurrentSession.algorithm, newPackages)
+        computeProperAlgorithmAndUpdateCurrentSession(
+            CurrentSession.algorithm,
+            newPackages,
+            comesFromAddPackage = true
+        )
 
         viewModelScope.launch {
             repository.addPackage(packge)
@@ -257,8 +259,6 @@ class PackagesViewModelImpl @Inject constructor(
         packages: List<Package>,
         comesFromAddPackage: Boolean
     ) {
-
-        val isLoading = IsLoading.state
 
         val route = CurrentSession.route.value.copy(packages = packages)
 
@@ -275,10 +275,11 @@ class PackagesViewModelImpl @Inject constructor(
                 }
             }
 
-            Algorithm.BRUTE_FORCE -> {
+            Algorithm.BRUTE_FORCE, Algorithm.CLOSEST_NEIGHBOUR -> {
+                var isFirstExec = true
 
                 if (comesFromAddPackage) {
-                    isLoading.value = true
+                    IsLoading.state.value = true
 
                     //I reset the position
                     route.packages.forEachIndexed { index, pckg ->
@@ -305,32 +306,52 @@ class PackagesViewModelImpl @Inject constructor(
                         packages = route.packages
                     )
 
-                    //once they are ready, we compute de brute force algorithm
+                    //once they are ready, we compute de brute force / closest neighbour algorithm
                     observeTravelTimeArray().observeForever { travelTimeArray ->
-                        val optimizedRoute = getOptimizedRouteBruteForceTravelTime(
-                            route = route,
-                            travelTimeArray = travelTimeArray,
-                            startTravelTimeArray = getStartTravelTimeArray(),
-                            endTravelTimeArray = getEndTravelTimeArray()
-                        )
+                        if(isFirstExec) {
+                            isFirstExec = false
+                        } else {
+                            val optimizedRoute = if (algorithm == Algorithm.BRUTE_FORCE) {
+                                getOptimizedRouteBruteForceTravelTime(
+                                    route = route,
+                                    travelTimeArray = travelTimeArray,
+                                    startTravelTimeArray = getStartTravelTimeArray(),
+                                    endTravelTimeArray = getEndTravelTimeArray()
+                                )
+                            } else {
+                                getOptimizedRouteClosestNeighbourTravelTime(
+                                    route = route,
+                                    travelTimeArray = travelTimeArray,
+                                    startTravelTimeArray = getStartTravelTimeArray(),
+                                    endTravelTimeArray = getEndTravelTimeArray()
+                                )
+                            }
+                            //and we update the route
+                            CurrentSession.route.value = optimizedRoute
+                            CurrentSession.packagesToDeliver.value = optimizedRoute.packages
 
-                        isLoading.value = false
-                        //and we update the route
-                        CurrentSession.route.value = optimizedRoute
-                        CurrentSession.packagesToDeliver.value = optimizedRoute.packages
-
-                        IsLoading.state.value = false
+                            IsLoading.state.value = false
+                        }
                     }
 
 
                 } else { //we already have the arrays
 
-                    val optimizedRoute = getOptimizedRouteBruteForceTravelTime(
-                        route = route,
-                        travelTimeArray = observeTravelTimeArray().value!!,
-                        startTravelTimeArray = getStartTravelTimeArray(),
-                        endTravelTimeArray = getEndTravelTimeArray()
-                    )
+                    val optimizedRoute = if (algorithm == Algorithm.BRUTE_FORCE) {
+                        getOptimizedRouteBruteForceTravelTime(
+                            route = route,
+                            travelTimeArray = observeTravelTimeArray().value!!,
+                            startTravelTimeArray = getStartTravelTimeArray(),
+                            endTravelTimeArray = getEndTravelTimeArray()
+                        )
+                    } else {
+                        getOptimizedRouteClosestNeighbourTravelTime(
+                            route = route,
+                            travelTimeArray = observeTravelTimeArray().value!!,
+                            startTravelTimeArray = getStartTravelTimeArray(),
+                            endTravelTimeArray = getEndTravelTimeArray()
+                        )
+                    }
 
                     //and we update the route
                     CurrentSession.route.value = optimizedRoute
@@ -338,49 +359,6 @@ class PackagesViewModelImpl @Inject constructor(
 
                     IsLoading.state.value = false
                 }
-            }
-
-            Algorithm.CLOSEST_NEIGHBOUR -> {
-
-                if (comesFromAddPackage) {
-
-                    computeDistanceBetweenStartLocationAndPackages(
-                        startLocation = route.startLocation,
-                        endLocation = route.endLocation,
-                        packages = packages
-                    )
-
-                    getOptimizedRouteBruteForceTravelTime(
-                        route = route,
-                        travelTimeArray = globalTravelTimeArray.value!!,
-                        startTravelTimeArray = globalStartTravelTimeArray,
-                        endTravelTimeArray = globalEndTravelTimeArray
-                    )
-                } else { //from remove or mark as delivered
-
-                    //I compute the permutations.
-                    // This is like this bc this was the same for both brute force algorithms
-                    val listWithPositions = mutableListOf<Byte>()
-                    packages.forEach {
-                        listWithPositions.add(it.position.toByte())
-                    }
-
-                    val arrayToPermute = listWithPositions.toTypedArray()
-                    computePermutationsOfArray(arrayToPermute)
-
-                    val optimizedRoute = getOptimizedRouteBruteForceTravelTime(
-                        route = CurrentSession.route.value.copy(packages = packages),
-                        travelTimeArray = globalTravelTimeArray.value!!, //will come for sure not empty
-                        startTravelTimeArray = getStartTravelTimeArray(),
-                        endTravelTimeArray = getEndTravelTimeArray()
-                    )
-
-                    CurrentSession.route.value = optimizedRoute
-                    CurrentSession.packagesToDeliver.value = optimizedRoute.packages
-
-                    IsLoading.state.value = false
-                }
-
             }
 
             Algorithm.URGENCY -> {
@@ -436,7 +414,8 @@ class PackagesViewModelImpl @Inject constructor(
                         totalTime += getUrgentRoute().totalTime!!
                         totalTime += getNotUrgentRoute().totalTime!!
 
-                        CurrentSession.route.value = route.copy(packages = optimizedPackages, totalTime = totalTime)
+                        CurrentSession.route.value =
+                            route.copy(packages = optimizedPackages, totalTime = totalTime)
                         CurrentSession.packagesToDeliver.value = optimizedPackages
                         CurrentSession.travelTime.value = totalTime
 
@@ -822,7 +801,7 @@ class PackagesViewModelImpl @Inject constructor(
         startDistanceArray: IntArray,
         endDistanceArray: IntArray
     ): Route {
-        if (route.packages.isNullOrEmpty()) return route.copy(id = -1)
+        if (route.packages.isEmpty()) return route.copy(id = -1)
 
         if (startDistanceArray.size != route.packages.size ||
             endDistanceArray.size != route.packages.size ||
@@ -831,13 +810,13 @@ class PackagesViewModelImpl @Inject constructor(
             return route.copy(id = -2)
         }
 
-        val packages = route.packages!!
+        val packages = route.packages
         var closestNeighbour = packages[0]
         var minimumDistance = startDistanceArray[0]
         val optimizedList = ArrayList<Package>()
         var totalDistance = 0
 
-        val visitedArray = BooleanArray(route.packages!!.size)
+        val visitedArray = BooleanArray(route.packages.size)
 
         for (i in 1 until startDistanceArray.size) {
             if (startDistanceArray[i] < minimumDistance) {
@@ -1023,8 +1002,7 @@ class PackagesViewModelImpl @Inject constructor(
         return listOf(
             Location(address = "Valencia"),
             Location(address = "El Hierro la mejor isla del mundo entero ", latitude = 2.0),
-            Location(address = "El Hierro la mejor isla del mundo entero ", latitude = 3.0),
-            Location(address = "El Hierro la mejor isla del mundo entero ", latitude = 4.0),
+            Location(address = "Tenerife la segunda mejor isla del mundo entero ", latitude = 3.0)
         )
     }
 
@@ -1069,7 +1047,7 @@ class PackagesViewModelImpl @Inject constructor(
     }
 
     override fun getExamplePackages(): List<Package> {
-        val packages = listOf(
+        return listOf(
             Package(
                 location = Location(
                     address = "Avd Universitat 44 Valencia Espanya",
@@ -1130,7 +1108,6 @@ class PackagesViewModelImpl @Inject constructor(
                 numPackage = 4
             )
         )
-        return packages
     }
 
 }
