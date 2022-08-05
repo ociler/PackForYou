@@ -27,6 +27,8 @@ import com.packforyou.R
 import com.packforyou.data.models.*
 import com.packforyou.ui.login.CurrentSession
 import com.packforyou.ui.theme.*
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 const val MAX_NOTE_LINES = 7
 lateinit var openRemoveDialog: MutableState<Boolean>
@@ -56,6 +58,7 @@ fun PackageItem(pckge: Package, viewModel: IPackagesViewModel) {
             if (it == DismissValue.DismissedToStart) {
                 correctPackage = pckge
                 openRemoveDialog.value = true
+
             } else if (it == DismissValue.DismissedToEnd) {
                 pckge.isDelivered = true
                 viewModel.removePackageFromToDeliverList(pckge)
@@ -63,6 +66,16 @@ fun PackageItem(pckge: Package, viewModel: IPackagesViewModel) {
             true
         }
     )
+
+    //TODO only works properly the first time you dismiss. I have no idea why it's like this
+    if (dismissState.dismissDirection == DismissDirection.EndToStart
+        && isCancelled.value) {
+        LaunchedEffect(Unit) {
+            dismissState.reset()
+            isCancelled.value = false
+            openRemoveDialog.value = false
+        }
+    }
 
     Column(
         modifier = Modifier.padding(horizontal = 15.dp)
@@ -158,13 +171,6 @@ fun PackageItem(pckge: Package, viewModel: IPackagesViewModel) {
             viewModel.removePackage(correctPackage)
         }
         else -> {
-        }
-    }
-
-    //TODO when dismiss it doesn't return to the correct position. Takes the package on the bottom of the correct one
-    if (isCancelled.value) {
-        LaunchedEffect(Unit) {
-
         }
     }
 }
@@ -374,9 +380,8 @@ fun RemoveDialog() {
 
     Dialog(
         onDismissRequest = {
-            openRemoveDialog.value = false
             isCancelled.value = true
-            isPostponed.value = null
+            openRemoveDialog.value = false
         },
         properties = DialogProperties(
             dismissOnBackPress = true,

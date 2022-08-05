@@ -7,18 +7,18 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
 import com.google.android.gms.maps.model.*
 import com.google.maps.android.compose.*
@@ -26,9 +26,9 @@ import kotlinx.coroutines.launch
 import com.packforyou.R
 import com.packforyou.data.models.*
 import com.packforyou.ui.login.CurrentSession
-import com.packforyou.ui.packages.IsLoading
-import com.packforyou.ui.packages.StateIcon
+import com.packforyou.ui.packages.*
 import com.packforyou.ui.theme.*
+import com.packforyou.ui.utils.UsefulFunctions
 
 lateinit var cameraPositionState: CameraPositionState
 
@@ -37,10 +37,50 @@ fun AtlasScreen(atlasViewModel: IAtlasViewModel) {
     Box {
         AtlasWithMutableRoute(atlasViewModel)
 
-        IsLoading.state = remember { mutableStateOf(false) }
-
         if (IsLoading.state.value) {
-            CircularProgressIndicator()
+            LoadingScreen()
+        }
+    }
+}
+
+@Composable
+fun LoadingScreen() {
+    val algorithm = UsefulFunctions.getStringGivenAlgorithm(CurrentSession.algorithm)
+
+    Dialog(
+        onDismissRequest = {
+        },
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true
+        )
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxHeight(.45f)
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(30.dp),
+            colors = CardDefaults.cardColors(White)
+        ) {
+
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .padding(vertical = 20.dp, horizontal = 30.dp)
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    text = "Loading $algorithm algorithm...",
+                    style = PackForYouTypography.labelMedium,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.wrapContentHeight(),
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(25.dp))
+                CircularProgressIndicator()
+            }
         }
     }
 }
@@ -355,7 +395,7 @@ fun AtlasWithMutableRoute(viewModel: IAtlasViewModel) {
         latLong = LatLng(endLocation.latitude, endLocation.longitude)
         MarkerInfoWindow( //TODO change finish icon
             state = MarkerState(position = latLong),
-            icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_finish)
+            icon = BitmapDescriptorFactory.fromResource(R.drawable.finish)
         ) {
             CustomEndMarkerWindow(endLocation = endLocation)
         }

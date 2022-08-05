@@ -58,6 +58,7 @@ fun StartRouteScreen(
     fusedLocationClient: FusedLocationProviderClient
 ) {
     val context = LocalContext.current
+    val endLocation = CurrentSession.route.value.endLocation
 
     val packagesViewModel =
         ViewModelProvider(owner)[PackagesViewModelImpl::class.java]
@@ -139,6 +140,16 @@ fun StartRouteScreen(
                 Marker(
                     state = MarkerState(position = markerPosition.value),
                     icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_black_marker)
+                )
+
+                Marker(
+                    state = MarkerState(
+                        position = LatLng(
+                            endLocation.latitude,
+                            endLocation.longitude
+                        )
+                    ),
+                    icon = BitmapDescriptorFactory.fromResource(R.drawable.finish)
                 )
 
                 Polyline(

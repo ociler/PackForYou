@@ -240,9 +240,6 @@ class PackagesViewModelImpl @Inject constructor(
 
 
     override fun addPackage(packge: Package) {
-        //TODO in the future this will get the previous-selected algorithm
-        //it is prepared to do so
-
         val newPackages = CurrentSession.packagesToDeliver.value.plus(packge)
         computeProperAlgorithmAndUpdateCurrentSession(
             CurrentSession.algorithm,
@@ -263,9 +260,9 @@ class PackagesViewModelImpl @Inject constructor(
     ) {
 
         val route = CurrentSession.route.value.copy(packages = packages)
+        IsLoading.state.value = true
 
         when (algorithm) {
-
             Algorithm.DIRECTIONS_API -> {
 
                 computeOptimizedRouteDirectionsAPI(route)
@@ -281,7 +278,6 @@ class PackagesViewModelImpl @Inject constructor(
                 var isFirstExec = true
 
                 if (comesFromAddPackage) {
-                    IsLoading.state.value = true
 
                     //I reset the position
                     route.packages.forEachIndexed { index, pckg ->
@@ -1017,8 +1013,6 @@ class PackagesViewModelImpl @Inject constructor(
         val newPackages = CurrentSession.packagesToDeliver.value.filter {
             it.numPackage != pckge.numPackage
         }
-
-        IsLoading.state.value = true
         computeProperAlgorithmAndUpdateCurrentSession(CurrentSession.algorithm, newPackages)
     }
 

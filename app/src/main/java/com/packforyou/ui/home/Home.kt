@@ -43,7 +43,7 @@ private lateinit var addPackageState: MutableState<Boolean>
 private lateinit var selectPackageToEditState: MutableState<Boolean>
 private lateinit var defineEndLocationState: MutableState<Boolean>
 
-private var isFirstScreen = true
+private var isFirstScreen = false
 
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -105,6 +105,8 @@ fun HomeScreen(
         CurrentSession.travelTime = remember {
             mutableStateOf(deliveryMan.route!!.totalTime!!)
         }
+
+        IsLoading.state = remember { mutableStateOf(false) }
     }
 
     val packages = CurrentSession.packagesToDeliver

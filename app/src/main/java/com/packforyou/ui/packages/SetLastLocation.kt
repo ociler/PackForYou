@@ -135,7 +135,6 @@ fun SetLastLocation(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SetLastLocationItem(location: Location, viewModel: IPackagesViewModel) {
     Row(

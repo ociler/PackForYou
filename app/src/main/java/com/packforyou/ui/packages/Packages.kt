@@ -41,6 +41,8 @@ import com.packforyou.data.models.*
 import com.packforyou.navigation.Screen
 import com.packforyou.ui.login.CurrentSession
 import com.packforyou.ui.theme.*
+import com.packforyou.ui.utils.UsefulFunctions.getAlgorithmGivenString
+import com.packforyou.ui.utils.UsefulFunctions.getStringGivenAlgorithm
 
 lateinit var expanded: MutableState<Boolean>
 lateinit var selectedAlgorithm: MutableState<Algorithm>
@@ -60,8 +62,6 @@ fun PackagesScreen(
     packages: MutableState<List<Package>>,
     lifecycleOwner: LifecycleOwner
 ) {
-
-    IsLoading.state = remember { mutableStateOf(false) }
     expanded = remember { mutableStateOf(false) }
     selectedAlgorithm = remember {
         mutableStateOf(CurrentSession.algorithm)
@@ -148,7 +148,7 @@ fun PackagesScreen(
                             items(algorithmOptions) { algorithmName ->
                                 if (getAlgorithmGivenString(algorithmName) == CurrentSession.algorithm) {
                                     EnabledAlgorithmItem(
-                                       algorithmName = algorithmName
+                                        algorithmName = algorithmName
                                     )
                                 } else {
                                     DisabledAlgorithmItem(
@@ -380,8 +380,8 @@ fun DisabledAlgorithmItem(
             modifier = Modifier
                 .clickable {
                     selectedAlgorithm.value = getAlgorithmGivenString(algorithmName)
-                    IsLoading.state.value = true
 
+                    IsLoading.state.value = true
                     computeProperAlgorithmAndUpdateRoute(
                         selectedAlgorithm.value,
                         viewModel,
@@ -479,54 +479,6 @@ fun StartRouteRectangularButton(navController: NavController, isEmpty: Boolean) 
     }
 }
 
-private fun getAlgorithmGivenString(algorithmString: String): Algorithm {
-    return when (algorithmString) {
-        "Directions API" -> {
-            Algorithm.DIRECTIONS_API
-        }
-
-        "Brute Force" -> {
-            Algorithm.BRUTE_FORCE
-        }
-
-        "Closest Neighbour" -> {
-            Algorithm.CLOSEST_NEIGHBOUR
-        }
-
-        "Urgency" -> {
-            Algorithm.URGENCY
-        }
-
-        else -> {
-            Algorithm.NOT_ALGORITHM
-        }
-    }
-}
-
-private fun getStringGivenAlgorithm(algorithm: Algorithm): String {
-    return when (algorithm) {
-        Algorithm.DIRECTIONS_API -> {
-            "Directions API"
-        }
-
-        Algorithm.BRUTE_FORCE -> {
-            "Brute Force"
-        }
-
-        Algorithm.CLOSEST_NEIGHBOUR -> {
-            "Closest Neighbour"
-        }
-
-        Algorithm.URGENCY -> {
-            "Urgency"
-        }
-
-        else -> {
-            "Custom Algorithm"
-        }
-    }
-}
-
 //TODO refactor this method, as it has a lot of business logic that should be on the viewModel
 private fun computeProperAlgorithmAndUpdateRoute(
     algorithm: Algorithm,
@@ -536,7 +488,6 @@ private fun computeProperAlgorithmAndUpdateRoute(
 ) {
     var isFirstExec = true
     val route = CurrentSession.route.value
-    val isLoading = IsLoading.state
 
     when (algorithm) {
         Algorithm.DIRECTIONS_API -> {
@@ -600,7 +551,6 @@ private fun computeProperAlgorithmAndUpdateRoute(
                             endTravelTimeArray = viewModel.getEndTravelTimeArray()
                         )
 
-                        isLoading.value = false
                         //and we update the route
                         CurrentSession.route.value = optimizedRoute
                         CurrentSession.packagesToDeliver.value = optimizedRoute.packages
@@ -611,6 +561,8 @@ private fun computeProperAlgorithmAndUpdateRoute(
                             Toast.LENGTH_SHORT
                         )
                             .show()
+
+                        IsLoading.state.value = false
                     }
 
                 } else { //we already have the arrays
@@ -649,7 +601,6 @@ private fun computeProperAlgorithmAndUpdateRoute(
             CurrentSession.algorithm = Algorithm.CLOSEST_NEIGHBOUR
 
             if (viewModel.observeTravelTimeArray().value == null) {
-                isLoading.value = true
 
                 //I reset the position
                 route.packages.forEachIndexed { index, pckg ->
@@ -688,7 +639,7 @@ private fun computeProperAlgorithmAndUpdateRoute(
                         endTravelTimeArray = viewModel.getEndTravelTimeArray()
                     )
 
-                    isLoading.value = false
+                    IsLoading.state.value = false
 
                     //and we update the route
                     CurrentSession.route.value = optimizedRoute
