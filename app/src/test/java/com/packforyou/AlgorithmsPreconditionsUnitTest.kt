@@ -96,10 +96,10 @@ class AlgorithmsPreconditionsUnitTest {
 
 
     @Test
-    fun zero_packages_on_closest_neighbour_travel_time() {
+    fun zero_packages_on_Nearest_neighbour_travel_time() {
         val route = Route(packages = listOf())
 
-        val routeId = packagesViewModel.getOptimizedRouteClosestNeighbourTravelTime(
+        val routeId = packagesViewModel.getOptimizedRouteNearestNeighbourTravelTime(
             route = route,
             travelTimeArray = travelTimeArray,
             startTravelTimeArray = startTravelTimeArray,
@@ -110,10 +110,10 @@ class AlgorithmsPreconditionsUnitTest {
     }
 
     @Test
-    fun zero_packages_on_closest_neighbour_distance() {
+    fun zero_packages_on_Nearest_neighbour_distance() {
         val route = Route(packages = listOf())
 
-        val routeId = packagesViewModel.getOptimizedRouteClosestNeighbourDistance(
+        val routeId = packagesViewModel.getOptimizedRouteNearestNeighbourDistance(
             route = route,
             distanceArray = distanceArray,
             startDistanceArray = startDistanceArray,
@@ -125,10 +125,10 @@ class AlgorithmsPreconditionsUnitTest {
 
 
     @Test
-    fun different_size_arrays_and_packages_closest_neighbour_travel_time() {
+    fun different_size_arrays_and_packages_Nearest_neighbour_travel_time() {
         val route = Route(packages = listOf(Package()))
 
-        val routeId = packagesViewModel.getOptimizedRouteClosestNeighbourTravelTime(
+        val routeId = packagesViewModel.getOptimizedRouteNearestNeighbourTravelTime(
             route = route,
             travelTimeArray = travelTimeArray,
             startTravelTimeArray = startTravelTimeArray,
@@ -139,10 +139,10 @@ class AlgorithmsPreconditionsUnitTest {
     }
 
     @Test
-    fun different_size_arrays_and_packages_closest_neighbour_distance() {
+    fun different_size_arrays_and_packages_Nearest_neighbour_distance() {
         val route = Route(packages = listOf(Package()))
 
-        val routeId = packagesViewModel.getOptimizedRouteClosestNeighbourDistance(
+        val routeId = packagesViewModel.getOptimizedRouteNearestNeighbourDistance(
             route = route,
             distanceArray = distanceArray,
             startDistanceArray = startDistanceArray,

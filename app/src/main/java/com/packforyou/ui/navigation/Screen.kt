@@ -1,4 +1,4 @@
-package com.packforyou.navigation
+package com.packforyou.ui.navigation
 
 sealed class Screen(val route: String) {
     object Login: Screen(route = "login_screen")

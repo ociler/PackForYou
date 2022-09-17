@@ -7,8 +7,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -21,12 +19,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.NavOptions
 import com.packforyou.R
-import com.packforyou.navigation.Screen
-import com.packforyou.ui.login.CurrentSession
+import com.packforyou.ui.navigation.Screen
 import com.packforyou.ui.login.ILoginViewModel
-import com.packforyou.ui.login.LoginViewModelImpl
 import com.packforyou.ui.theme.PackForYouTypography
 import kotlinx.coroutines.launch
 

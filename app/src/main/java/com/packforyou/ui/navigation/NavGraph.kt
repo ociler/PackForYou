@@ -1,5 +1,6 @@
-package com.packforyou.navigation
+package com.packforyou.ui.navigation
 
+import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
@@ -18,18 +19,19 @@ fun SetupNavGraph(
     navController: NavHostController,
     viewModelOwner: ViewModelStoreOwner,
     lifecycleOwner: LifecycleOwner,
-    fusedLocationClient: FusedLocationProviderClient
-){
+    fusedLocationClient: FusedLocationProviderClient,
+    locationRequest: ActivityResultLauncher<Array<String>>
+) {
 
 
-    val startDestination = if(startWithLogin) {
+    val startDestination = if (startWithLogin) {
         Screen.Login.route
     } else {
         Screen.Home.route
     }
 
     NavHost(
-        navController =  navController,
+        navController = navController,
         startDestination = startDestination
     ) {
 
@@ -42,13 +44,22 @@ fun SetupNavGraph(
         composable(
             route = Screen.Home.route
         ) {
-            HomeScreen(navController = navController, viewModelOwner = viewModelOwner, lifecycleOwner = lifecycleOwner)
+            HomeScreen(
+                navController = navController,
+                viewModelOwner = viewModelOwner,
+                lifecycleOwner = lifecycleOwner
+            )
         }
 
         composable(
             route = Screen.StartRoute.route
         ) {
-            StartRouteScreen(navController = navController, owner = viewModelOwner, fusedLocationClient = fusedLocationClient)
+            StartRouteScreen(
+                navController = navController,
+                owner = viewModelOwner,
+                fusedLocationClient = fusedLocationClient,
+                locationRequest = locationRequest
+            )
         }
     }
 }

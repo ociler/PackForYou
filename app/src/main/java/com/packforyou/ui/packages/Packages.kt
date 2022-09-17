@@ -27,6 +27,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -38,7 +39,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import com.packforyou.R
 import com.packforyou.data.models.*
-import com.packforyou.navigation.Screen
+import com.packforyou.ui.navigation.Screen
 import com.packforyou.ui.login.CurrentSession
 import com.packforyou.ui.theme.*
 import com.packforyou.ui.utils.UsefulFunctions.getAlgorithmGivenString
@@ -50,7 +51,7 @@ lateinit var selectedAlgorithm: MutableState<Algorithm>
 val algorithmOptions = listOf(
     "Directions API",
     "Brute Force",
-    "Closest Neighbour",
+    "Nearest Neighbour",
     "Urgency",
     "Custom Sort"
 )
@@ -134,7 +135,7 @@ fun PackagesScreen(
 
                             Spacer(modifier = Modifier.width(5.dp))
                         }
-                        FilterButton()
+                        SortButton()
                         Spacer(Modifier.padding(end = 5.dp))
                     }
 
@@ -409,8 +410,7 @@ fun DisabledAlgorithmItem(
 
 
 @Composable
-fun FilterButton() {
-
+fun SortButton() {
     Row {
         Box(
             modifier = Modifier
@@ -427,7 +427,9 @@ fun FilterButton() {
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_sort),
-                    contentDescription = "Sorts packages",
+                    contentDescription = stringResource(
+                        id = R.string.sort_button_description
+                    ),
                     tint = White,
                     modifier = Modifier.fillMaxSize()
                 )
@@ -597,8 +599,8 @@ private fun computeProperAlgorithmAndUpdateRoute(
         }
 
 
-        Algorithm.CLOSEST_NEIGHBOUR -> {
-            CurrentSession.algorithm = Algorithm.CLOSEST_NEIGHBOUR
+        Algorithm.NEAREST_NEIGHBOUR -> {
+            CurrentSession.algorithm = Algorithm.NEAREST_NEIGHBOUR
 
             if (viewModel.observeTravelTimeArray().value == null) {
 
@@ -632,7 +634,7 @@ private fun computeProperAlgorithmAndUpdateRoute(
 
 
                 viewModel.observeTravelTimeArray().observe(owner) { travelTimeArray ->
-                    val optimizedRoute = viewModel.getOptimizedRouteClosestNeighbourTravelTime(
+                    val optimizedRoute = viewModel.getOptimizedRouteNearestNeighbourTravelTime(
                         route = route,
                         travelTimeArray = travelTimeArray,
                         startTravelTimeArray = viewModel.getStartTravelTimeArray(),
@@ -647,13 +649,13 @@ private fun computeProperAlgorithmAndUpdateRoute(
 
                     Toast.makeText(
                         context,
-                        "Packages sorted by Closest Neighbour",
+                        "Packages sorted by Nearest Neighbour",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
 
             } else { //we already have the arrays
-                val optimizedRoute = viewModel.getOptimizedRouteClosestNeighbourTravelTime(
+                val optimizedRoute = viewModel.getOptimizedRouteNearestNeighbourTravelTime(
                     route = route,
                     travelTimeArray = viewModel.observeTravelTimeArray().value!!,
                     startTravelTimeArray = viewModel.getStartTravelTimeArray(),
@@ -666,7 +668,7 @@ private fun computeProperAlgorithmAndUpdateRoute(
 
                 IsLoading.state.value = false
 
-                Toast.makeText(context, "Packages sorted by Closest Neighbour", Toast.LENGTH_SHORT)
+                Toast.makeText(context, "Packages sorted by Nearest Neighbour", Toast.LENGTH_SHORT)
                     .show()
             }
         }

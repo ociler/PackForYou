@@ -1,12 +1,10 @@
 package com.packforyou.ui.login
 
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
 import com.packforyou.data.models.*
 import com.packforyou.data.repositories.IUsersRepository
 import com.packforyou.ui.packages.IsLoading
@@ -243,7 +241,7 @@ class LoginViewModelImpl @Inject constructor(
                 client = Client(
                     name = "Neza Divjak"
                 ),
-                state = PackageState.NEW_LOCATION
+                state = PackageState.RELOCATED
             ),
 
             Package(
@@ -279,7 +277,7 @@ class LoginViewModelImpl @Inject constructor(
                 client = Client(
                     name = "Andrés Arroyo"
                 ),
-                state = PackageState.NEW_LOCATION
+                state = PackageState.RELOCATED
             ),
             Package(
                 isDelivered = false,
@@ -425,7 +423,7 @@ class LoginViewModelImpl @Inject constructor(
                     client = Client(
                         name = "Neza Divjak"
                     ),
-                    state = PackageState.NEW_LOCATION
+                    state = PackageState.RELOCATED
                 ),
 
                 Package(
@@ -461,7 +459,7 @@ class LoginViewModelImpl @Inject constructor(
                     client = Client(
                         name = "Andrés Arroyo"
                     ),
-                    state = PackageState.NEW_LOCATION
+                    state = PackageState.RELOCATED
                 ),
                 Package(
                     isDelivered = false,

@@ -13,3 +13,4 @@ object CurrentSession {
     lateinit var lastLocationsList: MutableState<List<Location>>
     lateinit var travelTime: MutableState<Int>
 }
+

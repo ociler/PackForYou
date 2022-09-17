@@ -6,5 +6,5 @@ enum class PackageState {
     CONFIRMED,
     DELIVERED,
     POSTPONED_DELIVERY,
-    NEW_LOCATION
+    RELOCATED
 }

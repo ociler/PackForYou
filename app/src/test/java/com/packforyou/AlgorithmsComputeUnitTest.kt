@@ -144,9 +144,9 @@ class PackagesUnitTest {
     }
 
     @Test
-    fun closest_neighbour_travel_time_works_properly() {
+    fun Nearest_neighbour_travel_time_works_properly() {
         val route = Route(packages = packages.toList())
-        val optimizedRoute = packagesViewModel.getOptimizedRouteClosestNeighbourTravelTime(
+        val optimizedRoute = packagesViewModel.getOptimizedRouteNearestNeighbourTravelTime(
             route = route,
             startTravelTimeArray = startTravelTimeArray,
             travelTimeArray = travelTimeArray,
@@ -167,9 +167,9 @@ class PackagesUnitTest {
     }
 
     @Test
-    fun closest_neighbour_distance_works_properly() {
+    fun Nearest_neighbour_distance_works_properly() {
         val route = Route(packages = packages.toList())
-        val optimizedRoute = packagesViewModel.getOptimizedRouteClosestNeighbourDistance(
+        val optimizedRoute = packagesViewModel.getOptimizedRouteNearestNeighbourDistance(
             route = route,
             startDistanceArray = startDistanceArray,
             distanceArray = distanceArray,

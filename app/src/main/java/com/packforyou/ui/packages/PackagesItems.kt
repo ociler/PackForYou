@@ -25,10 +25,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.packforyou.R
 import com.packforyou.data.models.*
-import com.packforyou.ui.login.CurrentSession
 import com.packforyou.ui.theme.*
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 
 const val MAX_NOTE_LINES = 7
 lateinit var openRemoveDialog: MutableState<Boolean>
@@ -292,7 +289,7 @@ fun StateIcon(state: PackageState, modifier: Modifier = Modifier) {
             color = Cancelled
         }
 
-        PackageState.NEW_LOCATION -> {
+        PackageState.RELOCATED -> {
             caption = "New Location"
             color = NewLocation
         }

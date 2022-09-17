@@ -4,7 +4,7 @@ import com.packforyou.data.distanceMatrixDataClases.DistanceAndTime
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface DistanceMatrixApiService {
+interface IDistanceMatrixApiService {
 
     @GET("$MATRIX_URL?mode=driving&language=en-EN&sensor=false&$KEY_URL_REFERENCE")
     suspend fun getDistanceAndTime(

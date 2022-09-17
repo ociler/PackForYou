@@ -13,8 +13,8 @@ object UsefulFunctions {
                 Algorithm.BRUTE_FORCE
             }
 
-            "Closest Neighbour" -> {
-                Algorithm.CLOSEST_NEIGHBOUR
+            "Nearest Neighbour" -> {
+                Algorithm.NEAREST_NEIGHBOUR
             }
 
             "Urgency" -> {
@@ -37,8 +37,8 @@ object UsefulFunctions {
                 "Brute Force"
             }
 
-            Algorithm.CLOSEST_NEIGHBOUR -> {
-                "Closest Neighbour"
+            Algorithm.NEAREST_NEIGHBOUR -> {
+                "Nearest Neighbour"
             }
 
             Algorithm.URGENCY -> {

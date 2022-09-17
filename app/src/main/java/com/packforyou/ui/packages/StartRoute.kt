@@ -1,7 +1,7 @@
 package com.packforyou.ui.packages
 
 import android.widget.Toast
-import androidx.compose.foundation.Canvas
+import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,7 +13,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color.Companion.Blue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -21,12 +20,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavController
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.*
 import com.google.maps.android.compose.*
 import com.packforyou.R
 import com.packforyou.data.models.Package
-import com.packforyou.navigation.Screen
 import com.packforyou.ui.atlas.AtlasViewModelImpl
 import com.packforyou.ui.home.AppBar
 import com.packforyou.ui.login.CurrentSession
@@ -55,7 +52,8 @@ private lateinit var cameraPositionState: CameraPositionState
 fun StartRouteScreen(
     navController: NavController,
     owner: ViewModelStoreOwner,
-    fusedLocationClient: FusedLocationProviderClient
+    fusedLocationClient: FusedLocationProviderClient,
+    locationRequest: ActivityResultLauncher<Array<String>>
 ) {
     val context = LocalContext.current
     val endLocation = CurrentSession.route.value.endLocation
@@ -65,6 +63,15 @@ fun StartRouteScreen(
 
     val atlasViewModel =
         ViewModelProvider(owner)[AtlasViewModelImpl::class.java]
+
+    /*
+    locationRequest.launch(
+        arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
+    )
+
+     */
 
     currentPosition = remember {
         mutableStateOf(0)
@@ -90,17 +97,17 @@ fun StartRouteScreen(
             )
         )
     }
-
-    val startLocation = CurrentSession.route.value.startLocation
-
     currentLocation = remember {
         mutableStateOf(
             LatLng(
-                startLocation.latitude,
-                startLocation.longitude
+                CurrentSession.deliveryMan!!.currentLocation.latitude,
+                CurrentSession.deliveryMan!!.currentLocation.longitude
             )
         )
     }
+
+
+
 
     pointsList = atlasViewModel.observePointsList().observeAsState(emptyList())
 
@@ -127,7 +134,6 @@ fun StartRouteScreen(
                     mapStyleOptions = MapStyleOptions(atlasViewModel.getMapStyleString())
                 )
             ) {
-
                 Marker(
                     state = MarkerState(position = currentLocation.value),
                     icon = BitmapDescriptorFactory.fromResource(R.drawable.maps_dot)

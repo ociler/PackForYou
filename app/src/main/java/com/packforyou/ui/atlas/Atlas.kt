@@ -3,6 +3,8 @@ package com.packforyou.ui.atlas
 import android.content.Context
 import android.graphics.Bitmap
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -13,6 +15,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -71,7 +74,7 @@ fun LoadingScreen() {
                     .fillMaxWidth()
             ) {
                 Text(
-                    text = "Loading $algorithm algorithm...",
+                    text = "Recalculating route using $algorithm algorithm...",
                     style = PackForYouTypography.labelMedium,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -393,7 +396,7 @@ fun AtlasWithMutableRoute(viewModel: IAtlasViewModel) {
         }
 
         latLong = LatLng(endLocation.latitude, endLocation.longitude)
-        MarkerInfoWindow( //TODO change finish icon
+        MarkerInfoWindow(
             state = MarkerState(position = latLong),
             icon = BitmapDescriptorFactory.fromResource(R.drawable.finish)
         ) {
@@ -416,7 +419,7 @@ private fun getProperMarker(state: PackageState): Int {
             R.drawable.ic_confirmed_marker
         }
 
-        PackageState.NEW_LOCATION -> {
+        PackageState.RELOCATED -> {
             R.drawable.ic_new_location_marker
         }
         else -> {
@@ -432,7 +435,14 @@ fun CustomMarkerInfoWindow(pckg: Package) {
         shadowElevation = 10.dp,
         color = White,
         shape = RoundedCornerShape(15.dp),
-        modifier = Modifier.fillMaxWidth(.6f)
+        modifier = Modifier
+            .fillMaxWidth(.6f)
+            .clickable(
+                enabled = false,
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() },
+                onClick = { },
+            )
     ) {
         Column(
             Modifier.padding(
@@ -523,7 +533,8 @@ fun CustomEndMarkerWindow(endLocation: Location) {
         shadowElevation = 10.dp,
         color = White,
         shape = RoundedCornerShape(15.dp),
-        modifier = Modifier.fillMaxWidth(.5f)
+        modifier = Modifier
+            .fillMaxWidth(.5f)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -533,7 +544,7 @@ fun CustomEndMarkerWindow(endLocation: Location) {
                 )
         ) {
             Icon(
-                imageVector = Icons.Filled.Home, //TODO change for end icon
+                painter = painterResource(R.drawable.ic_finish), //TODO change for end icon
                 contentDescription = "End icon",
                 tint = Black
             )
@@ -570,7 +581,7 @@ private fun getStateColor(state: PackageState): Color {
             Cancelled
         }
 
-        PackageState.NEW_LOCATION -> {
+        PackageState.RELOCATED -> {
             NewLocation
         }
         else -> {

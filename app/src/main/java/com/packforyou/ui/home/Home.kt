@@ -1,7 +1,6 @@
 package com.packforyou.ui.home
 
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,7 +23,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavController
 import com.packforyou.R
 import com.packforyou.data.models.Algorithm
-import com.packforyou.navigation.Screen
+import com.packforyou.ui.navigation.Screen
 import com.packforyou.ui.atlas.AtlasScreen
 import com.packforyou.ui.atlas.AtlasViewModelImpl
 import com.packforyou.ui.login.CurrentSession
@@ -325,7 +324,6 @@ fun StartRouteRoundedButton(
 
 @Composable
 fun TravelTimeButton(modifier: Modifier = Modifier) {
-
     val travelTime = CurrentSession.travelTime
     Surface(
         shape = RoundedCornerShape(20.dp),

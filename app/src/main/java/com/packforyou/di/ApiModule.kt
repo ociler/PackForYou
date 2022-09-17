@@ -1,11 +1,9 @@
 package com.packforyou.di
 
-import com.packforyou.api.DirectionsApiService
-import com.packforyou.api.DistanceMatrixApiService
+import com.packforyou.api.IDirectionsApiService
+import com.packforyou.api.IDistanceMatrixApiService
 import com.packforyou.data.repositories.IPackagesAndAtlasRepository
 import com.packforyou.data.repositories.PackagesAndAtlasRepositoryImpl
-import com.packforyou.ui.atlas.AtlasViewModelImpl
-import com.packforyou.ui.atlas.IAtlasViewModel
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -46,12 +44,12 @@ object ApiModule {
 
     @Singleton
     @Provides
-    fun provideDirectionsApiService(retrofit: Retrofit): DirectionsApiService = retrofit.create(DirectionsApiService::class.java)
+    fun provideDirectionsApiService(retrofit: Retrofit): IDirectionsApiService = retrofit.create(IDirectionsApiService::class.java)
 
 
     @Singleton
     @Provides
-    fun provideMatrixApiService(retrofit: Retrofit): DistanceMatrixApiService = retrofit.create(DistanceMatrixApiService::class.java)
+    fun provideMatrixApiService(retrofit: Retrofit): IDistanceMatrixApiService = retrofit.create(IDistanceMatrixApiService::class.java)
 
 
 

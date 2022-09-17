@@ -1,7 +1,7 @@
 package com.packforyou.data.repositories
 
-import com.packforyou.api.DirectionsApiService
-import com.packforyou.api.DistanceMatrixApiService
+import com.packforyou.api.IDirectionsApiService
+import com.packforyou.api.IDistanceMatrixApiService
 import com.packforyou.data.dataSources.IFirebaseRemoteDatabase
 import com.packforyou.data.models.*
 import com.packforyou.api.ICallbackAPICalls
@@ -48,8 +48,8 @@ interface IPackagesAndAtlasRepository {
 @Singleton
 class PackagesAndAtlasRepositoryImpl(
     private val dataSource: IFirebaseRemoteDatabase,
-    private val directionsApiService: DirectionsApiService,
-    private val distanceMatrixApiService: DistanceMatrixApiService
+    private val directionsApiService: IDirectionsApiService,
+    private val distanceMatrixApiService: IDistanceMatrixApiService
 ) : IPackagesAndAtlasRepository {
 
     private lateinit var travelTimeArray: Array<IntArray>
