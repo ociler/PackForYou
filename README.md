@@ -15,4 +15,6 @@ https://user-images.githubusercontent.com/45457100/195585998-3762a71a-81ef-458d-
 <br>
 <b>Future work:</b>
 
-Delivery Men won't have to call their clients to know if they will be at home or not. Instead of it, they will know it via this app, as this client will receive a Telegram message where he will be able to say if he will be at home or not and, i not, he will be able to send another location.
+- Delivery Men won't have to call their clients to know if they will be at home or not. Instead of it, they will know it via this app, as this client will receive a Telegram message where he will be able to say if he will be at home or not and, i not, he will be able to send another location.
+
+- Automated testing.
