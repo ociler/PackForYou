@@ -51,11 +51,8 @@ private lateinit var cameraPositionState: CameraPositionState
 @Composable
 fun StartRouteScreen(
     navController: NavController,
-    owner: ViewModelStoreOwner,
-    fusedLocationClient: FusedLocationProviderClient,
-    locationRequest: ActivityResultLauncher<Array<String>>
+    owner: ViewModelStoreOwner
 ) {
-    val context = LocalContext.current
     val endLocation = CurrentSession.route.value.endLocation
 
     val packagesViewModel =
@@ -63,15 +60,6 @@ fun StartRouteScreen(
 
     val atlasViewModel =
         ViewModelProvider(owner)[AtlasViewModelImpl::class.java]
-
-    /*
-    locationRequest.launch(
-        arrayOf(
-            Manifest.permission.ACCESS_FINE_LOCATION
-        )
-    )
-
-     */
 
     currentPosition = remember {
         mutableStateOf(0)

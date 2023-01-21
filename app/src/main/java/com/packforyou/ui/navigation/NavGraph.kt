@@ -18,9 +18,7 @@ const val startWithLogin = true
 fun SetupNavGraph(
     navController: NavHostController,
     viewModelOwner: ViewModelStoreOwner,
-    lifecycleOwner: LifecycleOwner,
-    fusedLocationClient: FusedLocationProviderClient,
-    locationRequest: ActivityResultLauncher<Array<String>>
+    lifecycleOwner: LifecycleOwner
 ) {
 
 
@@ -56,9 +54,7 @@ fun SetupNavGraph(
         ) {
             StartRouteScreen(
                 navController = navController,
-                owner = viewModelOwner,
-                fusedLocationClient = fusedLocationClient,
-                locationRequest = locationRequest
+                owner = viewModelOwner
             )
         }
     }
