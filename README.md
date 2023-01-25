@@ -1,5 +1,7 @@
 This is the project I've developed as my Final Degree Project on the Universitat Politècnica de València for the degree of Computer Engineering. You can find the thesis here: https://riunet.upv.es/handle/10251/187349.
 
+All the designs of this app have been developed by Esther Frasquet Ricarte. You can find her LinkedIn profile here: https://www.linkedin.com/in/esther-frasquet-ricarte-a035a925b/
+
 <br>
 <b> Abstract: </b>
 
